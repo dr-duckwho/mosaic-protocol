@@ -1,11 +1,13 @@
 # Compiler files
 cache/
 out/
+bin/
 
-# Ignores development broadcast logs
-!/broadcast
-/broadcast/*/31337/
-/broadcast/**/dry-run/
+# Ignores broadcast logs
+broadcast/
 
 # Dotenv file
 .env
+
+# IDE
+.idea/

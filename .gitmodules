@@ -1,0 +1,12 @@
+[submodule "lib/forge-std"]
+	path = lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "lib/openzeppelin-contracts"]
+	path = lib/openzeppelin-contracts
+	url = https://github.com/Openzeppelin/openzeppelin-contracts
+[submodule "lib/openzepplin-contracts"]
+	path = lib/openzepplin-contracts
+	url = https://github.com/Openzepplin/openzepplin-contracts
+[submodule "lib/mockprovider"]
+	path = lib/mockprovider
+	url = https://github.com/cleanunicorn/mockprovider
