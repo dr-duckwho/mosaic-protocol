@@ -128,17 +128,21 @@ contract GroupRegistryTest is Test, TestUtils {
         return groupRegistry.create(_targetPunkId, _targetMaxPrice);
     }
 
+    // TODO: Refactor the test helpers
     function _createAndBuy(address payable creator, uint256 targetPunkId)
         internal
         returns (uint192 groupId)
     {
-        // given
+        // create
         uint256 targetMaxPrice = 10 ether;
         vm.deal(creator, 100 ether);
         vm.prank(creator);
         uint192 groupId = _create(targetPunkId, targetMaxPrice);
         vm.prank(creator);
+
+        // contribute
         groupRegistry.contribute{value: targetMaxPrice}(groupId, 100);
+        assertEq(groupRegistry.getGroupTotalContribution(groupId), 10 ether);
 
         // given mocks
         mockCryptoPunksMarket.givenQueryReturn(
@@ -148,6 +152,16 @@ contract GroupRegistryTest is Test, TestUtils {
         mockCryptoPunksMarket.givenQueryReturn(
             abi.encodePacked(CryptoPunksMarket.transferPunk.selector),
             abi.encodePacked(true)
+        );
+        mockCryptoPunksMarket.setPunksOfferedForSale(
+            1,
+            MockCryptoPunksMarketProvider.Offer(
+                true,
+                1,
+                address(0x1),
+                1 ether,
+                address(0x0)
+            )
         );
         mockCryptoPunksMarket.setPunkIndexToAddress(1, address(groupRegistry));
         mockExhibitRegistry.givenSelectorReturnResponse(
@@ -159,7 +173,7 @@ contract GroupRegistryTest is Test, TestUtils {
             true
         );
 
-        // when
+        // buy
         vm.prank(creator);
         groupRegistry.buy(groupId);
 
