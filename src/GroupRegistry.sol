@@ -103,11 +103,14 @@ contract GroupRegistry is
             hasShare(msg.sender, groupId),
             "Only ticket holders can initiate a buy"
         );
-        // TODO: send only the necessary amount of ETH
-        //  within available funds from the group
-        // cf. Offer offer = punksOfferedForSale[punkIndex];
         uint256 punkId = group.targetPunkIndex;
-        cryptoPunksMarket.buyPunk{value: group.totalContribution}(punkId);
+        (, , , uint256 punkOfferMinValue, ) = cryptoPunksMarket
+            .punksOfferedForSale(punkId);
+        require(
+            group.totalContribution >= punkOfferMinValue,
+            "Offered price is greater than the current contribution"
+        );
+        cryptoPunksMarket.buyPunk{value: punkOfferMinValue}(punkId);
         require(
             cryptoPunksMarket.punkIndexToAddress(punkId) == address(this),
             "Unexpected ownership"
@@ -115,6 +118,7 @@ contract GroupRegistry is
         group.status = GroupStatus.WON;
         emit GroupWon(groupId);
         finalizeWon(groupId);
+        // TODO: Refund the remaining contributions pro rata
     }
 
     // Also for retry
@@ -231,6 +235,14 @@ contract GroupRegistry is
             group.ticketsBought,
             group.status
         );
+    }
+
+    function getGroupTotalContribution(uint192 groupId)
+        public
+        view
+        returns (uint256 totalContribution)
+    {
+        return getValidGroup(groupId).totalContribution;
     }
 
     //

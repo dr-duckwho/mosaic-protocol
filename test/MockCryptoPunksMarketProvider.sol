@@ -109,4 +109,8 @@ contract MockCryptoPunksMarketProvider is MockProvider, CryptoPunksMarket {
     function setBalanceOf(address addr, uint256 balance) public {
         balanceOf[addr] = balance;
     }
+
+    function setPunksOfferedForSale(uint256 punkIndex, Offer calldata offer) public {
+        punksOfferedForSale[punkIndex] = offer;
+    }
 }
