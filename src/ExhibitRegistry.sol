@@ -17,8 +17,7 @@ import {GroupRegistry} from "./GroupRegistry.sol";
 contract ExhibitRegistry is IExhibitRegistry, ERC1155, AccessControl {
     using SafeCast for uint256;
 
-    bytes32 public constant ROLE_ADMIN = keccak256("ADMIN");
-    bytes32 public constant ROLE_MINT_AUTHORITY = keccak256("MINT_AUTHORITY");
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     uint256 public constant MONO_ID_BITS = 64;
     uint256 constant MONO_ID_BITMASK = (1 << (MONO_ID_BITS + 1)) - 1; // lower 64 bits
@@ -51,22 +50,15 @@ contract ExhibitRegistry is IExhibitRegistry, ERC1155, AccessControl {
     mapping(uint192 => uint64) private claimableCount;
     mapping(uint192 => uint64) private claimedCount;
 
-    address public mintAuthority;
-    CryptoPunksMarket public cryptoPunksMarket;
+    CryptoPunksMarket public immutable cryptoPunksMarket;
 
-    constructor(address _mintAuthority, address cryptoPunksMarketAddress)
-        ERC1155("MOSAIC")
-    {
-        _grantRole(ROLE_ADMIN, msg.sender);
-        setMintAuthority(_mintAuthority);
+    constructor(
+        address _mintAuthority,
+        address cryptoPunksMarketAddress
+    ) ERC1155("MOSAIC") {
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(MINTER_ROLE, _mintAuthority);
         cryptoPunksMarket = CryptoPunksMarket(cryptoPunksMarketAddress);
-    }
-
-    function setMintAuthority(address _mintAuthority)
-        public
-        onlyRole(ROLE_ADMIN)
-    {
-        mintAuthority = _mintAuthority;
     }
 
     //
@@ -76,12 +68,7 @@ contract ExhibitRegistry is IExhibitRegistry, ERC1155, AccessControl {
         address originalTokenContract,
         uint256 originalTokenId,
         uint64 totalClaimableCount
-    )
-        external
-        override
-        onlyRole(ROLE_MINT_AUTHORITY)
-        returns (uint192 exhibitId)
-    {
+    ) external override onlyRole(MINTER_ROLE) returns (uint192 exhibitId) {
         require(
             originalTokenContract == address(cryptoPunksMarket),
             "Must be CryptoPunks"
@@ -105,12 +92,7 @@ contract ExhibitRegistry is IExhibitRegistry, ERC1155, AccessControl {
         address contributor,
         uint192 exhibitId,
         string calldata metadataUri
-    )
-        external
-        override
-        onlyRole(ROLE_MINT_AUTHORITY)
-        returns (uint256 erc1155TokenId)
-    {
+    ) external override onlyRole(MINTER_ROLE) returns (uint256 erc1155TokenId) {
         require(
             monoIdByExhibit[exhibitId] > 0,
             "Group must be initialized first"
@@ -128,19 +110,16 @@ contract ExhibitRegistry is IExhibitRegistry, ERC1155, AccessControl {
     //
     // Helpers
     //
-    function toErc1155Id(uint192 exhibitId, uint64 monoId)
-        public
-        pure
-        returns (uint256)
-    {
+    function toErc1155Id(
+        uint192 exhibitId,
+        uint64 monoId
+    ) public pure returns (uint256) {
         return (uint256(exhibitId) << MONO_ID_BITS) | uint256(monoId);
     }
 
-    function toGroupMonoIds(uint256 erc1155Id)
-        public
-        pure
-        returns (uint192 exhibitId, uint64 monoId)
-    {
+    function toGroupMonoIds(
+        uint256 erc1155Id
+    ) public pure returns (uint192 exhibitId, uint64 monoId) {
         return (
             uint192(erc1155Id >> MONO_ID_BITS),
             uint64(erc1155Id & MONO_ID_BITMASK)
@@ -157,12 +136,9 @@ contract ExhibitRegistry is IExhibitRegistry, ERC1155, AccessControl {
     //
     // Internals
     //
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(ERC1155, AccessControl)
-        returns (bool)
-    {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view override(ERC1155, AccessControl) returns (bool) {
         return
             ERC1155.supportsInterface(interfaceId) ||
             AccessControl.supportsInterface(interfaceId);
