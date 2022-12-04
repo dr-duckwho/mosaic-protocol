@@ -21,6 +21,7 @@ contract GroupRegistry is
 {
     // TODO: Introduce a global explicit storage contract
     bytes32 public constant ROLE_ADMIN = keccak256("ADMIN");
+    uint64 public constant TICKET_SUPPLY_PER_GROUP = 100;
 
     CryptoPunksMarket public cryptoPunksMarket;
 
@@ -48,7 +49,7 @@ contract GroupRegistry is
         returns (uint192 groupId)
     {
         groupId = ++groupCount;
-        uint64 totalTicketSupply = 100;
+        uint64 totalTicketSupply = TICKET_SUPPLY_PER_GROUP;
         uint256 unitTicketPrice = targetMaxPrice / totalTicketSupply;
 
         Group storage newGroup = groups[groupId];
@@ -97,6 +98,9 @@ contract GroupRegistry is
         emit Contributed(contributor, groupId, ticketQuantity);
     }
 
+    /**
+     * @dev Can be tried as long as the group is OPEN
+     */
     function buy(uint192 groupId) external nonReentrant {
         Group storage group = getValidGroup(groupId);
         require(
@@ -104,25 +108,28 @@ contract GroupRegistry is
             "Only ticket holders can initiate a buy"
         );
         uint256 punkId = group.targetPunkIndex;
-        (, , , uint256 punkOfferMinValue, ) = cryptoPunksMarket
-            .punksOfferedForSale(punkId);
+        (, , , uint256 offeredPrice, ) = cryptoPunksMarket.punksOfferedForSale(
+            punkId
+        );
+        // TODO: Require all 100 tickets bought already
         require(
-            group.totalContribution >= punkOfferMinValue,
+            group.totalContribution >= offeredPrice,
             "Offered price is greater than the current contribution"
         );
-        cryptoPunksMarket.buyPunk{value: punkOfferMinValue}(punkId);
+        cryptoPunksMarket.buyPunk{value: offeredPrice}(punkId);
         require(
             cryptoPunksMarket.punkIndexToAddress(punkId) == address(this),
             "Unexpected ownership"
         );
+        group.purchasePrice = offeredPrice;
         group.status = GroupStatus.WON;
         emit GroupWon(groupId);
-        finalizeWon(groupId);
-        // TODO: Refund the remaining contributions pro rata
+        finalizeOnWon(groupId);
     }
 
-    // Also for retry
-    function finalizeWon(uint192 groupId) public {
+    // Separated for retry after any partial failure
+    function finalizeOnWon(uint192 groupId) public {
+        // TODO: Consider removing `getValidGroup` invocation if it costs too much gas
         Group storage group = getValidGroup(groupId);
         require(group.status == GroupStatus.WON, "The group has not won");
         require(
@@ -130,6 +137,7 @@ contract GroupRegistry is
             "Exhibit registry must be set"
         );
 
+        // FIXME: Defend against reentrancy attacks in edge cases where the same cryptopunk ID is used later
         cryptoPunksMarket.transferPunk(
             address(exhibitRegistry),
             group.targetPunkIndex
@@ -140,6 +148,7 @@ contract GroupRegistry is
             group.ticketsBought
         );
         group.exhibit = address(exhibitRegistry);
+        // TODO: Consider whether to explicitly mark other competing groups as LOST
         group.status = GroupStatus.FINALIZED;
     }
 
@@ -155,10 +164,11 @@ contract GroupRegistry is
         );
         require(
             hasShare(msg.sender, groupId) || msg.sender == group.creator,
-            "Only its stakeholders can claim tokens"
+            "Only ticket holders can claim tokens"
         );
+        // TODO: Check whether payable casting is safe here
+        _refundAndBurnTickets(payable(msg.sender), groupId, 1);
 
-        _burn(msg.sender, groupId, 1);
         IExhibitRegistry delegate = IExhibitRegistry(group.exhibit);
         uint256 tokenId = delegate.mint(
             msg.sender,
@@ -168,6 +178,40 @@ contract GroupRegistry is
         // TODO: take metadata
         emit Claimed(msg.sender, groupId, group.exhibit, tokenId);
         return (delegate, tokenId);
+    }
+
+    function finalizeOnLost(uint192 groupId) public {
+        // TODO: Refund the remaining contributions pro rata when won/lost/expired
+    }
+
+    function getRefundableContributionPerTicket(uint192 groupId)
+        public
+        view
+        returns (uint256 refundPerTicket)
+    {
+        Group storage group = getValidGroup(groupId);
+        require(
+            group.status == GroupStatus.FINALIZED,
+            "The group is not finalized"
+        );
+        uint256 surplus = group.totalContribution - group.purchasePrice;
+        return surplus / TICKET_SUPPLY_PER_GROUP;
+    }
+
+    function _refundAndBurnTickets(
+        address payable contributor,
+        uint192 groupId,
+        uint64 ticketCount
+    ) {
+        uint256 refund = getRefundableContributionPerTicket(groupId) * ticketCount;
+
+        if (refund > 0) {
+            (bool sent, bytes memory data) = contributor.call{value: msg.value}(
+                ""
+            );
+            require(sent, "Failed to refund");
+        }
+        _burn(msg.sender, groupId, ticketCount);
     }
 
     //
@@ -205,17 +249,6 @@ contract GroupRegistry is
 
     function getGroupCount() public view returns (uint192) {
         return groupCount;
-    }
-
-    // FIXME: not a good design
-    function getGroupStatus(uint192 groupId) public view returns (GroupStatus) {
-        Group storage group = groups[groupId];
-        if (
-            group.status == GroupStatus.OPEN && group.expiry >= block.timestamp
-        ) {
-            return GroupStatus.EXPIRED;
-        }
-        return group.status;
     }
 
     function getGroupInfo(uint192 groupId)

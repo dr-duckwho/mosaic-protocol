@@ -4,11 +4,14 @@ pragma solidity ^0.8.17;
 import {IERC721} from "openzepplin-contracts/contracts/token/ERC721/IERC721.sol";
 
 interface IGroupRegistry {
+    /**
+     * @dev WON if the group has successfully purchased and acquired the target original; 
+     *  LOST if the group has not procured the target original within the expiry.
+     */
     enum GroupStatus {
         OPEN,
         WON,
         LOST,
-        EXPIRED,
         FINALIZED
     }
 
@@ -23,6 +26,7 @@ interface IGroupRegistry {
         uint64 ticketsBought;
         uint40 expiry; // in seconds, with respect to block.timestamp
         GroupStatus status;
+        uint256 purchasePrice; // price at which the target is bought
         address exhibit; // set only when won and finalized
         uint192 exhibitId;
     }
@@ -50,13 +54,5 @@ interface IGroupRegistry {
         uint256 tokenId
     );
 
-    function create(uint256 targetPunkId, uint256 targetMaxPrice)
-        external
-        returns (uint192 groupId);
-
-    function contribute(uint192 groupId, uint64 ticketQuantity)
-        external
-        payable;
-
-    // TODO: Consider `forfeit`
+    // TODO: Add signatures; consider `forfeit`
 }
