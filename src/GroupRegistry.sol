@@ -171,11 +171,7 @@ contract GroupRegistry is
         _refundAndBurnTickets(payable(msg.sender), groupId, 1);
 
         IExhibitRegistry delegate = IExhibitRegistry(group.exhibit);
-        uint256 tokenId = delegate.mint(
-            msg.sender,
-            group.exhibitId,
-            metadataUri
-        );
+        tokenId = delegate.mint(msg.sender, group.exhibitId, metadataUri);
         // TODO: take metadata
         emit Claimed(msg.sender, groupId, group.exhibit, tokenId);
         return (delegate, tokenId);
@@ -201,14 +197,12 @@ contract GroupRegistry is
         address payable contributor,
         uint192 groupId,
         uint64 ticketCount
-    ) {
+    ) internal {
         uint256 refund = getRefundableContributionPerTicket(groupId) *
             ticketCount;
 
         if (refund > 0) {
-            (bool sent, bytes memory data) = contributor.call{value: msg.value}(
-                ""
-            );
+            (bool sent, ) = contributor.call{value: msg.value}("");
             require(sent, "Failed to refund");
         }
         _burn(msg.sender, groupId, ticketCount);
