@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {IERC721} from "openzepplin-contracts/contracts/token/ERC721/IERC721.sol";
+import {IERC721} from "@openzeppelin/token/ERC721/IERC721.sol";
 
 interface IGroupRegistry {
     /**
-     * @dev WON if the group has successfully purchased and acquired the target original; 
+     * @dev WON if the group has successfully purchased and acquired the target original;
      *  LOST if the group has not procured the target original within the expiry.
      */
     enum GroupStatus {

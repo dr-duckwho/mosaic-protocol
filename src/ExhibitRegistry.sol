@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {ERC1155} from "openzepplin-contracts/contracts/token/ERC1155/ERC1155.sol";
-import {SafeCast} from "openzepplin-contracts/contracts/utils/math/SafeCast.sol";
-import {AccessControl} from "openzepplin-contracts/contracts/access/AccessControl.sol";
+import {ERC1155} from "@openzeppelin/token/ERC1155/ERC1155.sol";
+import {SafeCast} from "@openzeppelin/utils/math/SafeCast.sol";
+import {AccessControl} from "@openzeppelin/access/AccessControl.sol";
 
 import {CryptoPunksMarket} from "./external/CryptoPunksMarket.sol";
 
