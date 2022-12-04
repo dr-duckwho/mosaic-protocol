@@ -1,0 +1,3 @@
+forge-std/=lib/forge-std/src/
+mockprovider/=lib/mockprovider/src/
+@openzeppelin/=lib/openzeppelin-contracts/contracts/
