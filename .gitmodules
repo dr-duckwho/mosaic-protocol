@@ -4,6 +4,7 @@
 [submodule "lib/openzeppelin-contracts"]
 	path = lib/openzeppelin-contracts
 	url = https://github.com/Openzeppelin/openzeppelin-contracts
+	branch = v4.8.0
 [submodule "lib/openzepplin-contracts"]
 	path = lib/openzepplin-contracts
 	url = https://github.com/Openzepplin/openzepplin-contracts
