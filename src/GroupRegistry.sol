@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {Strings} from "openzepplin-contracts/contracts/utils/Strings.sol";
-import {ERC1155} from "openzepplin-contracts/contracts/token/ERC1155/ERC1155.sol";
-import {IERC721} from "openzepplin-contracts/contracts/token/ERC721/IERC721.sol";
-import {AccessControl} from "openzepplin-contracts/contracts/access/AccessControl.sol";
-import {ReentrancyGuard} from "openzepplin-contracts/contracts/security/ReentrancyGuard.sol";
+import {Strings} from "@openzeppelin/utils/Strings.sol";
+import {ERC1155} from "@openzeppelin/token/ERC1155/ERC1155.sol";
+import {IERC721} from "@openzeppelin/token/ERC721/IERC721.sol";
+import {AccessControl} from "@openzeppelin/access/AccessControl.sol";
+import {ReentrancyGuard} from "@openzeppelin/security/ReentrancyGuard.sol";
 
 import {CryptoPunksMarket} from "./external/CryptoPunksMarket.sol";
 
@@ -20,11 +20,9 @@ contract GroupRegistry is
     ReentrancyGuard
 {
     // TODO: Introduce a global explicit storage contract
-    bytes32 public constant ROLE_ADMIN = keccak256("ADMIN");
     uint64 public constant TICKET_SUPPLY_PER_GROUP = 100;
 
     CryptoPunksMarket public cryptoPunksMarket;
-
     IExhibitRegistry private exhibitRegistry;
 
     /**
@@ -38,16 +36,16 @@ contract GroupRegistry is
         address exhibitRegistryAddress
     ) ERC1155("TICKET_V1") {
         // TODO: Inherit a configuration storage from a Museum
-        _grantRole(ROLE_ADMIN, msg.sender);
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         // TODO: code it up with config passing
         cryptoPunksMarket = CryptoPunksMarket(cryptoPunksMarketAddress);
         exhibitRegistry = IExhibitRegistry(exhibitRegistryAddress);
     }
 
-    function create(uint256 targetPunkId, uint256 targetMaxPrice)
-        external
-        returns (uint192 groupId)
-    {
+    function create(
+        uint256 targetPunkId,
+        uint256 targetMaxPrice
+    ) external returns (uint192 groupId) {
         groupId = ++groupCount;
         uint64 totalTicketSupply = TICKET_SUPPLY_PER_GROUP;
         uint256 unitTicketPrice = targetMaxPrice / totalTicketSupply;
@@ -73,10 +71,10 @@ contract GroupRegistry is
         return groupId;
     }
 
-    function contribute(uint192 groupId, uint64 ticketQuantity)
-        external
-        payable
-    {
+    function contribute(
+        uint192 groupId,
+        uint64 ticketQuantity
+    ) external payable {
         Group storage group = getValidGroup(groupId);
 
         uint256 ticketsLeft = group.totalTicketSupply - group.ticketsBought;
@@ -152,7 +150,10 @@ contract GroupRegistry is
         group.status = GroupStatus.FINALIZED;
     }
 
-    function claim(uint192 groupId, string calldata metadataUri)
+    function claim(
+        uint192 groupId,
+        string calldata metadataUri
+    )
         external
         nonReentrant
         returns (IExhibitRegistry registry, uint256 tokenId)
@@ -184,11 +185,9 @@ contract GroupRegistry is
         // TODO: Refund the remaining contributions pro rata when won/lost/expired
     }
 
-    function getRefundableContributionPerTicket(uint192 groupId)
-        public
-        view
-        returns (uint256 refundPerTicket)
-    {
+    function getRefundableContributionPerTicket(
+        uint192 groupId
+    ) public view returns (uint256 refundPerTicket) {
         Group storage group = getValidGroup(groupId);
         require(
             group.status == GroupStatus.FINALIZED,
@@ -203,7 +202,8 @@ contract GroupRegistry is
         uint192 groupId,
         uint64 ticketCount
     ) {
-        uint256 refund = getRefundableContributionPerTicket(groupId) * ticketCount;
+        uint256 refund = getRefundableContributionPerTicket(groupId) *
+            ticketCount;
 
         if (refund > 0) {
             (bool sent, bytes memory data) = contributor.call{value: msg.value}(
@@ -238,11 +238,9 @@ contract GroupRegistry is
     // Group-related views
     //
 
-    function getValidGroup(uint192 groupId)
-        internal
-        view
-        returns (Group storage)
-    {
+    function getValidGroup(
+        uint192 groupId
+    ) internal view returns (Group storage) {
         require(groupId <= groupCount, "Invalid groupId");
         return groups[groupId];
     }
@@ -251,7 +249,9 @@ contract GroupRegistry is
         return groupCount;
     }
 
-    function getGroupInfo(uint192 groupId)
+    function getGroupInfo(
+        uint192 groupId
+    )
         public
         view
         returns (
@@ -270,11 +270,9 @@ contract GroupRegistry is
         );
     }
 
-    function getGroupTotalContribution(uint192 groupId)
-        public
-        view
-        returns (uint256 totalContribution)
-    {
+    function getGroupTotalContribution(
+        uint192 groupId
+    ) public view returns (uint256 totalContribution) {
         return getValidGroup(groupId).totalContribution;
     }
 
@@ -282,27 +280,24 @@ contract GroupRegistry is
     // Ticket
     //
 
-    function getTickets(address inquired, uint192 groupId)
-        public
-        view
-        returns (uint256)
-    {
+    function getTickets(
+        address inquired,
+        uint192 groupId
+    ) public view returns (uint256) {
         return balanceOf(inquired, getTokenId(groupId));
     }
 
-    function isCreator(address inquired, uint192 groupId)
-        public
-        view
-        returns (bool)
-    {
+    function isCreator(
+        address inquired,
+        uint192 groupId
+    ) public view returns (bool) {
         return groups[groupId].creator == inquired;
     }
 
-    function hasShare(address inquired, uint192 groupId)
-        public
-        view
-        returns (bool)
-    {
+    function hasShare(
+        address inquired,
+        uint192 groupId
+    ) public view returns (bool) {
         return getTickets(inquired, groupId) > 0;
     }
 
@@ -314,19 +309,16 @@ contract GroupRegistry is
         address to,
         uint256[] memory ids,
         uint256[] memory amounts
-    ) external onlyRole(ROLE_ADMIN) {
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _mintBatch(to, ids, amounts, "");
     }
 
     //
     // Internals
     //
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(ERC1155, AccessControl)
-        returns (bool)
-    {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view override(ERC1155, AccessControl) returns (bool) {
         return
             ERC1155.supportsInterface(interfaceId) ||
             AccessControl.supportsInterface(interfaceId);
