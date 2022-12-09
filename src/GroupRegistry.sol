@@ -31,6 +31,11 @@ contract GroupRegistry is
     uint192 public groupCount;
     mapping(uint192 => Group) private groups;
 
+    /**
+     * @dev groupId -> address -> shares (= the number of tickets bought)
+     */
+    mapping(uint192 => mapping(address => uint256)) refundableTickets;
+
     constructor(
         address cryptoPunksMarketAddress,
         address exhibitRegistryAddress
@@ -90,6 +95,7 @@ contract GroupRegistry is
         address contributor = msg.sender;
         group.totalContribution += ethReceived;
         group.ticketsBought += ticketQuantity;
+        refundableTickets[groupId][contributor] += ticketQuantity;
 
         _mint(contributor, groupId, ticketQuantity, "");
 
@@ -147,7 +153,7 @@ contract GroupRegistry is
         );
         group.exhibit = address(exhibitRegistry);
         // TODO: Consider whether to explicitly mark other competing groups as LOST
-        group.status = GroupStatus.FINALIZED;
+        group.status = GroupStatus.CLAIMABLE;
     }
 
     function claim(
@@ -160,52 +166,63 @@ contract GroupRegistry is
     {
         Group storage group = getValidGroup(groupId);
         require(
-            group.status == GroupStatus.FINALIZED,
+            group.status == GroupStatus.CLAIMABLE,
             "The group is not finalized"
         );
         require(
             hasShare(msg.sender, groupId) || msg.sender == group.creator,
             "Only ticket holders can claim tokens"
         );
-        // TODO: Check whether payable casting is safe here
-        _refundAndBurnTickets(payable(msg.sender), groupId, 1);
+
+        _burn(msg.sender, groupId, 1);
 
         IExhibitRegistry delegate = IExhibitRegistry(group.exhibit);
-        tokenId = delegate.mint(msg.sender, group.exhibitId, metadataUri);
         // TODO: take metadata
+        tokenId = delegate.mint(msg.sender, group.exhibitId, metadataUri);
+
         emit Claimed(msg.sender, groupId, group.exhibit, tokenId);
         return (delegate, tokenId);
+    }
+
+    /**
+     * Refunds any remaining contributions pro rata after finalization
+     */
+    function refund(
+        uint192 groupId,
+        address payable contributor
+    )
+        external
+        nonReentrant
+    {
+        Group storage group = getValidGroup(groupId);
+        require(
+            group.status == GroupStatus.CLAIMABLE || group.expiry > block.timestamp,
+            "The group is not finalized"
+        );
+        require(
+            refundableTickets[groupId][contributor] > 0,
+            "Only refundable ticket holders can get refunds"
+        );
+        uint256 owed = getRefundPerTicket(group) * refundableTickets[groupId][contributor];
+        (bool s, ) = contributor.call{value: owed}("");
+        if (!s) {
+            revert("Failed to refund");
+        }
+        refundableTickets[groupId][contributor] = 0;
     }
 
     function finalizeOnLost(uint192 groupId) public {
         // TODO: Refund the remaining contributions pro rata when won/lost/expired
     }
 
-    function getRefundableContributionPerTicket(
-        uint192 groupId
-    ) public view returns (uint256 refundPerTicket) {
-        Group storage group = getValidGroup(groupId);
-        require(
-            group.status == GroupStatus.FINALIZED,
-            "The group is not finalized"
-        );
-        uint256 surplus = group.totalContribution - group.purchasePrice;
-        return surplus / TICKET_SUPPLY_PER_GROUP;
-    }
-
-    function _refundAndBurnTickets(
-        address payable contributor,
-        uint192 groupId,
-        uint64 ticketCount
-    ) internal {
-        uint256 refund = getRefundableContributionPerTicket(groupId) *
-            ticketCount;
-
-        if (refund > 0) {
-            (bool sent, ) = contributor.call{value: msg.value}("");
-            require(sent, "Failed to refund");
+    function getRefundPerTicket(
+        Group storage group
+    ) private view returns (uint256 refundPerTicket) {
+        if (group.totalContribution <= group.purchasePrice) {
+            return 0;
         }
-        _burn(msg.sender, groupId, ticketCount);
+        uint256 surplus = group.totalContribution - group.purchasePrice;
+        return surplus / group.ticketsBought;
     }
 
     //
