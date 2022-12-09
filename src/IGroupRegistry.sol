@@ -12,7 +12,7 @@ interface IGroupRegistry {
         OPEN,
         WON,
         LOST,
-        FINALIZED
+        CLAIMABLE
     }
 
     struct Group {

@@ -89,7 +89,7 @@ contract GroupRegistryTest is Test, TestUtils {
             IGroupRegistry.GroupStatus _status
         ) = groupRegistry.getGroupInfo(groupId);
         assertEq(_ticketsBought, 100);
-        assert(_status == IGroupRegistry.GroupStatus.FINALIZED);
+        assert(_status == IGroupRegistry.GroupStatus.CLAIMABLE);
     }
 
     function test_claim() public {
