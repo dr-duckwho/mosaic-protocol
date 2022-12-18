@@ -22,7 +22,7 @@ contract ExhibitRegistry is IExhibitRegistry, ERC1155, AccessControl {
     uint256 public constant MONO_ID_BITS = 64;
     uint256 constant MONO_ID_BITMASK = (1 << (MONO_ID_BITS + 1)) - 1; // lower 64 bits
 
-    struct Oeuvre {
+    struct Original {
         address tokenContract;
         uint256 tokenId;
     }
@@ -32,7 +32,7 @@ contract ExhibitRegistry is IExhibitRegistry, ERC1155, AccessControl {
      */
     uint192 public exhibitCount;
 
-    mapping(uint192 => Oeuvre) private oeuvreByExhibit;
+    mapping(uint192 => Original) private originalByExhibit;
 
     /**
      * @dev 0 represents the original; each mono is assigned an ID starting from 1.
@@ -80,7 +80,7 @@ contract ExhibitRegistry is IExhibitRegistry, ERC1155, AccessControl {
         );
         ++exhibitCount;
         ++monoIdByExhibit[exhibitCount];
-        oeuvreByExhibit[exhibitCount] = Oeuvre(
+        originalByExhibit[exhibitCount] = Original(
             originalTokenContract,
             originalTokenId
         );
