@@ -31,21 +31,15 @@ contract CryptoPunksMosaicRegistry is ICryptoPunksMosaicRegistry, ERC1155, Acces
     mapping(uint192 => Original) private originals;
 
     /**
-     * @dev 0 represents the original; each mono is assigned an ID starting from 1.
-            originalId => latestMonoId
+     * @dev 0 represents the Original; each Mono is assigned an ID starting from 1.
+     *      originalId => latestMonoId
      */
     mapping(uint192 => uint64) private latestMonoIds;
 
     /**
-     * @dev tokenId (originalId + monoId) => uri
+     * @dev mosaicId (originalId + monoId) => uri
      */
     mapping(uint256 => string) private metadata;
-
-    /**
-     * @dev to calculate governance quorum and token circulation
-     */
-    mapping(uint192 => uint64) private claimableCount;
-    mapping(uint192 => uint64) private claimedCount;
 
     constructor(
         address _mintAuthority,
@@ -66,12 +60,11 @@ contract CryptoPunksMosaicRegistry is ICryptoPunksMosaicRegistry, ERC1155, Acces
         require(
             cryptoPunksMarket.punkIndexToAddress(punkId) ==
                 address(this),
-            "This must own the punk now"
+            "The contract must own the punk"
         );
         originalId = ++latestOriginalId;
         ++latestMonoIds[originalId];
-        originals[originalId] = Original(punkId);
-        claimableCount[originalId] = totalClaimableCount;
+        originals[originalId] = Original(originalId, punkId, totalClaimableCount, 0);
         return originalId;
     }
 
@@ -82,13 +75,13 @@ contract CryptoPunksMosaicRegistry is ICryptoPunksMosaicRegistry, ERC1155, Acces
     ) external override onlyRole(MINTER_ROLE) returns (uint256 mosaicId) {
         require(
             latestMonoIds[originalId] > 0,
-            "Group must be initialized first"
+            "Original must be initialized first"
         );
-        uint64 monoId = ++latestMonoIds[originalId];
+        uint64 monoId = latestMonoIds[originalId]++;
         mosaicId = toMosaicId(originalId, monoId);
         metadata[mosaicId] = metadataUri;
+        originals[originalId].claimedMonoCount++;
         _mint(contributor, mosaicId, 1, "");
-        claimedCount[originalId]++;
 
         // TODO: handle metadataUri
 
