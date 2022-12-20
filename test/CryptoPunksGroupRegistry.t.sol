@@ -6,47 +6,30 @@ import "forge-std/Test.sol";
 import {TestUtils} from "./TestUtils.sol";
 import {MockProvider} from "mockprovider/MockProvider.sol";
 
-import {GroupRegistry} from "../src/GroupRegistry.sol";
-import {IGroupRegistry} from "../src/IGroupRegistry.sol";
-import {IExhibitRegistry} from "../src/IExhibitRegistry.sol";
-import {DummyERC721} from "./DummyERC721.sol";
+import {CryptoPunksGroupRegistry} from "../src/CryptoPunksGroupRegistry.sol";
+import {UsingCryptoPunksGroupRegistryStructs} from "../src/UsingCryptoPunksGroupRegistryStructs.sol";
+import {ICryptoPunksMosaicRegistry} from "../src/ICryptoPunksMosaicRegistry.sol";
 import {MockCryptoPunksMarketProvider} from "./MockCryptoPunksMarketProvider.sol";
-import {CryptoPunksMarket} from "../src/external/CryptoPunksMarket.sol";
+import {ICryptoPunksMarket} from "../src/external/ICryptoPunksMarket.sol";
 
-contract GroupRegistryTest is Test, TestUtils {
+contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupRegistryStructs {
     MockCryptoPunksMarketProvider public mockCryptoPunksMarket;
-    MockProvider public mockExhibitRegistry;
-    GroupRegistry public groupRegistry;
+    MockProvider public mockMosaicRegistry;
+    CryptoPunksGroupRegistry public groupRegistry;
     uint256 targetPunkId;
 
     address public originalOwner;
 
-    // Expected events' specifications
-    event GroupCreated(
-        uint192 indexed groupId,
-        address indexed creator,
-        uint256 targetMaxPrice,
-        uint64 totalTicketSupply,
-        uint256 unitTicketPrice
-    );
-
-    event Claimed(
-        address indexed claimer,
-        uint192 indexed groupId,
-        address indexed exhibitRegistry,
-        uint256 tokenId
-    );
-
     function setUp() public {
         mockCryptoPunksMarket = new MockCryptoPunksMarketProvider();
-        mockExhibitRegistry = new MockProvider();
+        mockMosaicRegistry = new MockProvider();
 
         originalOwner = _randomAddress();
         targetPunkId = 1;
 
-        groupRegistry = new GroupRegistry(
+        groupRegistry = new CryptoPunksGroupRegistry(
             address(mockCryptoPunksMarket),
-            address(mockExhibitRegistry)
+            address(mockMosaicRegistry)
         );
     }
 
@@ -68,12 +51,12 @@ contract GroupRegistryTest is Test, TestUtils {
             address _creator,
             uint256 _targetMaxPrice,
             uint96 _ticketsBought,
-            IGroupRegistry.GroupStatus _status
+            GroupStatus _status
         ) = groupRegistry.getGroupInfo(groupId);
         assertEq(_creator, creator);
         assertEq(_targetMaxPrice, targetMaxPrice);
         assertEq(_ticketsBought, 0);
-        assert(_status == IGroupRegistry.GroupStatus.OPEN);
+        assert(_status == GroupStatus.OPEN);
     }
 
     function test_buy() public {
@@ -86,10 +69,10 @@ contract GroupRegistryTest is Test, TestUtils {
             address _creator,
             uint256 _targetMaxPrice,
             uint96 _ticketsBought,
-            IGroupRegistry.GroupStatus _status
+            GroupStatus _status
         ) = groupRegistry.getGroupInfo(groupId);
         assertEq(_ticketsBought, 100);
-        assert(_status == IGroupRegistry.GroupStatus.CLAIMABLE);
+        assert(_status == GroupStatus.CLAIMABLE);
     }
 
     function test_claim() public {
@@ -99,25 +82,23 @@ contract GroupRegistryTest is Test, TestUtils {
         assertEq(groupRegistry.balanceOf(creator, groupId), 100);
 
         string memory metadataUri = "uri";
-        uint256 tokenId = 581019;
+        uint256 expectedMosaicId = 581019;
 
-        mockExhibitRegistry.givenSelectorReturnResponse(
-            IExhibitRegistry.mint.selector,
-            MockProvider.ReturnData({success: true, data: abi.encode(tokenId)}),
+        mockMosaicRegistry.givenSelectorReturnResponse(
+            ICryptoPunksMosaicRegistry.mint.selector,
+            MockProvider.ReturnData({success: true, data: abi.encode(expectedMosaicId)}),
             true
         );
 
         // when
         vm.expectEmit(true, true, false, false);
-        emit Claimed(creator, groupId, address(mockExhibitRegistry), tokenId);
+        emit Claimed(creator, groupId, expectedMosaicId);
 
         vm.prank(creator);
-        (IExhibitRegistry actualRegistry, uint256 actualTokenId) = groupRegistry
-            .claim(groupId, metadataUri);
+        uint256 mosaicId = groupRegistry.claim(groupId, metadataUri);
 
         // then
-        assertEq(address(actualRegistry), address(mockExhibitRegistry));
-        assertEq(actualTokenId, tokenId);
+        assertEq(mosaicId, expectedMosaicId);
         assertEq(groupRegistry.balanceOf(creator, groupId), 99);
     }
 
@@ -146,11 +127,11 @@ contract GroupRegistryTest is Test, TestUtils {
 
         // given mocks
         mockCryptoPunksMarket.givenQueryReturn(
-            abi.encodePacked(CryptoPunksMarket.buyPunk.selector),
+            abi.encodePacked(ICryptoPunksMarket.buyPunk.selector),
             abi.encodePacked(uint256(1))
         );
         mockCryptoPunksMarket.givenQueryReturn(
-            abi.encodePacked(CryptoPunksMarket.transferPunk.selector),
+            abi.encodePacked(ICryptoPunksMarket.transferPunk.selector),
             abi.encodePacked(true)
         );
         mockCryptoPunksMarket.setPunksOfferedForSale(
@@ -164,8 +145,8 @@ contract GroupRegistryTest is Test, TestUtils {
             )
         );
         mockCryptoPunksMarket.setPunkIndexToAddress(1, address(groupRegistry));
-        mockExhibitRegistry.givenSelectorReturnResponse(
-            IExhibitRegistry.create.selector,
+        mockMosaicRegistry.givenSelectorReturnResponse(
+            ICryptoPunksMosaicRegistry.create.selector,
             MockProvider.ReturnData({
                 success: true,
                 data: abi.encode(uint192(1))

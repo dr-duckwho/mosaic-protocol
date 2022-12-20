@@ -3,12 +3,12 @@ pragma solidity ^0.8.0;
 
 import {MockProvider} from "mockprovider/MockProvider.sol";
 
-import {CryptoPunksMarket} from "../src/external/CryptoPunksMarket.sol";
+import {ICryptoPunksMarket} from "../src/external/ICryptoPunksMarket.sol";
 
 /**
  * @dev A wrapper to mock staticcall return values for public fields
  */
-contract MockCryptoPunksMarketProvider is MockProvider, CryptoPunksMarket {
+contract MockCryptoPunksMarketProvider is MockProvider, ICryptoPunksMarket {
     /**
      * @dev fields copied from larvalabs/cryptopunks
      */ 

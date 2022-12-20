@@ -7,14 +7,13 @@ import {IERC721} from "@openzeppelin/token/ERC721/IERC721.sol";
 import {AccessControl} from "@openzeppelin/access/AccessControl.sol";
 import {ReentrancyGuard} from "@openzeppelin/security/ReentrancyGuard.sol";
 
-import {CryptoPunksMarket} from "./external/CryptoPunksMarket.sol";
-
-import {IGroupRegistry} from "./IGroupRegistry.sol";
-import {IExhibitRegistry} from "./IExhibitRegistry.sol";
+import  "./external/ICryptoPunksMarket.sol";
+import "./ICryptoPunksGroupRegistry.sol";
+import "./ICryptoPunksMosaicRegistry.sol";
 
 // TODO: Wire with Museum
-contract GroupRegistry is
-    IGroupRegistry,
+contract CryptoPunksGroupRegistry is
+    ICryptoPunksGroupRegistry,
     ERC1155,
     AccessControl,
     ReentrancyGuard
@@ -22,13 +21,13 @@ contract GroupRegistry is
     // TODO: Introduce a global explicit storage contract
     uint64 public constant TICKET_SUPPLY_PER_GROUP = 100;
 
-    CryptoPunksMarket public cryptoPunksMarket;
-    IExhibitRegistry private exhibitRegistry;
+    ICryptoPunksMarket public immutable cryptoPunksMarket;
+    ICryptoPunksMosaicRegistry private mosaicRegistry;
 
     /**
      * @dev also used as a `groupId`, starting from 1.
      */
-    uint192 public groupCount;
+    uint192 public latestGroupId;
     mapping(uint192 => Group) private groups;
 
     /**
@@ -38,27 +37,32 @@ contract GroupRegistry is
 
     constructor(
         address cryptoPunksMarketAddress,
-        address exhibitRegistryAddress
-    ) ERC1155("TICKET_V1") {
+        address mosaicRegistryAddress
+    ) ERC1155("CryptoPunks Mosaic Ticket") {
         // TODO: Inherit a configuration storage from a Museum
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         // TODO: code it up with config passing
-        cryptoPunksMarket = CryptoPunksMarket(cryptoPunksMarketAddress);
-        exhibitRegistry = IExhibitRegistry(exhibitRegistryAddress);
+        cryptoPunksMarket = ICryptoPunksMarket(cryptoPunksMarketAddress);
+        mosaicRegistry = ICryptoPunksMosaicRegistry(mosaicRegistryAddress);
+    }
+
+    modifier onlyValidGroup(uint192 groupId) {
+        require(groupId <= latestGroupId, "Invalid groupId");
+        _;
     }
 
     function create(
         uint256 targetPunkId,
         uint256 targetMaxPrice
     ) external returns (uint192 groupId) {
-        groupId = ++groupCount;
+        ++latestGroupId;
         uint64 totalTicketSupply = TICKET_SUPPLY_PER_GROUP;
         uint256 unitTicketPrice = targetMaxPrice / totalTicketSupply;
 
-        Group storage newGroup = groups[groupId];
-        newGroup.id = groupId;
+        Group storage newGroup = groups[latestGroupId];
+        newGroup.id = latestGroupId;
         newGroup.creator = msg.sender;
-        newGroup.targetPunkIndex = targetPunkId;
+        newGroup.targetPunkId = targetPunkId;
         newGroup.targetMaxPrice = targetMaxPrice;
         newGroup.totalTicketSupply = totalTicketSupply;
         newGroup.unitTicketPrice = unitTicketPrice;
@@ -67,20 +71,20 @@ contract GroupRegistry is
         newGroup.expiry = uint40(block.timestamp + 604800);
 
         emit GroupCreated(
-            groupId,
+            latestGroupId,
             msg.sender,
             targetMaxPrice,
             totalTicketSupply,
             unitTicketPrice
         );
-        return groupId;
+        return latestGroupId;
     }
 
     function contribute(
         uint192 groupId,
         uint64 ticketQuantity
-    ) external payable {
-        Group storage group = getValidGroup(groupId);
+    ) external payable onlyValidGroup(groupId) {
+        Group storage group = groups[groupId];
 
         uint256 ticketsLeft = group.totalTicketSupply - group.ticketsBought;
         require(
@@ -105,16 +109,14 @@ contract GroupRegistry is
     /**
      * @dev Can be tried as long as the group is OPEN
      */
-    function buy(uint192 groupId) external nonReentrant {
-        Group storage group = getValidGroup(groupId);
+    function buy(uint192 groupId) external nonReentrant onlyValidGroup(groupId) {
+        Group storage group = groups[groupId];
         require(
-            hasShare(msg.sender, groupId),
+            hasContribution(msg.sender, groupId),
             "Only ticket holders can initiate a buy"
         );
-        uint256 punkId = group.targetPunkIndex;
-        (, , , uint256 offeredPrice, ) = cryptoPunksMarket.punksOfferedForSale(
-            punkId
-        );
+        uint256 punkId = group.targetPunkId;
+        (, , , uint256 offeredPrice, ) = cryptoPunksMarket.punksOfferedForSale(punkId);
         // TODO: Require all 100 tickets bought already
         require(
             group.totalContribution >= offeredPrice,
@@ -132,26 +134,24 @@ contract GroupRegistry is
     }
 
     // Separated for retry after any partial failure
-    function finalizeOnWon(uint192 groupId) public {
+    function finalizeOnWon(uint192 groupId) public onlyValidGroup(groupId) {
         // TODO: Consider removing `getValidGroup` invocation if it costs too much gas
-        Group storage group = getValidGroup(groupId);
+        Group storage group = groups[groupId];
         require(group.status == GroupStatus.WON, "The group has not won");
         require(
-            address(exhibitRegistry) != address(0x0),
+            address(mosaicRegistry) != address(0x0),
             "Exhibit registry must be set"
         );
 
         // FIXME: Defend against reentrancy attacks in edge cases where the same cryptopunk ID is used later
         cryptoPunksMarket.transferPunk(
-            address(exhibitRegistry),
-            group.targetPunkIndex
+            address(mosaicRegistry),
+            group.targetPunkId
         );
-        group.exhibitId = exhibitRegistry.create(
-            address(cryptoPunksMarket),
-            group.targetPunkIndex,
+        group.originalId = mosaicRegistry.create(
+            group.targetPunkId,
             group.ticketsBought
         );
-        group.exhibit = address(exhibitRegistry);
         // TODO: Consider whether to explicitly mark other competing groups as LOST
         group.status = GroupStatus.CLAIMABLE;
     }
@@ -162,26 +162,26 @@ contract GroupRegistry is
     )
         external
         nonReentrant
-        returns (IExhibitRegistry registry, uint256 tokenId)
+        onlyValidGroup(groupId)
+        returns (uint256 mosaicId)
     {
-        Group storage group = getValidGroup(groupId);
+        Group storage group = groups[groupId];
         require(
             group.status == GroupStatus.CLAIMABLE,
             "The group is not finalized"
         );
         require(
-            hasShare(msg.sender, groupId) || msg.sender == group.creator,
+            hasContribution(msg.sender, groupId) || msg.sender == group.creator,
             "Only ticket holders can claim tokens"
         );
 
         _burn(msg.sender, groupId, 1);
 
-        IExhibitRegistry delegate = IExhibitRegistry(group.exhibit);
         // TODO: take metadata
-        tokenId = delegate.mint(msg.sender, group.exhibitId, metadataUri);
+        mosaicId = mosaicRegistry.mint(msg.sender, group.originalId, metadataUri);
 
-        emit Claimed(msg.sender, groupId, group.exhibit, tokenId);
-        return (delegate, tokenId);
+        emit Claimed(msg.sender, groupId, mosaicId);
+        return mosaicId;
     }
 
     /**
@@ -193,8 +193,9 @@ contract GroupRegistry is
     )
         external
         nonReentrant
+        onlyValidGroup(groupId)
     {
-        Group storage group = getValidGroup(groupId);
+        Group storage group = groups[groupId];
         require(
             group.status == GroupStatus.CLAIMABLE || group.expiry > block.timestamp,
             "The group is not finalized"
@@ -204,10 +205,8 @@ contract GroupRegistry is
             "Only refundable ticket holders can get refunds"
         );
         uint256 owed = getRefundPerTicket(group) * refundableTickets[groupId][contributor];
-        (bool s, ) = contributor.call{value: owed}("");
-        if (!s) {
-            revert("Failed to refund");
-        }
+        (bool sent, ) = contributor.call{value: owed}("");
+        require(sent, "Failed to refund");
         refundableTickets[groupId][contributor] = 0;
     }
 
@@ -226,17 +225,6 @@ contract GroupRegistry is
     }
 
     //
-    // Group-Token Relationship
-    //
-
-    /**
-     * @dev Group ID is simply used as its corresponding ERC1155 token (ticket) ID
-     */
-    function getTokenId(uint192 groupId) internal pure returns (uint256) {
-        return groupId;
-    }
-
-    //
     // Registry-related views
     //
 
@@ -249,30 +237,13 @@ contract GroupRegistry is
     // Group-related views
     //
 
-    function getValidGroup(
-        uint192 groupId
-    ) internal view returns (Group storage) {
-        require(groupId <= groupCount, "Invalid groupId");
-        return groups[groupId];
-    }
-
-    function getGroupCount() public view returns (uint192) {
-        return groupCount;
-    }
-
-    function getGroupInfo(
-        uint192 groupId
-    )
-        public
-        view
-        returns (
-            address creator,
-            uint256 targetMaxPrice,
-            uint96 ticketsBought,
-            GroupStatus status
-        )
-    {
-        Group storage group = getValidGroup(groupId);
+    function getGroupInfo(uint192 groupId) public view onlyValidGroup(groupId) returns (
+        address creator,
+        uint256 targetMaxPrice,
+        uint96 ticketsBought,
+        GroupStatus status
+    ) {
+        Group storage group = groups[groupId];
         return (
             group.creator,
             group.targetMaxPrice,
@@ -283,8 +254,8 @@ contract GroupRegistry is
 
     function getGroupTotalContribution(
         uint192 groupId
-    ) public view returns (uint256 totalContribution) {
-        return getValidGroup(groupId).totalContribution;
+    ) public view onlyValidGroup(groupId) returns (uint256 totalContribution) {
+        return groups[groupId].totalContribution;
     }
 
     //
@@ -295,7 +266,7 @@ contract GroupRegistry is
         address inquired,
         uint192 groupId
     ) public view returns (uint256) {
-        return balanceOf(inquired, getTokenId(groupId));
+        return balanceOf(inquired, uint256(groupId));
     }
 
     function isCreator(
@@ -305,7 +276,7 @@ contract GroupRegistry is
         return groups[groupId].creator == inquired;
     }
 
-    function hasShare(
+    function hasContribution(
         address inquired,
         uint192 groupId
     ) public view returns (bool) {

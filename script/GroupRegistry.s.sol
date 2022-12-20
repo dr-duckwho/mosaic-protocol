@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import {IERC721} from "@openzeppelin/token/ERC721/IERC721.sol";
 
 import "forge-std/Script.sol";
-import "../src/GroupRegistry.sol";
+import "../src/CryptoPunksGroupRegistry.sol";
 
 contract TicketRegistryScript is Script {
     function run() external {
