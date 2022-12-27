@@ -88,6 +88,10 @@ contract CryptoPunksMosaicRegistry is ICryptoPunksMosaicRegistry, ERC1155, Acces
         return mosaicId;
     }
 
+    function bid(uint192 originalId, uint256 price) external {
+        // TODO: Implement this
+    }
+
     //
     // Helpers
     //

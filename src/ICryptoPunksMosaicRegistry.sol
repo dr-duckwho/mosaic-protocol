@@ -16,4 +16,6 @@ interface ICryptoPunksMosaicRegistry is UsingCryptoPunksMosaicRegistryStructs {
         uint192 originalId,
         string calldata metadataUri
     ) external returns (uint256 mosaicId);
+
+    function bid(uint192 originalId, uint256 price) external;
 }
