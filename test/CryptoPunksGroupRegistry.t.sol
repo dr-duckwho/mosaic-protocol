@@ -56,7 +56,7 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
         assertEq(_creator, creator);
         assertEq(_targetMaxPrice, targetMaxPrice);
         assertEq(_ticketsBought, 0);
-        assert(_status == GroupStatus.OPEN);
+        assert(_status == GroupStatus.Open);
     }
 
     function test_buy() public {
@@ -72,7 +72,7 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
             GroupStatus _status
         ) = groupRegistry.getGroupInfo(groupId);
         assertEq(_ticketsBought, 100);
-        assert(_status == GroupStatus.CLAIMABLE);
+        assert(_status == GroupStatus.Claimable);
     }
 
     function test_claim() public {

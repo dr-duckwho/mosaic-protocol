@@ -66,7 +66,7 @@ contract CryptoPunksGroupRegistry is
         newGroup.targetMaxPrice = targetMaxPrice;
         newGroup.totalTicketSupply = totalTicketSupply;
         newGroup.unitTicketPrice = unitTicketPrice;
-        newGroup.status = GroupStatus.OPEN;
+        newGroup.status = GroupStatus.Open;
         // TODO: Make it configurable
         newGroup.expiry = uint40(block.timestamp + 604800);
 
@@ -128,7 +128,7 @@ contract CryptoPunksGroupRegistry is
             "Unexpected ownership"
         );
         group.purchasePrice = offeredPrice;
-        group.status = GroupStatus.WON;
+        group.status = GroupStatus.Won;
         emit GroupWon(groupId);
         finalizeOnWon(groupId);
     }
@@ -137,7 +137,7 @@ contract CryptoPunksGroupRegistry is
     function finalizeOnWon(uint192 groupId) public onlyValidGroup(groupId) {
         // TODO: Consider removing `getValidGroup` invocation if it costs too much gas
         Group storage group = groups[groupId];
-        require(group.status == GroupStatus.WON, "The group has not won");
+        require(group.status == GroupStatus.Won, "The group has not won");
         require(
             address(mosaicRegistry) != address(0x0),
             "Exhibit registry must be set"
@@ -153,7 +153,7 @@ contract CryptoPunksGroupRegistry is
             group.ticketsBought
         );
         // TODO: Consider whether to explicitly mark other competing groups as LOST
-        group.status = GroupStatus.CLAIMABLE;
+        group.status = GroupStatus.Claimable;
     }
 
     function claim(
@@ -167,7 +167,7 @@ contract CryptoPunksGroupRegistry is
     {
         Group storage group = groups[groupId];
         require(
-            group.status == GroupStatus.CLAIMABLE,
+            group.status == GroupStatus.Claimable,
             "The group is not finalized"
         );
         require(
@@ -197,7 +197,7 @@ contract CryptoPunksGroupRegistry is
     {
         Group storage group = groups[groupId];
         require(
-            group.status == GroupStatus.CLAIMABLE || group.expiry > block.timestamp,
+            group.status == GroupStatus.Claimable || group.expiry > block.timestamp,
             "The group is not finalized"
         );
         require(
