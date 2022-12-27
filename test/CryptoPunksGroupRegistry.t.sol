@@ -47,12 +47,8 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
         uint192 groupId = groupRegistry.create(targetPunkId, targetMaxPrice);
 
         // then
-        (
-            address _creator,
-            uint256 _targetMaxPrice,
-            uint96 _ticketsBought,
-            GroupStatus _status
-        ) = groupRegistry.getGroupInfo(groupId);
+        (address _creator, uint256 _targetMaxPrice, uint96 _ticketsBought, GroupStatus _status) =
+            groupRegistry.getGroupInfo(groupId);
         assertEq(_creator, creator);
         assertEq(_targetMaxPrice, targetMaxPrice);
         assertEq(_ticketsBought, 0);
@@ -65,12 +61,8 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
         uint192 groupId = _createAndBuy(creator, targetPunkId);
 
         // then
-        (
-            address _creator,
-            uint256 _targetMaxPrice,
-            uint96 _ticketsBought,
-            GroupStatus _status
-        ) = groupRegistry.getGroupInfo(groupId);
+        (address _creator, uint256 _targetMaxPrice, uint96 _ticketsBought, GroupStatus _status) =
+            groupRegistry.getGroupInfo(groupId);
         assertEq(_ticketsBought, 100);
         assert(_status == GroupStatus.Claimable);
     }
@@ -102,18 +94,12 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
         assertEq(groupRegistry.balanceOf(creator, groupId), 99);
     }
 
-    function _create(uint256 _targetPunkId, uint256 _targetMaxPrice)
-        internal
-        returns (uint192)
-    {
+    function _create(uint256 _targetPunkId, uint256 _targetMaxPrice) internal returns (uint192) {
         return groupRegistry.create(_targetPunkId, _targetMaxPrice);
     }
 
     // TODO: Refactor the test helpers
-    function _createAndBuy(address payable creator, uint256 targetPunkId)
-        internal
-        returns (uint192 groupId)
-    {
+    function _createAndBuy(address payable creator, uint256 targetPunkId) internal returns (uint192 groupId) {
         // create
         uint256 targetMaxPrice = 10 ether;
         vm.deal(creator, 100 ether);
@@ -127,30 +113,18 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
 
         // given mocks
         mockCryptoPunksMarket.givenQueryReturn(
-            abi.encodePacked(ICryptoPunksMarket.buyPunk.selector),
-            abi.encodePacked(uint256(1))
+            abi.encodePacked(ICryptoPunksMarket.buyPunk.selector), abi.encodePacked(uint256(1))
         );
         mockCryptoPunksMarket.givenQueryReturn(
-            abi.encodePacked(ICryptoPunksMarket.transferPunk.selector),
-            abi.encodePacked(true)
+            abi.encodePacked(ICryptoPunksMarket.transferPunk.selector), abi.encodePacked(true)
         );
         mockCryptoPunksMarket.setPunksOfferedForSale(
-            1,
-            MockCryptoPunksMarketProvider.Offer(
-                true,
-                1,
-                address(0x1),
-                1 ether,
-                address(0x0)
-            )
+            1, MockCryptoPunksMarketProvider.Offer(true, 1, address(0x1), 1 ether, address(0x0))
         );
         mockCryptoPunksMarket.setPunkIndexToAddress(1, address(groupRegistry));
         mockMosaicRegistry.givenSelectorReturnResponse(
             ICryptoPunksMosaicRegistry.create.selector,
-            MockProvider.ReturnData({
-                success: true,
-                data: abi.encode(uint192(1))
-            }),
+            MockProvider.ReturnData({success: true, data: abi.encode(uint192(1))}),
             true
         );
 

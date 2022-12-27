@@ -38,15 +38,7 @@ interface UsingCryptoPunksGroupRegistryStructs {
 
     event GroupWon(uint192 indexed groupId);
 
-    event Contributed(
-        address indexed contributor,
-        uint192 indexed groupId,
-        uint96 indexed ticketQuantity
-    );
+    event Contributed(address indexed contributor, uint192 indexed groupId, uint96 indexed ticketQuantity);
 
-    event Claimed(
-        address indexed claimer,
-        uint192 indexed groupId,
-        uint256 indexed mosaicId
-    );
+    event Claimed(address indexed claimer, uint192 indexed groupId, uint256 indexed mosaicId);
 }

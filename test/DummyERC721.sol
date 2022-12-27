@@ -33,9 +33,7 @@ contract DummyERC721 is IERC721 {
         return owner;
     }
 
-    function supportsInterface(
-        bytes4 interfaceId
-    ) external pure returns (bool) {
+    function supportsInterface(bytes4 interfaceId) external pure returns (bool) {
         if (interfaceId == 0x01ffc9a7) {
             return true;
         }
@@ -55,10 +53,7 @@ contract DummyERC721 is IERC721 {
         emit Transfer(address(0), owner, id);
     }
 
-    function approve(
-        address operator,
-        uint256 tokenId
-    ) external onlyOwnedByOrIsApprovedForAll(tokenId, msg.sender) {
+    function approve(address operator, uint256 tokenId) external onlyOwnedByOrIsApprovedForAll(tokenId, msg.sender) {
         getApproved[tokenId] = operator;
         emit Approval(msg.sender, operator, tokenId);
     }
@@ -72,51 +67,27 @@ contract DummyERC721 is IERC721 {
         _transferFrom(owner, to, tokenId);
     }
 
-    function safeTransferFrom(
-        address owner,
-        address to,
-        uint256 tokenId
-    ) external {
+    function safeTransferFrom(address owner, address to, uint256 tokenId) external {
         safeTransferFrom(owner, to, tokenId, "");
     }
 
-    function safeTransferFrom(
-        address owner,
-        address to,
-        uint256 tokenId,
-        bytes memory data
-    ) public {
+    function safeTransferFrom(address owner, address to, uint256 tokenId, bytes memory data) public {
         _transferFrom(owner, to, tokenId);
         uint256 toCodeSize;
         assembly {
             toCodeSize := extcodesize(to)
         }
         if (toCodeSize != 0) {
-            bytes4 r = IERC721Receiver(to).onERC721Received(
-                msg.sender,
-                owner,
-                tokenId,
-                data
-            );
-            require(
-                r == IERC721Receiver.onERC721Received.selector,
-                "DummyERC721/RECEIVE_FAILED"
-            );
+            bytes4 r = IERC721Receiver(to).onERC721Received(msg.sender, owner, tokenId, data);
+            require(r == IERC721Receiver.onERC721Received.selector, "DummyERC721/RECEIVE_FAILED");
         }
     }
 
-    function _transferFrom(
-        address owner,
-        address to,
-        uint256 tokenId
-    ) private onlyOwnedBy(tokenId, owner) {
+    function _transferFrom(address owner, address to, uint256 tokenId) private onlyOwnedBy(tokenId, owner) {
         require(to != address(0), "DummyERC721/BAD_TRANSFER");
         if (owner != msg.sender) {
             if (!isApprovedForAll[owner][msg.sender]) {
-                require(
-                    getApproved[tokenId] == msg.sender,
-                    "DummyERC721/NOT_APPROVED"
-                );
+                require(getApproved[tokenId] == msg.sender, "DummyERC721/NOT_APPROVED");
             }
         }
         getApproved[tokenId] = address(0);

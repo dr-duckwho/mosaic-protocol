@@ -11,10 +11,9 @@ import {ICryptoPunksMarket} from "../src/external/ICryptoPunksMarket.sol";
 contract MockCryptoPunksMarketProvider is MockProvider, ICryptoPunksMarket {
     /**
      * @dev fields copied from larvalabs/cryptopunks
-     */ 
+     */
     // You can use this hash to verify the image file containing all the punks
-    string public imageHash =
-        "ac39af4793119ee46bbff351d8cb6b5f23da60222126add4268e261199a2921b";
+    string public imageHash = "ac39af4793119ee46bbff351d8cb6b5f23da60222126add4268e261199a2921b";
 
     address owner;
 
@@ -65,10 +64,7 @@ contract MockCryptoPunksMarketProvider is MockProvider, ICryptoPunksMarket {
 
     function setInitialOwner(address to, uint256 punkIndex) public {}
 
-    function setInitialOwners(
-        address[] calldata addresses,
-        uint256[] calldata indices
-    ) public {}
+    function setInitialOwners(address[] calldata addresses, uint256[] calldata indices) public {}
 
     function allInitialOwnersAssigned() public {}
 
@@ -79,15 +75,9 @@ contract MockCryptoPunksMarketProvider is MockProvider, ICryptoPunksMarket {
 
     function punkNoLongerForSale(uint256 punkIndex) public {}
 
-    function offerPunkForSale(uint256 punkIndex, uint256 minSalePriceInWei)
-        public
-    {}
+    function offerPunkForSale(uint256 punkIndex, uint256 minSalePriceInWei) public {}
 
-    function offerPunkForSaleToAddress(
-        uint256 punkIndex,
-        uint256 minSalePriceInWei,
-        address toAddress
-    ) public {}
+    function offerPunkForSaleToAddress(uint256 punkIndex, uint256 minSalePriceInWei, address toAddress) public {}
 
     function buyPunk(uint256 punkIndex) public payable {}
 
@@ -101,7 +91,7 @@ contract MockCryptoPunksMarketProvider is MockProvider, ICryptoPunksMarket {
 
     /**
      * @dev for mocking
-     */ 
+     */
     function setPunkIndexToAddress(uint256 punkIndex, address addr) public {
         punkIndexToAddress[punkIndex] = addr;
     }

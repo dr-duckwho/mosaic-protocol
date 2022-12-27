@@ -7,7 +7,7 @@ import {AccessControl} from "@openzeppelin/access/AccessControl.sol";
 
 import "./external/ICryptoPunksMarket.sol";
 import "./ICryptoPunksMosaicRegistry.sol";
-import  "./CryptoPunksGroupRegistry.sol";
+import "./CryptoPunksGroupRegistry.sol";
 
 // TODO: Wire with Museum
 // TODO: Generalize for token contracts other than CryptoPunksMarket
@@ -41,10 +41,7 @@ contract CryptoPunksMosaicRegistry is ICryptoPunksMosaicRegistry, ERC1155, Acces
      */
     mapping(uint256 => string) private metadata;
 
-    constructor(
-        address _mintAuthority,
-        address cryptoPunksMarketAddress
-    ) ERC1155("CryptoPunks Mosaic") {
+    constructor(address _mintAuthority, address cryptoPunksMarketAddress) ERC1155("CryptoPunks Mosaic") {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(MINTER_ROLE, _mintAuthority);
         cryptoPunksMarket = ICryptoPunksMarket(cryptoPunksMarketAddress);
@@ -53,30 +50,26 @@ contract CryptoPunksMosaicRegistry is ICryptoPunksMosaicRegistry, ERC1155, Acces
     //
     // For mint authority
     //
-    function create(
-        uint256 punkId,
-        uint64 totalClaimableCount
-    ) external override onlyRole(MINTER_ROLE) returns (uint192 originalId) {
-        require(
-            cryptoPunksMarket.punkIndexToAddress(punkId) ==
-                address(this),
-            "The contract must own the punk"
-        );
+    function create(uint256 punkId, uint64 totalClaimableCount)
+        external
+        override
+        onlyRole(MINTER_ROLE)
+        returns (uint192 originalId)
+    {
+        require(cryptoPunksMarket.punkIndexToAddress(punkId) == address(this), "The contract must own the punk");
         originalId = ++latestOriginalId;
         ++latestMonoIds[originalId];
         originals[originalId] = Original(originalId, punkId, totalClaimableCount, 0);
         return originalId;
     }
 
-    function mint(
-        address contributor,
-        uint192 originalId,
-        string calldata metadataUri
-    ) external override onlyRole(MINTER_ROLE) returns (uint256 mosaicId) {
-        require(
-            latestMonoIds[originalId] > 0,
-            "Original must be initialized first"
-        );
+    function mint(address contributor, uint192 originalId, string calldata metadataUri)
+        external
+        override
+        onlyRole(MINTER_ROLE)
+        returns (uint256 mosaicId)
+    {
+        require(latestMonoIds[originalId] > 0, "Original must be initialized first");
         uint64 monoId = latestMonoIds[originalId]++;
         mosaicId = toMosaicId(originalId, monoId);
         metadata[mosaicId] = metadataUri;
@@ -91,20 +84,12 @@ contract CryptoPunksMosaicRegistry is ICryptoPunksMosaicRegistry, ERC1155, Acces
     //
     // Helpers
     //
-    function toMosaicId(
-        uint192 originalId,
-        uint64 monoId
-    ) public pure returns (uint256 mosaicId) {
+    function toMosaicId(uint192 originalId, uint64 monoId) public pure returns (uint256 mosaicId) {
         return (uint256(originalId) << MONO_ID_BITS) | uint256(monoId);
     }
 
-    function fromMosaicId(
-        uint256 mosaicId
-    ) public pure returns (uint192 originalId, uint64 monoId) {
-        return (
-            uint192(mosaicId >> MONO_ID_BITS),
-            uint64(mosaicId & MONO_ID_BITMASK)
-        );
+    function fromMosaicId(uint256 mosaicId) public pure returns (uint192 originalId, uint64 monoId) {
+        return (uint192(mosaicId >> MONO_ID_BITS), uint64(mosaicId & MONO_ID_BITMASK));
     }
 
     //
@@ -117,11 +102,7 @@ contract CryptoPunksMosaicRegistry is ICryptoPunksMosaicRegistry, ERC1155, Acces
     //
     // Internals
     //
-    function supportsInterface(
-        bytes4 interfaceId
-    ) public view override(ERC1155, AccessControl) returns (bool) {
-        return
-            ERC1155.supportsInterface(interfaceId) ||
-            AccessControl.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId) public view override (ERC1155, AccessControl) returns (bool) {
+        return ERC1155.supportsInterface(interfaceId) || AccessControl.supportsInterface(interfaceId);
     }
 }
