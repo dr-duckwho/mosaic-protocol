@@ -64,7 +64,8 @@ contract CryptoPunksMosaicRegistry is ICryptoPunksMosaicRegistry, ERC1155, Acces
         );
         originalId = ++latestOriginalId;
         ++latestMonoIds[originalId];
-        originals[originalId] = Original(originalId, punkId, totalClaimableCount, 0);
+        // TODO(@jyterencekim): Consider taking purchasePrice for a basis for reconstitution later
+        originals[originalId] = Original(originalId, punkId, totalClaimableCount, 0, OriginalStatus.Active, Bid(address(0x0), 0));
         return originalId;
     }
 
