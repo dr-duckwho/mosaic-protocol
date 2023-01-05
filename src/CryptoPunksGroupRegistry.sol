@@ -12,6 +12,7 @@ import "./ICryptoPunksGroupRegistry.sol";
 import "./ICryptoPunksMosaicRegistry.sol";
 
 // TODO: Wire with Museum
+// TODO: Migrate custom revert error messages to byte constants
 contract CryptoPunksGroupRegistry is
     ICryptoPunksGroupRegistry,
     ERC1155,
@@ -33,7 +34,7 @@ contract CryptoPunksGroupRegistry is
     /**
      * @dev groupId -> address -> shares (= the number of tickets bought)
      */
-    mapping(uint192 => mapping(address => uint256)) refundableTickets;
+    mapping(uint192 => mapping(address => uint256)) private refundableTickets;
 
     constructor(
         address cryptoPunksMarketAddress,
@@ -188,13 +189,13 @@ contract CryptoPunksGroupRegistry is
      * Refunds any remaining contributions pro rata after finalization
      */
     function refund(
-        uint192 groupId,
-        address payable contributor
+        uint192 groupId
     )
         external
         nonReentrant
         onlyValidGroup(groupId)
     {
+        address payable contributor = payable(msg.sender);
         Group storage group = groups[groupId];
         require(
             group.status == GroupStatus.Claimable || group.expiry > block.timestamp,
