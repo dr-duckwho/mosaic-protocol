@@ -37,9 +37,9 @@ contract CryptoPunksMosaicRegistry is ICryptoPunksMosaicRegistry, ERC1155, Acces
     mapping(uint192 => uint64) private latestMonoIds;
 
     /**
-     * @dev mosaicId (originalId + monoId) => uri
+     * @dev mosaicId (originalId + monoId) => Mono
      */
-    mapping(uint256 => string) private metadata;
+    mapping(uint256 => Mono) private monos;
 
     constructor(
         address _mintAuthority,
@@ -65,7 +65,7 @@ contract CryptoPunksMosaicRegistry is ICryptoPunksMosaicRegistry, ERC1155, Acces
         originalId = ++latestOriginalId;
         ++latestMonoIds[originalId];
         // TODO(@jyterencekim): Consider taking purchasePrice for a basis for reconstitution later
-        originals[originalId] = Original(originalId, punkId, totalClaimableCount, 0, OriginalStatus.Active, Bid(address(0x0), 0));
+        originals[originalId] = Original(originalId, punkId, totalClaimableCount, 0, OriginalStatus.Active, Bid(address(0x0), 0, 0));
         return originalId;
     }
 
@@ -80,7 +80,8 @@ contract CryptoPunksMosaicRegistry is ICryptoPunksMosaicRegistry, ERC1155, Acces
         );
         uint64 monoId = latestMonoIds[originalId]++;
         mosaicId = toMosaicId(originalId, monoId);
-        metadata[mosaicId] = metadataUri;
+        // TODO(@jyterencekim): Take proposedReservePrice
+        monos[mosaicId] = Mono({ mosaicId: mosaicId, metadata: metadataUri, governanceOptions: MonoGovernanceOptions({proposedReservePrice: 0, bidResponse: MonoBidResponse.None}) });
         originals[originalId].claimedMonoCount++;
         _mint(contributor, mosaicId, 1, "");
 
@@ -116,7 +117,7 @@ contract CryptoPunksMosaicRegistry is ICryptoPunksMosaicRegistry, ERC1155, Acces
     // ERC1155
     //
     function uri(uint256 mosaicId) public view override returns (string memory) {
-        return metadata[mosaicId];
+        return monos[mosaicId].metadata;
     }
 
     //
