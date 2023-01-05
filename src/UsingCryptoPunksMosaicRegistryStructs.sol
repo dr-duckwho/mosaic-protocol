@@ -2,6 +2,7 @@
 pragma solidity ^0.8.17;
 
 interface UsingCryptoPunksMosaicRegistryStructs {
+
     struct Original {
         uint192 id;
         uint256 punkId;
@@ -11,5 +12,19 @@ interface UsingCryptoPunksMosaicRegistryStructs {
          */
         uint128 totalMonoCount;
         uint128 claimedMonoCount;
+        OriginalStatus status;
+        Bid bid;
+    }
+
+    enum OriginalStatus {
+        Active,
+        Bid,
+        Sold
+    }
+
+    struct Bid {
+        address bidder;
+        uint40 expiry; // block.timestamp, in seconds
+        uint256 price;
     }
 }
