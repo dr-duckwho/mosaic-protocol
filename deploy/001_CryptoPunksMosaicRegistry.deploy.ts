@@ -2,7 +2,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { contracts } from "../deployments/testnet.json";
 
-const CryptoPunksMarketAddress = contracts.CryptoPunksMarket.address;
+const CryptoPunksMarketAddress = contracts.TestCryptoPunksMarket.address;
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const {
