@@ -32,6 +32,8 @@
     "typescript": ">=4.5.0"
   },
   "scripts": {
-    "deploy:testnet": "hardhat deploy --network goerli --export ./deployments/testnet.json --tags"
+    "deploy:testnet": "hardhat deploy --network goerli --export ./deployments/testnet.json --tags",
+    "run:testnet": "hardhat run --network goerli",
+    "verify:testnet": "hardhat --network goerli etherscan-verify --solc-input"
   }
 }

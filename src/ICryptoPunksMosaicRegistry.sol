@@ -4,7 +4,6 @@ pragma solidity ^0.8.17;
 import "./UsingCryptoPunksMosaicRegistryStructs.sol";
 
 interface ICryptoPunksMosaicRegistry is UsingCryptoPunksMosaicRegistryStructs {
-
     // TODO: fill it out
     function create(
         uint256 punkId,

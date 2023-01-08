@@ -7,13 +7,17 @@ import {AccessControl} from "@openzeppelin/access/AccessControl.sol";
 
 import "./external/ICryptoPunksMarket.sol";
 import "./ICryptoPunksMosaicRegistry.sol";
-import  "./CryptoPunksGroupRegistry.sol";
+import "./CryptoPunksGroupRegistry.sol";
 
 // TODO: Wire with Museum
 // TODO: Generalize for token contracts other than CryptoPunksMarket
 // TODO: Introduce `reconstitute` with claimed token tracking/oracle floor price retrieval
 // TODO: Reconsider the ID scheme so that the same origin contract's same groups map to the same ID (contract, group) => (internal id)
-contract CryptoPunksMosaicRegistry is ICryptoPunksMosaicRegistry, ERC1155, AccessControl {
+contract CryptoPunksMosaicRegistry is
+    ICryptoPunksMosaicRegistry,
+    ERC1155,
+    AccessControl
+{
     using SafeCast for uint256;
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
@@ -58,8 +62,7 @@ contract CryptoPunksMosaicRegistry is ICryptoPunksMosaicRegistry, ERC1155, Acces
         uint64 totalClaimableCount
     ) external override onlyRole(MINTER_ROLE) returns (uint192 originalId) {
         require(
-            cryptoPunksMarket.punkIndexToAddress(punkId) ==
-                address(this),
+            cryptoPunksMarket.punkIndexToAddress(punkId) == address(this),
             "The contract must own the punk"
         );
         originalId = ++latestOriginalId;
@@ -71,7 +74,7 @@ contract CryptoPunksMosaicRegistry is ICryptoPunksMosaicRegistry, ERC1155, Acces
             totalMonoCount: totalClaimableCount,
             claimedMonoCount: 0,
             status: OriginalStatus.Active,
-        // TODO(@kimhodol): Change expiry and price value
+            // TODO(@kimhodol): Change expiry and price value
             bid: Bid({bidder: address(0x0), expiry: 0, price: 0})
         });
         return originalId;
@@ -123,7 +126,9 @@ contract CryptoPunksMosaicRegistry is ICryptoPunksMosaicRegistry, ERC1155, Acces
     //
     // ERC1155
     //
-    function uri(uint256 mosaicId) public view override returns (string memory) {
+    function uri(
+        uint256 mosaicId
+    ) public view override returns (string memory) {
         return metadata[mosaicId];
     }
 
