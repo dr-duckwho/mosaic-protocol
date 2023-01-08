@@ -7,7 +7,7 @@ import {IERC721} from "@openzeppelin/token/ERC721/IERC721.sol";
 import {AccessControl} from "@openzeppelin/access/AccessControl.sol";
 import {ReentrancyGuard} from "@openzeppelin/security/ReentrancyGuard.sol";
 
-import  "./external/ICryptoPunksMarket.sol";
+import "./external/ICryptoPunksMarket.sol";
 import "./ICryptoPunksGroupRegistry.sol";
 import "./ICryptoPunksMosaicRegistry.sol";
 
@@ -110,14 +110,18 @@ contract CryptoPunksGroupRegistry is
     /**
      * @dev Can be tried as long as the group is OPEN
      */
-    function buy(uint192 groupId) external nonReentrant onlyValidGroup(groupId) {
+    function buy(
+        uint192 groupId
+    ) external nonReentrant onlyValidGroup(groupId) {
         Group storage group = groups[groupId];
         require(
             hasContribution(msg.sender, groupId),
             "Only ticket holders can initiate a buy"
         );
         uint256 punkId = group.targetPunkId;
-        (, , , uint256 offeredPrice, ) = cryptoPunksMarket.punksOfferedForSale(punkId);
+        (, , , uint256 offeredPrice, ) = cryptoPunksMarket.punksOfferedForSale(
+            punkId
+        );
         // TODO: Require all 100 tickets bought already
         require(
             group.totalContribution >= offeredPrice,
@@ -160,12 +164,7 @@ contract CryptoPunksGroupRegistry is
     function claim(
         uint192 groupId,
         string calldata metadataUri
-    )
-        external
-        nonReentrant
-        onlyValidGroup(groupId)
-        returns (uint256 mosaicId)
-    {
+    ) external nonReentrant onlyValidGroup(groupId) returns (uint256 mosaicId) {
         Group storage group = groups[groupId];
         require(
             group.status == GroupStatus.Claimable,
@@ -179,7 +178,11 @@ contract CryptoPunksGroupRegistry is
         _burn(msg.sender, groupId, 1);
 
         // TODO: take metadata
-        mosaicId = mosaicRegistry.mint(msg.sender, group.originalId, metadataUri);
+        mosaicId = mosaicRegistry.mint(
+            msg.sender,
+            group.originalId,
+            metadataUri
+        );
 
         emit Claimed(msg.sender, groupId, mosaicId);
         return mosaicId;
@@ -190,22 +193,20 @@ contract CryptoPunksGroupRegistry is
      */
     function refund(
         uint192 groupId
-    )
-        external
-        nonReentrant
-        onlyValidGroup(groupId)
-    {
+    ) external nonReentrant onlyValidGroup(groupId) {
         address payable contributor = payable(msg.sender);
         Group storage group = groups[groupId];
         require(
-            group.status == GroupStatus.Claimable || group.expiry > block.timestamp,
+            group.status == GroupStatus.Claimable ||
+                group.expiry > block.timestamp,
             "The group is not finalized"
         );
         require(
             refundableTickets[groupId][contributor] > 0,
             "Only refundable ticket holders can get refunds"
         );
-        uint256 owed = getRefundPerTicket(group) * refundableTickets[groupId][contributor];
+        uint256 owed = getRefundPerTicket(group) *
+            refundableTickets[groupId][contributor];
         (bool sent, ) = contributor.call{value: owed}("");
         require(sent, "Failed to refund");
         refundableTickets[groupId][contributor] = 0;
@@ -238,12 +239,19 @@ contract CryptoPunksGroupRegistry is
     // Group-related views
     //
 
-    function getGroupInfo(uint192 groupId) public view onlyValidGroup(groupId) returns (
-        address creator,
-        uint256 targetMaxPrice,
-        uint96 ticketsBought,
-        GroupStatus status
-    ) {
+    function getGroupInfo(
+        uint192 groupId
+    )
+        public
+        view
+        onlyValidGroup(groupId)
+        returns (
+            address creator,
+            uint256 targetMaxPrice,
+            uint96 ticketsBought,
+            GroupStatus status
+        )
+    {
         Group storage group = groups[groupId];
         return (
             group.creator,

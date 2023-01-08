@@ -5,7 +5,9 @@ pragma solidity ^0.8.4;
 interface ICryptoPunksMarket {
     function name() external view returns (string memory);
 
-    function punksOfferedForSale(uint256)
+    function punksOfferedForSale(
+        uint256
+    )
         external
         view
         returns (
@@ -39,15 +41,12 @@ interface ICryptoPunksMarket {
 
     function standard() external view returns (string memory);
 
-    function punkBids(uint256)
+    function punkBids(
+        uint256
+    )
         external
         view
-        returns (
-            bool hasBid,
-            uint256 punkIndex,
-            address bidder,
-            uint256 value
-        );
+        returns (bool hasBid, uint256 punkIndex, address bidder, uint256 value);
 
     function balanceOf(address) external view returns (uint256);
 
@@ -73,8 +72,10 @@ interface ICryptoPunksMarket {
 
     function punksRemainingToAssign() external view returns (uint256);
 
-    function offerPunkForSale(uint256 punkIndex, uint256 minSalePriceInWei)
-        external;
+    function offerPunkForSale(
+        uint256 punkIndex,
+        uint256 minSalePriceInWei
+    ) external;
 
     function getPunk(uint256 punkIndex) external;
 
