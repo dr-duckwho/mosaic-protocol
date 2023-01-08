@@ -12,3 +12,13 @@ broadcast/
 # IDE
 .idea/
 .vscode/
+
+# Hardhat files
+node_modules
+coverage
+coverage.json
+typechain
+typechain-types
+artifacts
+cache_hardhat
+
