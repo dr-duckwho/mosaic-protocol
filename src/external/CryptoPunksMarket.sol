@@ -3,13 +3,13 @@ pragma solidity ^0.8.17;
 
 // Modified original CryptoPunksMarket with recent solidity code style
 contract CryptoPunksMarket {
-
     // You can use this hash to verify the image file containing all the punks
-    string public imageHash = "ac39af4793119ee46bbff351d8cb6b5f23da60222126add4268e261199a2921b";
+    string public imageHash =
+        "ac39af4793119ee46bbff351d8cb6b5f23da60222126add4268e261199a2921b";
 
     address owner;
 
-    string public standard = 'CryptoPunks';
+    string public standard = "CryptoPunks";
     string public name;
     string public symbol;
     uint8 public decimals;
@@ -21,17 +21,17 @@ contract CryptoPunksMarket {
     uint public punksRemainingToAssign = 0;
 
     //mapping (address => uint) public addressToPunkIndex;
-    mapping (uint => address) public punkIndexToAddress;
+    mapping(uint => address) public punkIndexToAddress;
 
     /* This creates an array with all balances */
-    mapping (address => uint256) public balanceOf;
+    mapping(address => uint256) public balanceOf;
 
     struct Offer {
         bool isForSale;
         uint punkIndex;
         address seller;
-        uint minValue;          // in ether
-        address onlySellTo;     // specify to sell only to a specific person
+        uint minValue; // in ether
+        address onlySellTo; // specify to sell only to a specific person
     }
 
     struct Bid {
@@ -42,31 +42,57 @@ contract CryptoPunksMarket {
     }
 
     // A record of punks that are offered for sale at a specific minimum value, and perhaps to a specific person
-    mapping (uint => Offer) public punksOfferedForSale;
+    mapping(uint => Offer) public punksOfferedForSale;
 
     // A record of the highest punk bid
-    mapping (uint => Bid) public punkBids;
+    mapping(uint => Bid) public punkBids;
 
-    mapping (address => uint) public pendingWithdrawals;
+    mapping(address => uint) public pendingWithdrawals;
 
     event Assign(address indexed to, uint256 punkIndex);
     event Transfer(address indexed from, address indexed to, uint256 value);
-    event PunkTransfer(address indexed from, address indexed to, uint256 punkIndex);
-    event PunkOffered(uint indexed punkIndex, uint minValue, address indexed toAddress);
-    event PunkBidEntered(uint indexed punkIndex, uint value, address indexed fromAddress);
-    event PunkBidWithdrawn(uint indexed punkIndex, uint value, address indexed fromAddress);
-    event PunkBought(uint indexed punkIndex, uint value, address indexed fromAddress, address indexed toAddress);
+    event PunkTransfer(
+        address indexed from,
+        address indexed to,
+        uint256 punkIndex
+    );
+    event PunkOffered(
+        uint indexed punkIndex,
+        uint minValue,
+        address indexed toAddress
+    );
+    event PunkBidEntered(
+        uint indexed punkIndex,
+        uint value,
+        address indexed fromAddress
+    );
+    event PunkBidWithdrawn(
+        uint indexed punkIndex,
+        uint value,
+        address indexed fromAddress
+    );
+    event PunkBought(
+        uint indexed punkIndex,
+        uint value,
+        address indexed fromAddress,
+        address indexed toAddress
+    );
     event PunkNoLongerForSale(uint indexed punkIndex);
 
     /* Initializes contract with initial supply tokens to the creator of the contract */
     constructor() payable {
-        //        balanceOf[msg.sender] = initialSupply;              // Give the creator all initial tokens
+        // Give the creator all initial tokens
+        // balanceOf[msg.sender] = initialSupply;
         owner = msg.sender;
-        totalSupply = 10000;                        // Update total supply
+        // Update total supply
+        totalSupply = 10000;
         punksRemainingToAssign = totalSupply;
-        name = "CRYPTOPUNKS";                                   // Set the name for display purposes
-        symbol = unicode"Ͼ";                               // Set the symbol for display purposes
-        decimals = 0;                                       // Amount of decimals for display purposes
+        // Set the name for display purposes
+        name = "CRYPTOPUNKS";
+        // Set the symbol for display purposes
+        symbol = unicode"Ͼ";
+        // Amount of decimals for display purposes
+        decimals = 0;
     }
 
     function setInitialOwner(address to, uint punkIndex) public {
@@ -85,7 +111,10 @@ contract CryptoPunksMarket {
         }
     }
 
-    function setInitialOwners(address[] calldata addresses, uint[] calldata indices) public {
+    function setInitialOwners(
+        address[] calldata addresses,
+        uint[] calldata indices
+    ) public {
         if (msg.sender != owner) revert();
         uint n = addresses.length;
         for (uint i = 0; i < n; i++) {
@@ -124,7 +153,7 @@ contract CryptoPunksMarket {
         emit PunkTransfer(msg.sender, to, punkIndex);
         // Check for the case where there is a bid from the new owner and refund it.
         // Any other bid can stay in place.
-        Bid storage bid =  punkBids[punkIndex];
+        Bid storage bid = punkBids[punkIndex];
         if (bid.bidder == to) {
             // Kill bid and refund value
             pendingWithdrawals[to] += bid.value;
@@ -136,7 +165,13 @@ contract CryptoPunksMarket {
         if (!allPunksAssigned) revert();
         if (punkIndexToAddress[punkIndex] != msg.sender) revert();
         if (punkIndex >= 10000) revert();
-        punksOfferedForSale[punkIndex] = Offer(false, punkIndex, msg.sender, 0, address(0x0));
+        punksOfferedForSale[punkIndex] = Offer(
+            false,
+            punkIndex,
+            msg.sender,
+            0,
+            address(0x0)
+        );
         emit PunkNoLongerForSale(punkIndex);
     }
 
@@ -144,15 +179,31 @@ contract CryptoPunksMarket {
         if (!allPunksAssigned) revert();
         if (punkIndexToAddress[punkIndex] != msg.sender) revert();
         if (punkIndex >= 10000) revert();
-        punksOfferedForSale[punkIndex] = Offer(true, punkIndex, msg.sender, minSalePriceInWei, address(0x0));
+        punksOfferedForSale[punkIndex] = Offer(
+            true,
+            punkIndex,
+            msg.sender,
+            minSalePriceInWei,
+            address(0x0)
+        );
         emit PunkOffered(punkIndex, minSalePriceInWei, address(0x0));
     }
 
-    function offerPunkForSaleToAddress(uint punkIndex, uint minSalePriceInWei, address toAddress) public {
+    function offerPunkForSaleToAddress(
+        uint punkIndex,
+        uint minSalePriceInWei,
+        address toAddress
+    ) public {
         if (!allPunksAssigned) revert();
         if (punkIndexToAddress[punkIndex] != msg.sender) revert();
         if (punkIndex >= 10000) revert();
-        punksOfferedForSale[punkIndex] = Offer(true, punkIndex, msg.sender, minSalePriceInWei, toAddress);
+        punksOfferedForSale[punkIndex] = Offer(
+            true,
+            punkIndex,
+            msg.sender,
+            minSalePriceInWei,
+            toAddress
+        );
         emit PunkOffered(punkIndex, minSalePriceInWei, toAddress);
     }
 
@@ -160,10 +211,15 @@ contract CryptoPunksMarket {
         if (!allPunksAssigned) revert();
         Offer storage offer = punksOfferedForSale[punkIndex];
         if (punkIndex >= 10000) revert();
-        if (!offer.isForSale) revert();                // punk not actually for sale
-        if (offer.onlySellTo != address(0x0) && offer.onlySellTo != msg.sender) revert();  // punk not supposed to be sold to this user
-        if (msg.value < offer.minValue) revert();      // Didn't send enough ETH
-        if (offer.seller != punkIndexToAddress[punkIndex]) revert(); // Seller no longer owner of punk
+        if (!offer.isForSale) revert();
+        // punk not actually for sale
+        if (offer.onlySellTo != address(0x0) && offer.onlySellTo != msg.sender)
+            revert();
+        // punk not supposed to be sold to this user
+        if (msg.value < offer.minValue) revert();
+        // Didn't send enough ETH
+        if (offer.seller != punkIndexToAddress[punkIndex]) revert();
+        // Seller no longer owner of punk
 
         address seller = offer.seller;
 
@@ -178,7 +234,7 @@ contract CryptoPunksMarket {
 
         // Check for the case where there is a bid from the new owner and refund it.
         // Any other bid can stay in place.
-        Bid storage bid =  punkBids[punkIndex];
+        Bid storage bid = punkBids[punkIndex];
         if (bid.bidder == msg.sender) {
             // Kill bid and refund value
             pendingWithdrawals[msg.sender] += bid.value;
@@ -216,7 +272,7 @@ contract CryptoPunksMarket {
         if (!allPunksAssigned) revert();
         if (punkIndexToAddress[punkIndex] != msg.sender) revert();
         address seller = msg.sender;
-        Bid storage bid =  punkBids[punkIndex];
+        Bid storage bid = punkBids[punkIndex];
         if (bid.value == 0) revert();
         if (bid.value < minPrice) revert();
 
@@ -225,7 +281,13 @@ contract CryptoPunksMarket {
         balanceOf[bid.bidder]++;
         emit Transfer(seller, bid.bidder, 1);
 
-        punksOfferedForSale[punkIndex] = Offer(false, punkIndex, bid.bidder, 0, address(0x0));
+        punksOfferedForSale[punkIndex] = Offer(
+            false,
+            punkIndex,
+            bid.bidder,
+            0,
+            address(0x0)
+        );
         uint amount = bid.value;
         punkBids[punkIndex] = Bid(false, punkIndex, address(0x0), 0);
         pendingWithdrawals[seller] += amount;
@@ -237,7 +299,7 @@ contract CryptoPunksMarket {
         if (!allPunksAssigned) revert();
         if (punkIndexToAddress[punkIndex] == address(0x0)) revert();
         if (punkIndexToAddress[punkIndex] == msg.sender) revert();
-        Bid storage bid =  punkBids[punkIndex];
+        Bid storage bid = punkBids[punkIndex];
         if (bid.bidder != msg.sender) revert();
         emit PunkBidWithdrawn(punkIndex, bid.value, msg.sender);
         uint amount = bid.value;
@@ -245,5 +307,4 @@ contract CryptoPunksMarket {
         // Refund the bid money
         payable(msg.sender).transfer(amount);
     }
-
 }

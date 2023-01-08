@@ -3,7 +3,7 @@ import { CryptoPunksMosaicRegistry__factory } from "../../typechain-types";
 import { contracts } from "../../deployments/testnet.json";
 
 const MosaicRegistryAddress = contracts.CryptoPunksMosaicRegistry.address;
-const GroupRegistryAddress = "";
+const GroupRegistryAddress = contracts.CryptoPunksGroupRegistry.address;
 
 async function main() {
   const { deployer } = await ethers.getNamedSigners();
@@ -23,8 +23,6 @@ async function main() {
   );
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
 main().catch((error) => {
   console.error(error);
   process.exitCode = 1;

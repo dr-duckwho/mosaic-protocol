@@ -9,7 +9,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const { deployer } = await getNamedAccounts();
 
-  await deploy("CryptoPunksMarket", {
+  await deploy("TestCryptoPunksMarket", {
     contract: "CryptoPunksMarket",
     from: deployer,
     args: [],
