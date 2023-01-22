@@ -59,7 +59,10 @@ contract CryptoPunksMosaicRegistry is
     //
     function create(
         uint256 punkId,
-        uint64 totalClaimableCount
+        uint64 totalClaimableCount,
+        uint256 purchasePrice,
+        uint256 minReservePrice,
+        uint256 maxReservePrice
     ) external override onlyRole(MINTER_ROLE) returns (uint192 originalId) {
         require(
             cryptoPunksMarket.punkIndexToAddress(punkId) == address(this),
@@ -67,12 +70,14 @@ contract CryptoPunksMosaicRegistry is
         );
         originalId = ++latestOriginalId;
         ++latestMonoIds[originalId];
-        // TODO(@jyterencekim): Consider taking purchasePrice for a basis for reconstitution later
         originals[originalId] = Original({
             id: originalId,
             punkId: punkId,
             totalMonoCount: totalClaimableCount,
             claimedMonoCount: 0,
+            purchasePrice: purchasePrice,
+            minReservePrice: minReservePrice,
+            maxReservePrice: maxReservePrice,
             status: OriginalStatus.Active,
             // TODO(@kimhodol): Change expiry and price value
             bid: Bid({bidder: address(0x0), expiry: 0, price: 0})

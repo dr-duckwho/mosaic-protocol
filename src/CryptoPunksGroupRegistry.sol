@@ -19,6 +19,16 @@ contract CryptoPunksGroupRegistry is
     AccessControl,
     ReentrancyGuard
 {
+    /**
+     * Arithmetic constants
+     */
+    uint64 public constant MIN_RESERVE_PRICE_BASIS_POINT = 8000; // 80%
+    uint64 public constant MAX_RESERVE_PRICE_BASIS_POINT = 30000; // 300%
+    uint64 public constant BASIS_POINT_DENOMINATOR = 10000;
+
+    /**
+     * Business logic constants
+     */
     // TODO: Introduce a global explicit storage contract
     uint64 public constant TICKET_SUPPLY_PER_GROUP = 100;
 
@@ -156,7 +166,16 @@ contract CryptoPunksGroupRegistry is
         );
         group.originalId = mosaicRegistry.create(
             group.targetPunkId,
-            group.ticketsBought
+            group.ticketsBought,
+            group.purchasePrice,
+            calculateBasisPoint(
+                group.purchasePrice,
+                MIN_RESERVE_PRICE_BASIS_POINT
+            ),
+            calculateBasisPoint(
+                group.purchasePrice,
+                MAX_RESERVE_PRICE_BASIS_POINT
+            )
         );
         // TODO: Consider whether to explicitly mark other competing groups as LOST
         group.status = GroupStatus.Claimable;
@@ -314,6 +333,15 @@ contract CryptoPunksGroupRegistry is
         return
             ERC1155.supportsInterface(interfaceId) ||
             AccessControl.supportsInterface(interfaceId);
+    }
+
+    // Basis point calculation
+    function calculateBasisPoint(
+        uint256 amount,
+        uint256 basisPoints
+    ) public pure returns (uint256) {
+        require((amount * basisPoints) >= 10_000);
+        return (amount * basisPoints) / 10_000;
     }
 
     // TODO: fallback
