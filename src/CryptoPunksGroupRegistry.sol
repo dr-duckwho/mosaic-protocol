@@ -213,10 +213,6 @@ contract CryptoPunksGroupRegistry is
         refundableTickets[groupId][contributor] = 0;
     }
 
-    function finalizeOnLost(uint192 groupId) public {
-        // TODO: Refund the remaining contributions pro rata when won/lost/expired
-    }
-
     function getRefundPerTicket(
         Group storage group
     ) private view returns (uint256 refundPerTicket) {
