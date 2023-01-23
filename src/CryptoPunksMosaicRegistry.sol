@@ -97,7 +97,14 @@ contract CryptoPunksMosaicRegistry is
         uint64 monoId = latestMonoIds[originalId]++;
         mosaicId = toMosaicId(originalId, monoId);
         // TODO(@jyterencekim): Take proposedReservePrice
-        monos[mosaicId] = Mono({ mosaicId: mosaicId, metadata: metadataUri, governanceOptions: MonoGovernanceOptions({proposedReservePrice: 0, bidResponse: MonoBidResponse.None}) });
+        monos[mosaicId] = Mono({
+            mosaicId: mosaicId,
+            metadataUri: metadataUri,
+            governanceOptions: MonoGovernanceOptions({
+                proposedReservePrice: 0,
+                bidResponse: MonoBidResponse.None
+            })
+        });
         originals[originalId].claimedMonoCount++;
         _mint(contributor, mosaicId, 1, "");
 
@@ -135,7 +142,7 @@ contract CryptoPunksMosaicRegistry is
     function uri(
         uint256 mosaicId
     ) public view override returns (string memory) {
-        return monos[mosaicId].uri;
+        return monos[mosaicId].metadataUri;
     }
 
     //

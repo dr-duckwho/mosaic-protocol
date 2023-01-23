@@ -31,7 +31,7 @@ interface UsingCryptoPunksMosaicRegistryStructs {
          *
          * TODO: Decide whether to use URI or JSON data
          */
-        string uri;
+        string metadataUri;
         MonoGovernanceOptions governanceOptions;
     }
 
