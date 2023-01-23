@@ -7,7 +7,10 @@ interface ICryptoPunksMosaicRegistry is UsingCryptoPunksMosaicRegistryStructs {
     // TODO: fill it out
     function create(
         uint256 punkId,
-        uint64 totalClaimableCount
+        uint64 totalClaimableCount,
+        uint256 purchasePrice,
+        uint256 minReservePrice,
+        uint256 maxReservePrice
     ) external returns (uint192 originalId);
 
     function mint(

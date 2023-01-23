@@ -11,6 +11,9 @@ interface UsingCryptoPunksMosaicRegistryStructs {
          */
         uint128 totalMonoCount;
         uint128 claimedMonoCount;
+        uint256 purchasePrice;
+        uint256 minReservePrice;
+        uint256 maxReservePrice;
         OriginalStatus status;
         Bid bid;
     }
