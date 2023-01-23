@@ -41,9 +41,9 @@ contract CryptoPunksMosaicRegistry is
     mapping(uint192 => uint64) private latestMonoIds;
 
     /**
-     * @dev mosaicId (originalId + monoId) => uri
+     * @dev mosaicId (originalId + monoId) => Mono
      */
-    mapping(uint256 => string) private metadata;
+    mapping(uint256 => Mono) private monos;
 
     constructor(
         address _mintAuthority,
@@ -91,7 +91,8 @@ contract CryptoPunksMosaicRegistry is
         );
         uint64 monoId = latestMonoIds[originalId]++;
         mosaicId = toMosaicId(originalId, monoId);
-        metadata[mosaicId] = metadataUri;
+        // TODO(@jyterencekim): Take proposedReservePrice
+        monos[mosaicId] = Mono({ mosaicId: mosaicId, metadata: metadataUri, governanceOptions: MonoGovernanceOptions({proposedReservePrice: 0, bidResponse: MonoBidResponse.None}) });
         originals[originalId].claimedMonoCount++;
         _mint(contributor, mosaicId, 1, "");
 
@@ -129,7 +130,7 @@ contract CryptoPunksMosaicRegistry is
     function uri(
         uint256 mosaicId
     ) public view override returns (string memory) {
-        return metadata[mosaicId];
+        return monos[mosaicId].uri;
     }
 
     //

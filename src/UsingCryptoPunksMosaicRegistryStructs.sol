@@ -21,6 +21,28 @@ interface UsingCryptoPunksMosaicRegistryStructs {
         Sold
     }
 
+    struct Mono {
+        uint256 mosaicId;
+        /**
+         * @dev mosaicId (originalId + monoId) => uri
+         *
+         * TODO: Decide whether to use URI or JSON data
+         */
+        string uri;
+        MonoGovernanceOptions governanceOptions;
+    }
+
+    struct MonoGovernanceOptions {
+        uint256 proposedReservePrice;
+        MonoBidResponse bidResponse;
+    }
+
+    enum MonoBidResponse {
+        None,
+        Yes,
+        No
+    }
+
     struct Bid {
         address bidder;
         uint40 expiry; // block.timestamp, in seconds
