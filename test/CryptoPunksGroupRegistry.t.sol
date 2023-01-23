@@ -38,6 +38,7 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
         uint256 targetMaxPrice = 10 ether;
 
         address payable creator = _randomAddress();
+        groupRegistry.grantCuratorRole(creator);
         vm.deal(creator, 100 ether);
 
         // when
@@ -62,6 +63,7 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
     function test_buy() public {
         // given & when
         address payable creator = _randomAddress();
+        groupRegistry.grantCuratorRole(creator);
         uint192 groupId = _createAndBuy(creator, targetPunkId);
 
         // then
@@ -116,6 +118,7 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
         uint256 purchasePrice = 75 ether; // resulting in surplus of 25 ether
 
         // create
+        groupRegistry.grantCuratorRole(alice);
         vm.prank(alice);
         uint192 groupId = _create(targetPunkId, targetMaxPrice);
 
@@ -185,6 +188,7 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
         vm.deal(creator, 100 ether);
 
         // create
+        groupRegistry.grantCuratorRole(creator);
         vm.prank(creator);
         uint192 groupId = _create(targetPunkId, targetMaxPrice);
 
