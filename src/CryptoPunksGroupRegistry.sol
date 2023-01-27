@@ -28,9 +28,15 @@ contract CryptoPunksGroupRegistry is
 
     /**
      * Business logic constants
+     *
+     * TODO: Introduce a global explicit storage contract
      */
-    // TODO: Introduce a global explicit storage contract
     uint64 public constant TICKET_SUPPLY_PER_GROUP = 100;
+    /**
+     * @dev can create and curate the active group
+     */
+    bytes32 private constant CURATOR_ROLE =
+        bytes32(uint256(keccak256("curator")));
 
     ICryptoPunksMarket public immutable cryptoPunksMarket;
     ICryptoPunksMosaicRegistry private mosaicRegistry;
@@ -52,6 +58,7 @@ contract CryptoPunksGroupRegistry is
     ) ERC1155("CryptoPunks Mosaic Ticket") {
         // TODO: Inherit a configuration storage from a Museum
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(CURATOR_ROLE, msg.sender);
         // TODO: code it up with config passing
         cryptoPunksMarket = ICryptoPunksMarket(cryptoPunksMarketAddress);
         mosaicRegistry = ICryptoPunksMosaicRegistry(mosaicRegistryAddress);
@@ -65,7 +72,7 @@ contract CryptoPunksGroupRegistry is
     function create(
         uint256 targetPunkId,
         uint256 targetMaxPrice
-    ) external returns (uint192 groupId) {
+    ) external onlyRole(CURATOR_ROLE) returns (uint192 groupId) {
         ++latestGroupId;
         uint64 totalTicketSupply = TICKET_SUPPLY_PER_GROUP;
         uint256 unitTicketPrice = targetMaxPrice / totalTicketSupply;
@@ -318,6 +325,12 @@ contract CryptoPunksGroupRegistry is
         uint256[] memory amounts
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _mintBatch(to, ids, amounts, "");
+    }
+
+    function grantCuratorRole(
+        address to
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _grantRole(CURATOR_ROLE, to);
     }
 
     //
