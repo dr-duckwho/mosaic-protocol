@@ -262,26 +262,10 @@ contract CryptoPunksGroupRegistry is
     // Group-related views
     //
 
-    function getGroupInfo(
+    function getGroup(
         uint192 groupId
-    )
-        public
-        view
-        onlyValidGroup(groupId)
-        returns (
-            address creator,
-            uint256 targetMaxPrice,
-            uint96 ticketsBought,
-            GroupStatus status
-        )
-    {
-        Group storage group = groups[groupId];
-        return (
-            group.creator,
-            group.targetMaxPrice,
-            group.ticketsBought,
-            group.status
-        );
+    ) public view onlyValidGroup(groupId) returns (Group memory) {
+        return groups[groupId];
     }
 
     function getGroupTotalContribution(

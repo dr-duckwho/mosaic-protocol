@@ -48,16 +48,11 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
         uint192 groupId = groupRegistry.create(targetPunkId, targetMaxPrice);
 
         // then
-        (
-            address _creator,
-            uint256 _targetMaxPrice,
-            uint96 _ticketsBought,
-            GroupStatus _status
-        ) = groupRegistry.getGroupInfo(groupId);
-        assertEq(_creator, creator);
-        assertEq(_targetMaxPrice, targetMaxPrice);
-        assertEq(_ticketsBought, 0);
-        assert(_status == GroupStatus.Open);
+        Group memory group = groupRegistry.getGroup(groupId);
+        assertEq(group.creator, creator);
+        assertEq(group.targetMaxPrice, targetMaxPrice);
+        assertEq(group.ticketsBought, 0);
+        assert(group.status == GroupStatus.Open);
     }
 
     function test_buy() public {
@@ -67,14 +62,9 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
         uint192 groupId = _createAndBuy(creator, targetPunkId);
 
         // then
-        (
-            address _creator,
-            uint256 _targetMaxPrice,
-            uint96 _ticketsBought,
-            GroupStatus _status
-        ) = groupRegistry.getGroupInfo(groupId);
-        assertEq(_ticketsBought, 100);
-        assert(_status == GroupStatus.Claimable);
+        Group memory group = groupRegistry.getGroup(groupId);
+        assertEq(group.ticketsBought, 100);
+        assert(group.status == GroupStatus.Claimable);
     }
 
     function test_claim() public {
