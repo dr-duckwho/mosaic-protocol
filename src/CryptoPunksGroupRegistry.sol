@@ -72,6 +72,11 @@ contract CryptoPunksGroupRegistry is
         uint256 targetPunkId,
         uint256 targetMaxPrice
     ) external onlyRole(CURATOR_ROLE) returns (uint192 groupId) {
+        require(
+            groups[latestGroupId].status != GroupStatus.Open,
+            "Ongoing group exists"
+        );
+
         ++latestGroupId;
         uint64 totalTicketSupply = TICKET_SUPPLY_PER_GROUP;
         uint256 unitTicketPrice = targetMaxPrice / totalTicketSupply;

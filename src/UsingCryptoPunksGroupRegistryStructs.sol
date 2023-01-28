@@ -7,6 +7,7 @@ interface UsingCryptoPunksGroupRegistryStructs {
      *  LOST if the group has not procured the target original within the expiry.
      */
     enum GroupStatus {
+        None,
         Open,
         Won,
         Lost,
