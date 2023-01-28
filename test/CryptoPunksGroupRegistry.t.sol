@@ -38,7 +38,7 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
         uint256 targetMaxPrice = 10 ether;
 
         address payable creator = _randomAddress();
-        groupRegistry.grantCuratorRole(creator);
+        groupRegistry.grantRole(groupRegistry.CURATOR_ROLE(), creator);
         vm.deal(creator, 100 ether);
 
         // when
@@ -58,7 +58,7 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
     function test_buy() public {
         // given & when
         address payable creator = _randomAddress();
-        groupRegistry.grantCuratorRole(creator);
+        groupRegistry.grantRole(groupRegistry.CURATOR_ROLE(), creator);
         uint192 groupId = _createAndBuy(creator, targetPunkId);
 
         // then
@@ -78,7 +78,7 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
 
         mockMosaicRegistry.givenSelectorReturnResponse(
             ICryptoPunksMosaicRegistry.mint.selector,
-            MockProvider.ReturnData({success: true, data: abi.encode(expectedMosaicId)}),
+            MockProvider.ReturnData({success : true, data : abi.encode(expectedMosaicId)}),
             true
         );
 
@@ -104,23 +104,25 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
         vm.deal(carol, 30 ether);
 
         // purchase conditions
-        uint256 targetMaxPrice = 100 ether; // resulting in 1 ticket = 1 ether
-        uint256 purchasePrice = 75 ether; // resulting in surplus of 25 ether
+        uint256 targetMaxPrice = 100 ether;
+        // resulting in 1 ticket = 1 ether
+        uint256 purchasePrice = 75 ether;
+        // resulting in surplus of 25 ether
 
         // create
-        groupRegistry.grantCuratorRole(alice);
+        groupRegistry.grantRole(groupRegistry.CURATOR_ROLE(), alice);
         vm.prank(alice);
         uint192 groupId = _create(targetPunkId, targetMaxPrice);
 
         // contribute
         vm.prank(alice);
-        groupRegistry.contribute{value: 40 ether}(groupId, 40);
+        groupRegistry.contribute{value : 40 ether}(groupId, 40);
         assertEq(groupRegistry.getGroupTotalContribution(groupId), 40 ether);
         vm.prank(bob);
-        groupRegistry.contribute{value: 30 ether}(groupId, 30);
+        groupRegistry.contribute{value : 30 ether}(groupId, 30);
         assertEq(groupRegistry.getGroupTotalContribution(groupId), 70 ether);
         vm.prank(carol);
-        groupRegistry.contribute{value: 30 ether}(groupId, 30);
+        groupRegistry.contribute{value : 30 ether}(groupId, 30);
         assertEq(groupRegistry.getGroupTotalContribution(groupId), 100 ether);
 
         // given the market
@@ -136,7 +138,7 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
         mockCryptoPunksMarket.setPunkIndexToAddress(1, address(groupRegistry));
         mockMosaicRegistry.givenSelectorReturnResponse(
             ICryptoPunksMosaicRegistry.create.selector,
-            MockProvider.ReturnData({success: true, data: abi.encode(uint192(1))}),
+            MockProvider.ReturnData({success : true, data : abi.encode(uint192(1))}),
             true
         );
 
@@ -178,13 +180,13 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
         vm.deal(creator, 100 ether);
 
         // create
-        groupRegistry.grantCuratorRole(creator);
+        groupRegistry.grantRole(groupRegistry.CURATOR_ROLE(), creator);
         vm.prank(creator);
         uint192 groupId = _create(targetPunkId, targetMaxPrice);
 
         // contribute
         vm.prank(creator);
-        groupRegistry.contribute{value: targetMaxPrice}(groupId, 100);
+        groupRegistry.contribute{value : targetMaxPrice}(groupId, 100);
         assertEq(groupRegistry.getGroupTotalContribution(groupId), 10 ether);
 
         // given mocks
@@ -200,7 +202,7 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
         mockCryptoPunksMarket.setPunkIndexToAddress(1, address(groupRegistry));
         mockMosaicRegistry.givenSelectorReturnResponse(
             ICryptoPunksMosaicRegistry.create.selector,
-            MockProvider.ReturnData({success: true, data: abi.encode(uint192(1))}),
+            MockProvider.ReturnData({success : true, data : abi.encode(uint192(1))}),
             true
         );
 

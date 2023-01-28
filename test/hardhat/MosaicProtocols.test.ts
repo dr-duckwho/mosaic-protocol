@@ -45,6 +45,7 @@ describe("MosaicProtocol", function () {
         cryptoPunks,
         groupRegistry,
         mosaicRegistry,
+        owner,
         alice: punkOwner,
         bob,
         carol,
@@ -58,10 +59,14 @@ describe("MosaicProtocol", function () {
        */
 
       // TODO: #6 Access role constraint with create group
-      const groupId = await newGroup(groupRegistry)(bob, PUNK_ID, TARGET_PRICE);
-      await expect(
-        groupRegistry.getGroupInfo(groupId.add(1))
-      ).to.be.revertedWith("Invalid groupId");
+      const groupId = await newGroup(groupRegistry)(
+        owner,
+        PUNK_ID,
+        TARGET_PRICE
+      );
+      await expect(groupRegistry.getGroup(groupId.add(1))).to.be.revertedWith(
+        "Invalid groupId"
+      );
 
       /**
        * Contribute & Buy

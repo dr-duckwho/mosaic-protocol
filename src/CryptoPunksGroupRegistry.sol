@@ -35,7 +35,7 @@ contract CryptoPunksGroupRegistry is
     /**
      * @dev can create and curate the active group
      */
-    bytes32 private constant CURATOR_ROLE = keccak256("CURATOR_ROLE");
+    bytes32 public constant CURATOR_ROLE = keccak256("CURATOR_ROLE");
 
     ICryptoPunksMarket public immutable cryptoPunksMarket;
     ICryptoPunksMosaicRegistry private mosaicRegistry;
@@ -307,12 +307,6 @@ contract CryptoPunksGroupRegistry is
         uint256[] memory amounts
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _mintBatch(to, ids, amounts, "");
-    }
-
-    function grantCuratorRole(
-        address to
-    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        _grantRole(CURATOR_ROLE, to);
     }
 
     //
