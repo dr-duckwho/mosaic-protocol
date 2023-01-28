@@ -256,9 +256,9 @@ contract CryptoPunksGroupRegistry is
     // Registry-related views
     //
 
-    function uri(uint256 id) public view override returns (string memory) {
-        // TODO: Implement this
-        return Strings.toString(id);
+    function uri(uint256 groupId) public view override returns (string memory) {
+        Group storage group = groups[uint192(groupId)];
+        return group.metadataUri;
     }
 
     //

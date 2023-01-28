@@ -27,6 +27,8 @@ contract CryptoPunksMosaicRegistry is
 
     ICryptoPunksMarket public immutable cryptoPunksMarket;
 
+    string public invalidMetadataUri;
+
     /**
      * @dev used as a `originalId`, starting from 1.
      */
@@ -108,8 +110,6 @@ contract CryptoPunksMosaicRegistry is
         originals[originalId].claimedMonoCount++;
         _mint(contributor, mosaicId, 1, "");
 
-        // TODO: handle metadataUri
-
         return mosaicId;
     }
 
@@ -136,12 +136,22 @@ contract CryptoPunksMosaicRegistry is
         );
     }
 
+    function setInvalidMetadataUri(
+        string calldata _uri
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        invalidMetadataUri = _uri;
+    }
+
     //
     // ERC1155
     //
     function uri(
         uint256 mosaicId
     ) public view override returns (string memory) {
+        (uint192 originalId, ) = fromMosaicId(mosaicId);
+        if (originals[originalId].status == OriginalStatus.Sold) {
+            return invalidMetadataUri;
+        }
         return monos[mosaicId].metadataUri;
     }
 

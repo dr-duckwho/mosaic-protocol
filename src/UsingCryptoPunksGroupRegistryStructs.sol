@@ -27,6 +27,7 @@ interface UsingCryptoPunksGroupRegistryStructs {
         GroupStatus status;
         uint256 purchasePrice; // price at which the target is bought
         uint192 originalId;
+        string metadataUri;
     }
 
     event GroupCreated(
