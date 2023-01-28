@@ -139,7 +139,6 @@ contract CryptoPunksGroupRegistry is
         (, , , uint256 offeredPrice, ) = cryptoPunksMarket.punksOfferedForSale(
             punkId
         );
-        // TODO: Require all 100 tickets bought already
         require(group.ticketsBought == TICKET_SUPPLY_PER_GROUP, "Not sold out");
         require(
             group.totalContribution >= offeredPrice,
