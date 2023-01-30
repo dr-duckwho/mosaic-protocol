@@ -89,8 +89,7 @@ contract CryptoPunksMosaicRegistry is
 
     function mint(
         address contributor,
-        uint192 originalId,
-        string calldata metadataUri
+        uint192 originalId
     ) external override onlyRole(MINTER_ROLE) returns (uint256 mosaicId) {
         require(
             latestMonoIds[originalId] > 0,
@@ -99,9 +98,10 @@ contract CryptoPunksMosaicRegistry is
         uint64 monoId = latestMonoIds[originalId]++;
         mosaicId = toMosaicId(originalId, monoId);
         // TODO(@jyterencekim): Take proposedReservePrice
+        // TODO: Handle metadataUri
         monos[mosaicId] = Mono({
             mosaicId: mosaicId,
-            metadataUri: metadataUri,
+            metadataUri: "metadata://",
             governanceOptions: MonoGovernanceOptions({
                 proposedReservePrice: 0,
                 bidResponse: MonoBidResponse.None

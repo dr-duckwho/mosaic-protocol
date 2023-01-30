@@ -73,7 +73,6 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
         uint192 groupId = _createAndBuy(creator, targetPunkId);
         assertEq(groupRegistry.balanceOf(creator, groupId), 100);
 
-        string memory metadataUri = "uri";
         uint256 expectedMosaicId = 581019;
 
         mockMosaicRegistry.givenSelectorReturnResponse(
@@ -87,14 +86,16 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
         emit Claimed(creator, groupId, expectedMosaicId);
 
         vm.prank(creator);
-        uint256 mosaicId = groupRegistry.claim(groupId, metadataUri);
+        uint256[] memory mosaicIds = groupRegistry.claim(groupId);
 
         // then
-        assertEq(mosaicId, expectedMosaicId);
-        assertEq(groupRegistry.balanceOf(creator, groupId), 99);
+        assertEq(mosaicIds[0], expectedMosaicId);
+
+        // the tickets must have been burned after refund/mint
+        assertEq(groupRegistry.balanceOf(creator, groupId), 0);
     }
 
-    function test_refund() public {
+    function test_claim_refund() public {
         // given conditions
         address payable alice = _randomAddress();
         address payable bob = _randomAddress();
@@ -141,12 +142,75 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
             MockProvider.ReturnData({success : true, data : abi.encode(uint192(1))}),
             true
         );
+        mockMosaicRegistry.givenSelectorReturnResponse(
+            ICryptoPunksMosaicRegistry.mint.selector,
+            MockProvider.ReturnData({success : true, data : abi.encode(1)}),
+            true
+        );
 
         // buy
         assertEq(address(groupRegistry).balance, 100 ether);
         vm.prank(alice);
         groupRegistry.buy(groupId);
         assertEq(address(groupRegistry).balance, 25 ether);
+
+        // when
+        vm.prank(alice);
+        groupRegistry.claim(groupId);
+        vm.prank(bob);
+        groupRegistry.claim(groupId);
+        vm.prank(carol);
+        groupRegistry.claim(groupId);
+
+        // then
+        assertEq(alice.balance, 10 ether);
+        assertEq(bob.balance, 7.5 ether);
+        assertEq(carol.balance, 7.5 ether);
+
+        // when tried once again illegally
+        vm.prank(carol);
+        // TODO: Keep the error messages in a separate contract
+        vm.expectRevert("Only ticket holders can claim tokens");
+        groupRegistry.claim(groupId);
+    }
+
+    function test_refund_expired() public {
+        // given conditions
+        address payable alice = _randomAddress();
+        address payable bob = _randomAddress();
+        address payable carol = _randomAddress();
+        vm.deal(alice, 40 ether);
+        vm.deal(bob, 30 ether);
+        vm.deal(carol, 30 ether);
+
+        // purchase conditions
+        uint256 targetMaxPrice = 100 ether;
+        // resulting in 1 ticket = 1 ether
+        uint256 purchasePrice = 75 ether;
+        // resulting in surplus of 25 ether
+
+        // create
+        groupRegistry.grantRole(groupRegistry.CURATOR_ROLE(), alice);
+        vm.prank(alice);
+        uint192 groupId = _create(targetPunkId, targetMaxPrice);
+
+        // contribute
+        vm.prank(alice);
+        groupRegistry.contribute{value : 40 ether}(groupId, 40);
+        assertEq(groupRegistry.getGroupTotalContribution(groupId), 40 ether);
+        assertEq(alice.balance, 0 ether);
+        vm.prank(bob);
+        groupRegistry.contribute{value : 30 ether}(groupId, 30);
+        assertEq(groupRegistry.getGroupTotalContribution(groupId), 70 ether);
+        assertEq(bob.balance, 0 ether);
+        vm.prank(carol);
+        groupRegistry.contribute{value : 30 ether}(groupId, 30);
+        assertEq(groupRegistry.getGroupTotalContribution(groupId), 100 ether);
+        assertEq(carol.balance, 0 ether);
+
+        // expired
+        Group memory group = groupRegistry.getGroup(groupId);
+        vm.warp(group.expiry + 1);
 
         // when
         vm.prank(alice);
@@ -157,13 +221,14 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
         groupRegistry.refund(groupId);
 
         // then
-        assertEq(alice.balance, 10 ether);
-        assertEq(bob.balance, 7.5 ether);
-        assertEq(carol.balance, 7.5 ether);
+        assertEq(alice.balance, 40 ether);
+        assertEq(bob.balance, 30 ether);
+        assertEq(carol.balance, 30 ether);
 
         // when tried once again illegally
         vm.prank(carol);
-        vm.expectRevert("Only refundable ticket holders can get refunds");
+        // TODO: Keep the error messages in a separate contract
+        vm.expectRevert("Only ticket holders can get refunds");
         groupRegistry.refund(groupId);
     }
 

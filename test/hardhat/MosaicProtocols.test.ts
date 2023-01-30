@@ -124,9 +124,9 @@ describe("MosaicProtocol", function () {
       //  Why not just give a single ERC721 regardless of contribution?
       // TODO: #2 Handle NFT Metadata
       await Promise.all([
-        ...claimMosaics(groupRegistry)(bob, groupId, CONTRIBUTION.bob),
-        ...claimMosaics(groupRegistry)(carol, groupId, CONTRIBUTION.carol),
-        ...claimMosaics(groupRegistry)(david, groupId, CONTRIBUTION.david),
+        claimMosaics(groupRegistry)(bob, groupId),
+        claimMosaics(groupRegistry)(carol, groupId),
+        claimMosaics(groupRegistry)(david, groupId),
       ]);
 
       expect(await ticketBalance(bob, groupId)).to.equal(0);
@@ -163,30 +163,8 @@ describe("MosaicProtocol", function () {
 
       /**
        * Refund
+       * TODO: Check the after-refund-mint balances
        */
-
-      const surplus = TARGET_PRICE.sub(OFFERED_PRICE);
-      await expect(
-        groupRegistry.connect(bob).refund(groupId)
-      ).to.changeEtherBalances(
-        [groupRegistry.address, await bob.getAddress()],
-        [
-          surplus.div(100).mul(-CONTRIBUTION.bob),
-          surplus.div(100).mul(CONTRIBUTION.bob),
-        ]
-      );
-      await expect(
-        groupRegistry.connect(carol).refund(groupId)
-      ).to.changeEtherBalances(
-        [groupRegistry.address, await carol.getAddress()],
-        [parseEther("-20.4"), parseEther("20.4")]
-      );
-      await expect(
-        groupRegistry.connect(david).refund(groupId)
-      ).to.changeEtherBalances(
-        [groupRegistry.address, await david.getAddress()],
-        [parseEther("-6.4"), parseEther("6.4")]
-      );
     });
 
     /**
