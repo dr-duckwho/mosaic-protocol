@@ -101,7 +101,7 @@ contract CryptoPunksMosaicRegistry is
         // TODO: Handle metadataUri
         monos[mosaicId] = Mono({
             mosaicId: mosaicId,
-            metadataUri: "metadata://",
+            metadataUri: "",
             governanceOptions: MonoGovernanceOptions({
                 proposedReservePrice: 0,
                 bidResponse: MonoBidResponse.None
@@ -134,6 +134,22 @@ contract CryptoPunksMosaicRegistry is
             uint192(mosaicId >> MONO_ID_BITS),
             uint64(mosaicId & MONO_ID_BITMASK)
         );
+    }
+
+    function getMonoLifeCycle(
+        uint256 mosaicId
+    ) public view returns (MonoLifeCycle) {
+        // TODO: Check valid mosaicId
+        Mono storage mono = monos[mosaicId];
+        (uint192 originalId, ) = fromMosaicId(mosaicId);
+        Original storage original = originals[originalId];
+        if (original.status == OriginalStatus.Sold) {
+            return MonoLifeCycle.Dead;
+        }
+        if (bytes(mono.metadataUri).length == 0) {
+            return MonoLifeCycle.Raw;
+        }
+        return MonoLifeCycle.Active;
     }
 
     function setInvalidMetadataUri(
