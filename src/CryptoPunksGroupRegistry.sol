@@ -241,10 +241,7 @@ contract CryptoPunksGroupRegistry is
             "The group is not expired yet"
         );
         uint256 ticketsHeld = getTickets(msg.sender, groupId);
-        require(
-            ticketsHeld > 0,
-            "Only ticket holders can get refunds"
-        );
+        require(ticketsHeld > 0, "Only ticket holders can get refunds");
 
         _burn(msg.sender, groupId, ticketsHeld);
 

@@ -32,4 +32,6 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils {
         assertEq(originalId, expectedGroupId);
         assertEq(monoId, expectedMonoId);
     }
+
+    // TODO(@jyterencekim): Write unit tests for `mint`
 }

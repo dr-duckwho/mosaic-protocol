@@ -35,6 +35,15 @@ interface UsingCryptoPunksMosaicRegistryStructs {
         MonoGovernanceOptions governanceOptions;
     }
 
+    enum MonoLifeCycle {
+        // @dev pre-design, just minted
+        Raw,
+        // @dev post-design, valid
+        Active,
+        // @dev belonging to invalid/reconstituted Original
+        Dead
+    }
+
     struct MonoGovernanceOptions {
         uint256 proposedReservePrice;
         MonoBidResponse bidResponse;
