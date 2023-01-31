@@ -159,7 +159,6 @@ contract CryptoPunksGroupRegistry is
         finalizeOnWon(groupId);
     }
 
-    // Separated for retry after any partial failure
     function finalizeOnWon(uint192 groupId) public onlyValidGroup(groupId) {
         // TODO: Consider removing `getValidGroup` invocation if it costs too much gas
         Group storage group = groups[groupId];
@@ -191,55 +190,67 @@ contract CryptoPunksGroupRegistry is
         group.status = GroupStatus.Claimable;
     }
 
+    // @dev Batch claim-refund as many Mosaic Monos as tickets held
     function claim(
-        uint192 groupId,
-        string calldata metadataUri
-    ) external nonReentrant onlyValidGroup(groupId) returns (uint256 mosaicId) {
+        uint192 groupId
+    )
+        external
+        nonReentrant
+        onlyValidGroup(groupId)
+        returns (uint256[] memory mosaicIds)
+    {
         Group storage group = groups[groupId];
         require(
             group.status == GroupStatus.Claimable,
             "The group is not finalized"
         );
-        require(
-            hasContribution(msg.sender, groupId) || msg.sender == group.creator,
-            "Only ticket holders can claim tokens"
-        );
+        uint256 ticketsHeld = getTickets(msg.sender, groupId);
+        require(ticketsHeld > 0, "Only ticket holders can claim tokens");
 
-        _burn(msg.sender, groupId, 1);
+        _burn(msg.sender, groupId, ticketsHeld);
 
-        // TODO: take metadata
-        mosaicId = mosaicRegistry.mint(
-            msg.sender,
-            group.originalId,
-            metadataUri
-        );
+        // Refund
+        uint256 owed = getRefundPerTicket(group) * ticketsHeld;
+        (bool sent, ) = msg.sender.call{value: owed}("");
+        require(sent, "Failed to refund");
 
-        emit Claimed(msg.sender, groupId, mosaicId);
-        return mosaicId;
+        // Mint
+        uint256[] memory mosaicIds = new uint256[](ticketsHeld);
+        for (uint256 i = 0; i < ticketsHeld; i++) {
+            uint256 mosaicId = mosaicRegistry.mint(
+                msg.sender,
+                group.originalId
+            );
+            mosaicIds[i] = mosaicId;
+            emit Claimed(msg.sender, groupId, mosaicId);
+        }
+
+        return mosaicIds;
     }
 
-    /**
-     * Refunds any remaining contributions pro rata after finalization
-     */
+    // @dev only for lost/expired groups to invoke explicitly
     function refund(
         uint192 groupId
-    ) external nonReentrant onlyValidGroup(groupId) {
+    ) public nonReentrant onlyValidGroup(groupId) {
         address payable contributor = payable(msg.sender);
         Group storage group = groups[groupId];
         require(
-            group.status == GroupStatus.Claimable ||
-                group.expiry > block.timestamp,
-            "The group is not finalized"
+            group.status != GroupStatus.Claimable &&
+                group.status != GroupStatus.Won &&
+                group.expiry < block.timestamp,
+            "The group is not expired yet"
         );
+        uint256 ticketsHeld = getTickets(msg.sender, groupId);
         require(
-            refundableTickets[groupId][contributor] > 0,
-            "Only refundable ticket holders can get refunds"
+            ticketsHeld > 0,
+            "Only ticket holders can get refunds"
         );
-        uint256 owed = getRefundPerTicket(group) *
-            refundableTickets[groupId][contributor];
+
+        _burn(msg.sender, groupId, ticketsHeld);
+
+        uint256 owed = getRefundPerTicket(group) * ticketsHeld;
         (bool sent, ) = contributor.call{value: owed}("");
         require(sent, "Failed to refund");
-        refundableTickets[groupId][contributor] = 0;
     }
 
     function getRefundPerTicket(

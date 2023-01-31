@@ -15,8 +15,7 @@ interface ICryptoPunksMosaicRegistry is UsingCryptoPunksMosaicRegistryStructs {
 
     function mint(
         address contributor,
-        uint192 originalId,
-        string calldata metadataUri
+        uint192 originalId
     ) external returns (uint256 mosaicId);
 
     function bid(uint192 originalId, uint256 price) external;

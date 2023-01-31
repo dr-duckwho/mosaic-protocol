@@ -49,12 +49,9 @@ export const claimMosaics =
   (groupRegistry: CryptoPunksGroupRegistry) =>
   (
     contributor: SignerWithAddress,
-    groupId: BigNumberish,
-    ticketCount: BigNumberish
+    groupId: BigNumberish
   ) =>
-    [...Array(Number(ticketCount)).keys()].map((_) =>
-      groupRegistry.connect(contributor).claim(groupId, "metadata://")
-    );
+    groupRegistry.connect(contributor).claim(groupId);
 
 export const ticketBalanceBy =
   (groupRegistry: CryptoPunksGroupRegistry) =>
