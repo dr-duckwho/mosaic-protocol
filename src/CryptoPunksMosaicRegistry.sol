@@ -25,6 +25,10 @@ contract CryptoPunksMosaicRegistry is
     uint256 private constant MONO_ID_BITS = 64;
     uint256 private constant MONO_ID_BITMASK = (1 << (MONO_ID_BITS + 1)) - 1; // lower 64 bits
 
+    // TODO: Make it configurable
+    address private constant NO_BIDDER = address(0x0);
+    uint40 public constant BID_EXPIRY = 604800;
+
     ICryptoPunksMarket public immutable cryptoPunksMarket;
 
     string public invalidMetadataUri;
@@ -56,6 +60,14 @@ contract CryptoPunksMosaicRegistry is
         cryptoPunksMarket = ICryptoPunksMarket(cryptoPunksMarketAddress);
     }
 
+    modifier onlyActiveOriginal(uint192 originalId) {
+        require(
+            originals[originalId].status == OriginalStatus.Active,
+            "Not active"
+        );
+        _;
+    }
+
     //
     // For mint authority
     //
@@ -82,7 +94,7 @@ contract CryptoPunksMosaicRegistry is
             maxReservePrice: maxReservePrice,
             status: OriginalStatus.Active,
             // TODO(@kimhodol): Change expiry and price value
-            bid: Bid({bidder: address(0x0), expiry: 0, price: 0})
+            bid: Bid({bidder: NO_BIDDER, createdAt: 0, expiry: 0, price: 0})
         });
         return originalId;
     }
@@ -113,8 +125,17 @@ contract CryptoPunksMosaicRegistry is
         return mosaicId;
     }
 
-    function bid(uint192 originalId, uint256 price) external {
-        // TODO: Implement this
+    function bid(
+        uint192 originalId,
+        uint256 price
+    ) external onlyActiveOriginal(originalId) {
+        // TODO: Fill out details
+        Bid storage bid = originals[originalId].bid;
+        require(bid.bidder == NO_BIDDER, "Bid is already initialized");
+        bid.bidder = msg.sender;
+        bid.createdAt = uint40(block.timestamp);
+        bid.expiry = BID_EXPIRY;
+        originals[originalId].status = OriginalStatus.Bid;
     }
 
     //

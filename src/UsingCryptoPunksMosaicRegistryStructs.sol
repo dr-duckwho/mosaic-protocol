@@ -57,7 +57,8 @@ interface UsingCryptoPunksMosaicRegistryStructs {
 
     struct Bid {
         address bidder;
-        uint40 expiry; // block.timestamp, in seconds
+        uint40 createdAt;
+        uint40 expiry; // duration in block.timestamp, in seconds
         uint256 price;
     }
 }
