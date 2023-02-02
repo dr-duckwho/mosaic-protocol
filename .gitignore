@@ -12,6 +12,8 @@ broadcast/
 # IDE
 .idea/
 .vscode/
+*.iml
+.DS_Store
 
 # Hardhat files
 node_modules
