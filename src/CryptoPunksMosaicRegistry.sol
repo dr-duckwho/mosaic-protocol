@@ -40,7 +40,7 @@ contract CryptoPunksMosaicRegistry is
      * @dev 0 represents the Original; each Mono is assigned an ID starting from 1.
      *      originalId => latestMonoId
      */
-    mapping(uint192 => uint64) private latestMonoIds;
+    mapping(uint192 => uint64) public latestMonoIds;
 
     /**
      * @dev mosaicId (originalId + monoId) => Mono
@@ -118,7 +118,17 @@ contract CryptoPunksMosaicRegistry is
     }
 
     //
-    // Helpers
+    // Views
+    //
+    function getMono(
+        uint192 originalId,
+        uint64 monoId
+    ) external view returns (Mono memory) {
+        return monos[toMosaicId(originalId, monoId)];
+    }
+
+    //
+    // Internal Helpers
     //
     function toMosaicId(
         uint192 originalId,
