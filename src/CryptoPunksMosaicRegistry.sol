@@ -38,7 +38,7 @@ contract CryptoPunksMosaicRegistry is
      */
     uint192 public latestOriginalId;
 
-    mapping(uint192 => Original) private originals;
+    mapping(uint192 => Original) public originals;
 
     /**
      * @dev 0 represents the Original; each Mono is assigned an ID starting from 1.
@@ -49,7 +49,7 @@ contract CryptoPunksMosaicRegistry is
     /**
      * @dev mosaicId (originalId + monoId) => Mono
      */
-    mapping(uint256 => Mono) private monos;
+    mapping(uint256 => Mono) public monos;
 
     constructor(
         address _mintAuthority,
@@ -65,6 +65,11 @@ contract CryptoPunksMosaicRegistry is
             originals[originalId].status == OriginalStatus.Active,
             "Not active"
         );
+        _;
+    }
+
+    modifier onlyMosaicOwner(uint256 mosaicId) {
+        require(balanceOf(msg.sender, mosaicId) > 0, "Must own the Mono");
         _;
     }
 
@@ -109,7 +114,6 @@ contract CryptoPunksMosaicRegistry is
         );
         uint64 monoId = latestMonoIds[originalId]++;
         mosaicId = toMosaicId(originalId, monoId);
-        // TODO(@jyterencekim): Take proposedReservePrice
         // TODO: Handle metadataUri
         monos[mosaicId] = Mono({
             mosaicId: mosaicId,
@@ -125,6 +129,20 @@ contract CryptoPunksMosaicRegistry is
         return mosaicId;
     }
 
+    //
+    // For Mosaic owners
+    //
+    function proposeReservePrice(
+        uint256 mosaicId,
+        uint256 price
+    ) public onlyMosaicOwner(mosaicId) {
+        Mono storage mono = monos[mosaicId];
+        mono.governanceOptions.proposedReservePrice = price;
+    }
+
+    //
+    // Reconstitution
+    //
     function bid(
         uint192 originalId,
         uint256 price
@@ -149,13 +167,37 @@ contract CryptoPunksMosaicRegistry is
     }
 
     //
-    // Views
+    // Reconstitution helpers
+    //
+    function sumReservePriceProposals(
+        uint192 originalId
+    ) public returns (uint64 validProposalCount, uint256 priceSum) {
+        uint64 latestMonoId = latestMonoIds[originalId];
+        for (uint64 monoId = 1; monoId <= latestMonoId; monoId++) {
+            Mono storage mono = monos[toMosaicId(originalId, monoId)];
+            if (mono.governanceOptions.proposedReservePrice > 0) {
+                validProposalCount++;
+                priceSum += mono.governanceOptions.proposedReservePrice;
+            }
+        }
+        return (validProposalCount, priceSum);
+    }
+
+    //
+    // Model views
     //
     function getMono(
         uint192 originalId,
         uint64 monoId
     ) external view returns (Mono memory) {
         return monos[toMosaicId(originalId, monoId)];
+    }
+
+    function getOriginal(
+        uint256 mosaicId
+    ) external view returns (Original memory) {
+        (uint192 originalId, ) = fromMosaicId(mosaicId);
+        return originals[originalId];
     }
 
     //
