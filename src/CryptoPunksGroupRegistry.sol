@@ -177,14 +177,8 @@ contract CryptoPunksGroupRegistry is
             group.targetPunkId,
             group.ticketsBought,
             group.purchasePrice,
-            calculateBasisPoint(
-                group.purchasePrice,
-                MIN_RESERVE_PRICE_BASIS_POINT
-            ),
-            calculateBasisPoint(
-                group.purchasePrice,
-                MAX_RESERVE_PRICE_BASIS_POINT
-            )
+            calculateMinReservePrice(group.purchasePrice),
+            calculateMaxReservePrice(group.purchasePrice)
         );
         // TODO: Consider whether to explicitly mark other competing groups as LOST
         group.status = GroupStatus.Claimable;
@@ -308,6 +302,24 @@ contract CryptoPunksGroupRegistry is
         uint192 groupId
     ) public view returns (bool) {
         return getTickets(inquired, groupId) > 0;
+    }
+
+    //
+    // Constitution
+    //
+
+    function calculateMinReservePrice(
+        uint256 purchasePrice
+    ) public pure returns (uint256 minReservePrice) {
+        return
+            calculateBasisPoint(purchasePrice, MIN_RESERVE_PRICE_BASIS_POINT);
+    }
+
+    function calculateMaxReservePrice(
+        uint256 purchasePrice
+    ) public pure returns (uint256 maxReservePrice) {
+        return
+            calculateBasisPoint(purchasePrice, MAX_RESERVE_PRICE_BASIS_POINT);
     }
 
     //

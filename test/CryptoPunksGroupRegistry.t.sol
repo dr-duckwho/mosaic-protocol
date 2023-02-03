@@ -232,7 +232,22 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
         groupRegistry.refund(groupId);
     }
 
+    function test_calculateReservePrice() public {
+        // given
+        uint256 purchasePrice = 100 ether;
+
+        // when
+        uint256 minReservePrice = groupRegistry.calculateMinReservePrice(purchasePrice);
+        uint256 maxReservePrice = groupRegistry.calculateMaxReservePrice(purchasePrice);
+
+        // then
+        assertEq(minReservePrice, 80 ether);
+        assertEq(maxReservePrice, 300 ether);
+    }
+
+    //
     // Test helpers
+    //
 
     function _create(uint256 _targetPunkId, uint256 _targetMaxPrice) internal returns (uint192) {
         return groupRegistry.create(_targetPunkId, _targetMaxPrice);
