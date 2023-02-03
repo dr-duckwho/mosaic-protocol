@@ -130,8 +130,18 @@ contract CryptoPunksMosaicRegistry is
         uint256 price
     ) external onlyActiveOriginal(originalId) {
         // TODO: Fill out details
-        Bid storage bid = originals[originalId].bid;
-        require(bid.bidder == NO_BIDDER, "Bid is already initialized");
+        Original storage original = originals[originalId];
+        require(
+            original.status == OriginalStatus.Active,
+            "Original must be active"
+        );
+        Bid storage bid = original.bid;
+        require(bid.bidder == NO_BIDDER, "Bid ongoing already");
+        require(
+            price >= original.minReservePrice &&
+                price <= original.maxReservePrice,
+            "Bid price must be within the reserve price range"
+        );
         bid.bidder = msg.sender;
         bid.createdAt = uint40(block.timestamp);
         bid.expiry = BID_EXPIRY;

@@ -22,8 +22,8 @@ contract CryptoPunksGroupRegistry is
     /**
      * Arithmetic constants
      */
-    uint64 public constant MIN_RESERVE_PRICE_BASIS_POINT = 8000; // 80%
-    uint64 public constant MAX_RESERVE_PRICE_BASIS_POINT = 30000; // 300%
+    uint64 public constant MIN_RESERVE_PRICE_BASIS_POINT = 7000; // 70%
+    uint64 public constant MAX_RESERVE_PRICE_BASIS_POINT = 50000; // 500%
     uint64 public constant BASIS_POINT_DENOMINATOR = 10000;
 
     /**

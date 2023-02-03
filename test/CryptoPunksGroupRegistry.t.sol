@@ -241,8 +241,8 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
         uint256 maxReservePrice = groupRegistry.calculateMaxReservePrice(purchasePrice);
 
         // then
-        assertEq(minReservePrice, 80 ether);
-        assertEq(maxReservePrice, 300 ether);
+        assertEq(minReservePrice, 70 ether);
+        assertEq(maxReservePrice, 500 ether);
     }
 
     //
