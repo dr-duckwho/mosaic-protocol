@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {ERC1155} from "@openzeppelin/token/ERC1155/ERC1155.sol";
+import {ERC721} from "@openzeppelin/token/ERC721/ERC721.sol";
 import {SafeCast} from "@openzeppelin/utils/math/SafeCast.sol";
 import {AccessControl} from "@openzeppelin/access/AccessControl.sol";
 
@@ -15,7 +15,7 @@ import "./CryptoPunksGroupRegistry.sol";
 // TODO: Reconsider the ID scheme so that the same origin contract's same groups map to the same ID (contract, group) => (internal id)
 contract CryptoPunksMosaicRegistry is
     ICryptoPunksMosaicRegistry,
-    ERC1155,
+    ERC721,
     AccessControl
 {
     using SafeCast for uint256;
@@ -54,7 +54,7 @@ contract CryptoPunksMosaicRegistry is
     constructor(
         address _mintAuthority,
         address cryptoPunksMarketAddress
-    ) ERC1155("CryptoPunks Mosaic") {
+    ) ERC721("CryptoPunks Mosaic", "PUNKSMOSAIC") {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(MINTER_ROLE, _mintAuthority);
         cryptoPunksMarket = ICryptoPunksMarket(cryptoPunksMarketAddress);
@@ -69,7 +69,7 @@ contract CryptoPunksMosaicRegistry is
     }
 
     modifier onlyMosaicOwner(uint256 mosaicId) {
-        require(balanceOf(msg.sender, mosaicId) > 0, "Must own the Mono");
+        require(ownerOf(mosaicId) == msg.sender, "Must own the Mosaic");
         _;
     }
 
@@ -124,7 +124,7 @@ contract CryptoPunksMosaicRegistry is
             })
         });
         originals[originalId].claimedMonoCount++;
-        _mint(contributor, mosaicId, 1, "");
+        _mint(contributor, mosaicId);
 
         return mosaicId;
     }
@@ -259,9 +259,9 @@ contract CryptoPunksMosaicRegistry is
     //
     function supportsInterface(
         bytes4 interfaceId
-    ) public view override(ERC1155, AccessControl) returns (bool) {
+    ) public view override(ERC721, AccessControl) returns (bool) {
         return
-            ERC1155.supportsInterface(interfaceId) ||
+            ERC721.supportsInterface(interfaceId) ||
             AccessControl.supportsInterface(interfaceId);
     }
 }
