@@ -99,7 +99,13 @@ contract CryptoPunksMosaicRegistry is
             maxReservePrice: maxReservePrice,
             status: OriginalStatus.Active,
             // TODO(@kimhodol): Change expiry and price value
-            bid: Bid({bidder: NO_BIDDER, createdAt: 0, expiry: 0, price: 0})
+            bid: Bid({
+                id: 0,
+                bidder: NO_BIDDER,
+                createdAt: 0,
+                expiry: 0,
+                price: 0
+            })
         });
         return originalId;
     }
@@ -120,7 +126,8 @@ contract CryptoPunksMosaicRegistry is
             metadataUri: "",
             governanceOptions: MonoGovernanceOptions({
                 proposedReservePrice: 0,
-                bidResponse: MonoBidResponse.None
+                bidResponse: MonoBidResponse.None,
+                bidId: 0
             })
         });
         originals[originalId].claimedMonoCount++;
@@ -140,6 +147,19 @@ contract CryptoPunksMosaicRegistry is
         mono.governanceOptions.proposedReservePrice = price;
     }
 
+    function respondToBid(
+        uint256 mosaicId,
+        MonoBidResponse response
+    ) public onlyMosaicOwner(mosaicId) {
+        (uint192 originalId, ) = fromMosaicId(mosaicId);
+        require(isBid(originalId), "No bid ongoing");
+        Bid storage bid = originals[originalId].bid;
+        MonoGovernanceOptions storage governanceOptions = monos[mosaicId]
+            .governanceOptions;
+        governanceOptions.bidId = bid.id;
+        governanceOptions.bidResponse = response;
+    }
+
     //
     // Reconstitution
     //
@@ -147,7 +167,8 @@ contract CryptoPunksMosaicRegistry is
         uint192 originalId,
         uint256 price
     ) external onlyActiveOriginal(originalId) {
-        // TODO: Fill out details
+        // TODO: Fill out details and implement deposit management
+        // FIXME: Consider edge cases where different bids' lifecycles overlap (introduce an array of Bids?)
         Original storage original = originals[originalId];
         require(
             original.status == OriginalStatus.Active,
@@ -163,7 +184,9 @@ contract CryptoPunksMosaicRegistry is
         bid.bidder = msg.sender;
         bid.createdAt = uint40(block.timestamp);
         bid.expiry = BID_EXPIRY;
-        originals[originalId].status = OriginalStatus.Bid;
+        bid.id = uint256(
+            keccak256(abi.encodePacked(originalId, bid.bidder, bid.createdAt))
+        );
     }
 
     //
@@ -171,7 +194,7 @@ contract CryptoPunksMosaicRegistry is
     //
     function sumReservePriceProposals(
         uint192 originalId
-    ) public returns (uint64 validProposalCount, uint256 priceSum) {
+    ) public view returns (uint64 validProposalCount, uint256 priceSum) {
         uint64 latestMonoId = latestMonoIds[originalId];
         for (uint64 monoId = 1; monoId <= latestMonoId; monoId++) {
             Mono storage mono = monos[toMosaicId(originalId, monoId)];
@@ -181,6 +204,27 @@ contract CryptoPunksMosaicRegistry is
             }
         }
         return (validProposalCount, priceSum);
+    }
+
+    function sumBidResponses(
+        uint192 originalId
+    ) public view returns (uint64 yes, uint64 no) {
+        uint64 latestMonoId = latestMonoIds[originalId];
+        Bid storage bid = originals[originalId].bid;
+        for (uint64 monoId = 1; monoId <= latestMonoId; monoId++) {
+            MonoGovernanceOptions storage options = monos[
+                toMosaicId(originalId, monoId)
+            ].governanceOptions;
+            if (options.bidId == bid.id) {
+                if (options.bidResponse == MonoBidResponse.Yes) {
+                    yes++;
+                }
+                if (options.bidResponse == MonoBidResponse.No) {
+                    no++;
+                }
+            }
+        }
+        return (yes, no);
     }
 
     //
@@ -233,6 +277,13 @@ contract CryptoPunksMosaicRegistry is
             return MonoLifeCycle.Raw;
         }
         return MonoLifeCycle.Active;
+    }
+
+    function isBid(uint192 originalId) public view returns (bool) {
+        Bid storage bid = originals[originalId].bid;
+        return
+            bid.bidder != NO_BIDDER &&
+            bid.createdAt + bid.expiry <= block.timestamp;
     }
 
     function setInvalidMetadataUri(

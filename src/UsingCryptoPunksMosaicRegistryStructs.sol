@@ -20,7 +20,6 @@ interface UsingCryptoPunksMosaicRegistryStructs {
 
     enum OriginalStatus {
         Active,
-        Bid,
         Sold
     }
 
@@ -47,6 +46,8 @@ interface UsingCryptoPunksMosaicRegistryStructs {
     struct MonoGovernanceOptions {
         uint256 proposedReservePrice;
         MonoBidResponse bidResponse;
+        // @dev Bid ID
+        uint256 bidId;
     }
 
     enum MonoBidResponse {
@@ -56,6 +57,7 @@ interface UsingCryptoPunksMosaicRegistryStructs {
     }
 
     struct Bid {
+        uint256 id;
         address bidder;
         uint40 createdAt;
         uint40 expiry; // duration in block.timestamp, in seconds
