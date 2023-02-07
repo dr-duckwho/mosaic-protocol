@@ -9,9 +9,7 @@ import "./external/ICryptoPunksMarket.sol";
 import "./ICryptoPunksMosaicRegistry.sol";
 import "./CryptoPunksGroupRegistry.sol";
 
-// TODO: Wire with Museum
-// TODO: Generalize for token contracts other than CryptoPunksMarket
-// TODO: Introduce `reconstitute` with claimed token tracking/oracle floor price retrieval
+// TODO: Make global settings configurable
 // TODO: Reconsider the ID scheme so that the same origin contract's same groups map to the same ID (contract, group) => (internal id)
 contract CryptoPunksMosaicRegistry is
     ICryptoPunksMosaicRegistry,
@@ -25,7 +23,6 @@ contract CryptoPunksMosaicRegistry is
     uint256 private constant MONO_ID_BITS = 64;
     uint256 private constant MONO_ID_BITMASK = (1 << (MONO_ID_BITS + 1)) - 1; // lower 64 bits
 
-    // TODO: Make it configurable
     address private constant NO_BIDDER = address(0x0);
     uint40 public constant BID_EXPIRY = 604800;
     uint256 public constant BID_ACCEPTANCE_THRESHOLD_PERCENTAGE = 51;
