@@ -15,7 +15,7 @@ interface UsingCryptoPunksMosaicRegistryStructs {
         uint256 minReservePrice;
         uint256 maxReservePrice;
         OriginalStatus status;
-        Bid bid;
+        uint256 activeBidId;
     }
 
     enum OriginalStatus {
@@ -56,11 +56,27 @@ interface UsingCryptoPunksMosaicRegistryStructs {
         No
     }
 
+    // @dev There can be at most one ongoing bid per original
     struct Bid {
         uint256 id;
         address bidder;
+        uint192 originalId;
+        uint256 price;
         uint40 createdAt;
         uint40 expiry; // duration in block.timestamp, in seconds
-        uint256 price;
+        BidState state;
+    }
+
+    enum BidState {
+        // Empty or invalid
+        Invalid,
+        // Initial state, awaiting the result until the bidder explicitly reconstitutes the original or admits failure
+        Proposed,
+        // Final states upon vote results
+        Accepted,
+        Rejected,
+        // After bidder's action
+        Won,
+        Refunded
     }
 }

@@ -28,6 +28,7 @@ contract CryptoPunksMosaicRegistry is
     // TODO: Make it configurable
     address private constant NO_BIDDER = address(0x0);
     uint40 public constant BID_EXPIRY = 604800;
+    uint256 public constant BID_ACCEPTANCE_THRESHOLD_PERCENTAGE = 51;
 
     ICryptoPunksMarket public immutable cryptoPunksMarket;
 
@@ -50,6 +51,11 @@ contract CryptoPunksMosaicRegistry is
      * @dev mosaicId (originalId + monoId) => Mono
      */
     mapping(uint256 => Mono) public monos;
+
+    /**
+     * @dev bidId => Bid
+     */
+    mapping(uint256 => Bid) public bids;
 
     constructor(
         address _mintAuthority,
@@ -98,14 +104,7 @@ contract CryptoPunksMosaicRegistry is
             minReservePrice: minReservePrice,
             maxReservePrice: maxReservePrice,
             status: OriginalStatus.Active,
-            // TODO(@kimhodol): Change expiry and price value
-            bid: Bid({
-                id: 0,
-                bidder: NO_BIDDER,
-                createdAt: 0,
-                expiry: 0,
-                price: 0
-            })
+            activeBidId: 0
         });
         return originalId;
     }
@@ -152,41 +151,85 @@ contract CryptoPunksMosaicRegistry is
         MonoBidResponse response
     ) public onlyMosaicOwner(mosaicId) {
         (uint192 originalId, ) = fromMosaicId(mosaicId);
-        require(isBid(originalId), "No bid ongoing");
-        Bid storage bid = originals[originalId].bid;
+        require(hasOngoingBid(originalId), "No bid ongoing");
         MonoGovernanceOptions storage governanceOptions = monos[mosaicId]
             .governanceOptions;
-        governanceOptions.bidId = bid.id;
+        governanceOptions.bidId = originals[originalId].activeBidId;
         governanceOptions.bidResponse = response;
     }
 
     //
     // Reconstitution
     //
+
     function bid(
         uint192 originalId,
         uint256 price
     ) external onlyActiveOriginal(originalId) {
         // TODO: Fill out details and implement deposit management
-        // FIXME: Consider edge cases where different bids' lifecycles overlap (introduce an array of Bids?)
         Original storage original = originals[originalId];
         require(
             original.status == OriginalStatus.Active,
             "Original must be active"
         );
-        Bid storage bid = original.bid;
-        require(bid.bidder == NO_BIDDER, "Bid ongoing already");
         require(
             price >= original.minReservePrice &&
                 price <= original.maxReservePrice,
             "Bid price must be within the reserve price range"
         );
-        bid.bidder = msg.sender;
-        bid.createdAt = uint40(block.timestamp);
-        bid.expiry = BID_EXPIRY;
-        bid.id = uint256(
-            keccak256(abi.encodePacked(originalId, bid.bidder, bid.createdAt))
+
+        uint256 oldBidId = original.activeBidId;
+        if (oldBidId != 0) {
+            // A preceding bid exists, so its state must be updated first
+            BidState oldBidState = finalizeProposedBid(oldBidId);
+            require(
+                oldBidState == BidState.Rejected,
+                "The previous bid must be rejected"
+            );
+        }
+        uint256 newBidId = uint256(
+            keccak256(
+                abi.encodePacked(
+                    originalId,
+                    msg.sender,
+                    uint40(block.timestamp)
+                )
+            )
         );
+        bids[newBidId] = Bid({
+            id: newBidId,
+            originalId: originalId,
+            bidder: msg.sender,
+            createdAt: uint40(block.timestamp),
+            expiry: BID_EXPIRY,
+            price: price,
+            state: BidState.Proposed
+        });
+        original.activeBidId = newBidId;
+    }
+
+    function finalizeProposedBid(uint256 bidId) public returns (BidState) {
+        // TODO: Double-check the prerequisites, including Original check
+        Bid storage bid = bids[bidId];
+        require(
+            bid.state == BidState.Proposed,
+            "Only bids in proposal can be updated"
+        );
+        require(
+            bid.createdAt + bid.expiry < block.timestamp,
+            "Bid vote is ongoing"
+        );
+        bid.state = isBidAccepted(bid.originalId)
+            ? BidState.Accepted
+            : BidState.Rejected;
+        return bid.state;
+    }
+
+    // TODO: Introduce a way for Mosaic owners to force Bid finalization to prevent limbo cases where
+    //  the winning bidder makes no further transaction
+    function finalizeAcceptedBid(uint256 bidId) {
+        // TODO: Transfer the original and update the Mosaic state
+        // TODO: Enable Mosaic owners to retrieve the fund pro rata
     }
 
     //
@@ -209,13 +252,16 @@ contract CryptoPunksMosaicRegistry is
     function sumBidResponses(
         uint192 originalId
     ) public view returns (uint64 yes, uint64 no) {
+        if (!hasOngoingBid(originalId)) {
+            return (0, 0);
+        }
         uint64 latestMonoId = latestMonoIds[originalId];
-        Bid storage bid = originals[originalId].bid;
+        uint256 activeBidId = originals[originalId].activeBidId;
         for (uint64 monoId = 1; monoId <= latestMonoId; monoId++) {
             MonoGovernanceOptions storage options = monos[
                 toMosaicId(originalId, monoId)
             ].governanceOptions;
-            if (options.bidId == bid.id) {
+            if (options.bidId == activeBidId) {
                 if (options.bidResponse == MonoBidResponse.Yes) {
                     yes++;
                 }
@@ -225,6 +271,14 @@ contract CryptoPunksMosaicRegistry is
             }
         }
         return (yes, no);
+    }
+
+    function isBidAccepted(uint192 originalId) public view returns (bool) {
+        // TODO(@jyterencekim): Revisit the bid acceptance condition with respect to the planned spec
+        (uint64 yes, uint64 no) = sumBidResponses(originalId);
+        uint128 totalVotable = originals[originalId].totalMonoCount;
+        return
+            ((yes * 100) / totalVotable) >= BID_ACCEPTANCE_THRESHOLD_PERCENTAGE;
     }
 
     //
@@ -279,17 +333,20 @@ contract CryptoPunksMosaicRegistry is
         return MonoLifeCycle.Active;
     }
 
-    function isBid(uint192 originalId) public view returns (bool) {
-        Bid storage bid = originals[originalId].bid;
-        return
-            bid.bidder != NO_BIDDER &&
-            bid.createdAt + bid.expiry <= block.timestamp;
-    }
-
     function setInvalidMetadataUri(
         string calldata _uri
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         invalidMetadataUri = _uri;
+    }
+
+    // TODO(@jyterencekim): Revisit the conditions
+    function hasOngoingBid(uint192 originalId) public view returns (bool) {
+        uint256 bidId = originals[originalId].activeBidId;
+        Bid storage bid = bids[bidId];
+        return
+            bidId != 0 &&
+            bid.bidder != NO_BIDDER &&
+            bid.createdAt + bid.expiry >= block.timestamp;
     }
 
     //

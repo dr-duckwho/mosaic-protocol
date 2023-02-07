@@ -346,6 +346,7 @@ contract CryptoPunksGroupRegistry is
     }
 
     // Basis point calculation
+    // TODO: Move this to a common library
     function calculateBasisPoint(
         uint256 amount,
         uint256 basisPoints
