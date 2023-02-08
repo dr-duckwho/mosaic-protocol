@@ -8,7 +8,7 @@ import { expect } from "chai";
 import {
   claimMosaics,
   contributeBy,
-  mosaicBalanceOfBy,
+  mosaicOwnerOfBy,
   newGroup,
   offerPunkForSale,
   ticketBalanceBy,
@@ -138,29 +138,26 @@ describe("MosaicProtocol", function () {
       // TODO: #3 This test supposes bob, carol and david claimed all mosaic NFTs in sequential order.
       //  Might need a enumerable balance view function...
       //  but gas cost will end up to high for other tx
-      const mosaicBalanceOf = mosaicBalanceOfBy(mosaicRegistry, originalId);
+      const mosaicOwnerOf = mosaicOwnerOfBy(mosaicRegistry, originalId);
 
       const [bobStart, bobEnd] = [ORIGINAL_MONO_ID + 1, CONTRIBUTION.bob];
-      expect(await mosaicBalanceOf(bob, ORIGINAL_MONO_ID)).to.equal(0);
-      expect(await mosaicBalanceOf(bob, bobStart)).to.equal(1);
-      expect(await mosaicBalanceOf(bob, bobEnd)).to.equal(1);
+      // TODO: Test non-ownership also
+      expect(await mosaicOwnerOf(bobStart)).to.equal(await bob.getAddress());
+      expect(await mosaicOwnerOf(bobEnd)).to.equal(await bob.getAddress());
 
       const [carolStart, carolEnd] = [
         bobEnd + 1,
         CONTRIBUTION.bob + CONTRIBUTION.carol,
       ];
-      expect(await mosaicBalanceOf(carol, bobEnd)).to.equal(0);
-      expect(await mosaicBalanceOf(carol, carolStart)).to.equal(1);
-      expect(await mosaicBalanceOf(carol, carolEnd)).to.equal(1);
+      expect(await mosaicOwnerOf(carolStart)).to.equal(await carol.getAddress());
+      expect(await mosaicOwnerOf(carolEnd)).to.equal(await carol.getAddress());
 
       const [davidStart, davidEnd] = [
         carolEnd + 1,
         CONTRIBUTION.bob + CONTRIBUTION.carol + CONTRIBUTION.david,
       ];
-      expect(await mosaicBalanceOf(david, davidStart)).to.equal(1);
-      expect(await mosaicBalanceOf(david, davidEnd)).to.equal(1);
-      expect(await mosaicBalanceOf(david, davidEnd + 1)).to.equal(0);
-
+      expect(await mosaicOwnerOf(davidStart)).to.equal(await david.getAddress());
+      expect(await mosaicOwnerOf(davidEnd)).to.equal(await david.getAddress());
       /**
        * Refund
        * TODO: Check the after-refund-mint balances

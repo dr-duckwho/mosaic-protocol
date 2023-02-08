@@ -59,11 +59,10 @@ export const ticketBalanceBy =
     return groupRegistry.balanceOf(await contributor.getAddress(), groupId);
   };
 
-export const mosaicBalanceOfBy =
+export const mosaicOwnerOfBy =
   (mosaicRegistry: CryptoPunksMosaicRegistry, originalId: BigNumberish) =>
-  async (owner: SignerWithAddress, monoId: BigNumberish) => {
-    return mosaicRegistry.balanceOf(
-      await owner.getAddress(),
+  async (monoId: BigNumberish) => {
+    return mosaicRegistry.ownerOf(
       await mosaicRegistry.toMosaicId(originalId, monoId)
     );
   };
