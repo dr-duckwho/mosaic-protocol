@@ -53,6 +53,7 @@ contract CryptoPunksMosaicRegistry is
      * @dev bidId => Bid
      */
     mapping(uint256 => Bid) public bids;
+    mapping(uint256 => uint256) public bidDeposits;
 
     constructor(
         address _mintAuthority,
@@ -169,18 +170,24 @@ contract CryptoPunksMosaicRegistry is
     function bid(
         uint192 originalId,
         uint256 price
-    ) external onlyActiveOriginal(originalId) {
-        // TODO: Fill out details and implement deposit management
+    )
+        external
+        payable
+        onlyActiveOriginal(originalId)
+        returns (uint256 newBidId)
+    {
         Original storage original = originals[originalId];
         require(
             original.status == OriginalStatus.Active,
             "Original must be active"
         );
+        // TODO: Make bid respect min reserve prices decided by GovernanceOptions
         require(
             price >= original.minReservePrice &&
                 price <= original.maxReservePrice,
             "Bid price must be within the reserve price range"
         );
+        require(msg.value == price, "Must send the exact value as proposed");
 
         uint256 oldBidId = original.activeBidId;
         if (oldBidId != 0) {
@@ -209,7 +216,25 @@ contract CryptoPunksMosaicRegistry is
             price: price,
             state: BidState.Proposed
         });
+        bidDeposits[newBidId] = msg.value;
         original.activeBidId = newBidId;
+        // TODO: Define and emit Bid event
+
+        return newBidId;
+    }
+
+    function refundBidDeposit(uint256 bidId) external {
+        Bid storage bid = bids[bidId];
+        require(
+            bid.state == BidState.Rejected,
+            "Only rejected bids can be refunded"
+        );
+
+        uint256 deposit = bidDeposits[bidId];
+        (bool sent, ) = msg.sender.call{value: deposit}("");
+        require(sent, "Failed to refund");
+
+        bid.state = BidState.Refunded;
     }
 
     function finalizeProposedBid(uint256 bidId) public returns (BidState) {

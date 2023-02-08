@@ -205,6 +205,7 @@ contract CryptoPunksGroupRegistry is
 
         // Refund
         uint256 owed = getRefundPerTicket(group) * ticketsHeld;
+        // TODO: Define a library for ETH sending with gas considerations
         (bool sent, ) = msg.sender.call{value: owed}("");
         require(sent, "Failed to refund");
 
