@@ -31,29 +31,32 @@ contract CryptoPunksMosaicRegistry is
 
     string public invalidMetadataUri;
 
-    /**
-     * @dev used as a `originalId`, starting from 1.
-     */
+    //
+    // Models
+    //
+
+    // @dev used as a `originalId`, starting from 1.
     uint192 public latestOriginalId;
 
     mapping(uint192 => Original) public originals;
 
-    /**
-     * @dev 0 represents the Original; each Mono is assigned an ID starting from 1.
-     *      originalId => latestMonoId
-     */
+    // @dev 0 represents the Original; each Mono is assigned an ID starting from 1.
+    //  originalId => latestMonoId
     mapping(uint192 => uint64) public latestMonoIds;
 
-    /**
-     * @dev mosaicId (originalId + monoId) => Mono
-     */
+    // @dev mosaicId (originalId + monoId) => Mono
     mapping(uint256 => Mono) public monos;
 
-    /**
-     * @dev bidId => Bid
-     */
+    //
+    // Reconstitution
+    //
+
+    // @dev bidId => Bid
     mapping(uint256 => Bid) public bids;
     mapping(uint256 => uint256) public bidDeposits;
+
+    // @dev originalId => value
+    mapping(uint192 => uint256) public resalePrice;
 
     constructor(
         address _mintAuthority,
@@ -166,7 +169,6 @@ contract CryptoPunksMosaicRegistry is
     //
     // Reconstitution
     //
-
     function bid(
         uint192 originalId,
         uint256 price
@@ -177,10 +179,6 @@ contract CryptoPunksMosaicRegistry is
         returns (uint256 newBidId)
     {
         Original storage original = originals[originalId];
-        require(
-            original.status == OriginalStatus.Active,
-            "Original must be active"
-        );
         // TODO: Make bid respect min reserve prices decided by GovernanceOptions
         require(
             price >= original.minReservePrice &&
@@ -248,7 +246,7 @@ contract CryptoPunksMosaicRegistry is
             bid.createdAt + bid.expiry < block.timestamp,
             "Bid vote is ongoing"
         );
-        bid.state = isBidAccepted(bid.originalId)
+        bid.state = isBidAcceptable(bid.originalId)
             ? BidState.Accepted
             : BidState.Rejected;
         return bid.state;
@@ -256,9 +254,22 @@ contract CryptoPunksMosaicRegistry is
 
     // TODO: Introduce a way for Mosaic owners to force Bid finalization to prevent limbo cases where
     //  the winning bidder makes no further transaction
-    function finalizeAcceptedBid(uint256 bidId) {
+    function finalizeAcceptedBid(uint256 bidId) public {
         // TODO: Transfer the original and update the Mosaic state
-        // TODO: Enable Mosaic owners to retrieve the fund pro rata
+        Bid storage bid = bids[bidId];
+        require(bid.state == BidState.Accepted, "Bid must be accepted");
+
+        Original storage original = originals[bid.originalId];
+        resalePrice[original.id] = bid.price;
+        original.status = OriginalStatus.Sold;
+
+        cryptoPunksMarket.transferPunk(bid.bidder, original.punkId);
+
+        bid.state = BidState.Won;
+    }
+
+    function receiveResaleFund(uint256 originalId) public {
+        // TODO: Implement: enable Mosaic owners to retrieve the fund pro rata
     }
 
     //
@@ -293,8 +304,7 @@ contract CryptoPunksMosaicRegistry is
             if (options.bidId == activeBidId) {
                 if (options.bidResponse == MonoBidResponse.Yes) {
                     yes++;
-                }
-                else if (options.bidResponse == MonoBidResponse.No) {
+                } else if (options.bidResponse == MonoBidResponse.No) {
                     no++;
                 }
             }
@@ -302,7 +312,7 @@ contract CryptoPunksMosaicRegistry is
         return (yes, no);
     }
 
-    function isBidAccepted(uint192 originalId) public view returns (bool) {
+    function isBidAcceptable(uint192 originalId) public view returns (bool) {
         // TODO(@jyterencekim): Revisit the bid acceptance condition with respect to the planned spec
         (uint64 yes, uint64 no) = sumBidResponses(originalId);
         uint128 totalVotable = originals[originalId].totalMonoCount;
@@ -378,10 +388,8 @@ contract CryptoPunksMosaicRegistry is
             bid.createdAt + bid.expiry >= block.timestamp;
     }
 
-    //
-    // ERC1155
-    //
-    function uri(
+    // ERC721
+    function tokenURI(
         uint256 mosaicId
     ) public view override returns (string memory) {
         (uint192 originalId, ) = fromMosaicId(mosaicId);

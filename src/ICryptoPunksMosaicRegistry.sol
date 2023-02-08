@@ -18,5 +18,8 @@ interface ICryptoPunksMosaicRegistry is UsingCryptoPunksMosaicRegistryStructs {
         uint192 originalId
     ) external returns (uint256 mosaicId);
 
-    function bid(uint192 originalId, uint256 price) external;
+    function bid(
+        uint192 originalId,
+        uint256 price
+    ) external payable returns (uint256 newBidId);
 }

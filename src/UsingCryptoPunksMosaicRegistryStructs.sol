@@ -4,6 +4,7 @@ pragma solidity ^0.8.17;
 interface UsingCryptoPunksMosaicRegistryStructs {
     struct Original {
         uint192 id;
+        // @dev punkIndex
         uint256 punkId;
         /**
          * @dev To calculate governance quorum and token circulation.
@@ -72,8 +73,6 @@ interface UsingCryptoPunksMosaicRegistryStructs {
     }
 
     enum BidState {
-        // Empty or invalid
-        Invalid,
         // Initial state, awaiting the result until the bidder explicitly reconstitutes the original or admits failure
         Proposed,
         // Resulting states upon vote results
