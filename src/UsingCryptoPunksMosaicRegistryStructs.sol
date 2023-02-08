@@ -58,12 +58,16 @@ interface UsingCryptoPunksMosaicRegistryStructs {
 
     // @dev There can be at most one ongoing bid per original
     struct Bid {
+        // @dev keccak256(abi.encodePacked(originalId, bidder, uint40(block.timestamp))
         uint256 id;
-        address bidder;
+        address payable bidder;
         uint192 originalId;
         uint256 price;
+        // block.timestamp
         uint40 createdAt;
-        uint40 expiry; // duration in block.timestamp, in seconds
+        // duration in block.timestamp, in seconds
+        uint40 expiry;
+        // @dev updated upon any following Bid's creation or explicit external state updates
         BidState state;
     }
 
@@ -72,10 +76,10 @@ interface UsingCryptoPunksMosaicRegistryStructs {
         Invalid,
         // Initial state, awaiting the result until the bidder explicitly reconstitutes the original or admits failure
         Proposed,
-        // Final states upon vote results
+        // Resulting states upon vote results
         Accepted,
         Rejected,
-        // After bidder's action
+        // Final/terminal states after bidder's action
         Won,
         Refunded
     }

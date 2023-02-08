@@ -210,7 +210,7 @@ contract CryptoPunksMosaicRegistry is
         bids[newBidId] = Bid({
             id: newBidId,
             originalId: originalId,
-            bidder: msg.sender,
+            bidder: payable(msg.sender),
             createdAt: uint40(block.timestamp),
             expiry: BID_EXPIRY,
             price: price,
