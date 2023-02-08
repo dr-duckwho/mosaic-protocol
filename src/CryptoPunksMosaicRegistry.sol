@@ -139,6 +139,13 @@ contract CryptoPunksMosaicRegistry is
         uint256 mosaicId,
         uint256 price
     ) public onlyMosaicOwner(mosaicId) {
+        (uint192 originalId, ) = fromMosaicId(mosaicId);
+        Original storage original = originals[originalId];
+        require(
+            original.minReservePrice <= price &&
+                price <= original.maxReservePrice,
+            "Must be within the range"
+        );
         Mono storage mono = monos[mosaicId];
         mono.governanceOptions.proposedReservePrice = price;
     }
