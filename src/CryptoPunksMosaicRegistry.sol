@@ -294,7 +294,7 @@ contract CryptoPunksMosaicRegistry is
                 if (options.bidResponse == MonoBidResponse.Yes) {
                     yes++;
                 }
-                if (options.bidResponse == MonoBidResponse.No) {
+                else if (options.bidResponse == MonoBidResponse.No) {
                     no++;
                 }
             }
