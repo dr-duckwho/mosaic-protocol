@@ -7,6 +7,7 @@ import {IERC721} from "@openzeppelin/token/ERC721/IERC721.sol";
 import {AccessControl} from "@openzeppelin/access/AccessControl.sol";
 import {ReentrancyGuard} from "@openzeppelin/security/ReentrancyGuard.sol";
 
+import "./lib/BasisPoint.sol";
 import "./external/ICryptoPunksMarket.sol";
 import "./ICryptoPunksGroupRegistry.sol";
 import "./ICryptoPunksMosaicRegistry.sol";
@@ -22,9 +23,8 @@ contract CryptoPunksGroupRegistry is
     /**
      * Arithmetic constants
      */
-    uint64 public constant MIN_RESERVE_PRICE_BASIS_POINT = 7000; // 70%
-    uint64 public constant MAX_RESERVE_PRICE_BASIS_POINT = 50000; // 500%
-    uint64 public constant BASIS_POINT_DENOMINATOR = 10000;
+    uint64 public constant MIN_RESERVE_PRICE_BPS = 7000; // 70%
+    uint64 public constant MAX_RESERVE_PRICE_BPS = 50000; // 500%
 
     /**
      * Business logic constants
@@ -313,14 +313,20 @@ contract CryptoPunksGroupRegistry is
         uint256 purchasePrice
     ) public pure returns (uint256 minReservePrice) {
         return
-            calculateBasisPoint(purchasePrice, MIN_RESERVE_PRICE_BASIS_POINT);
+            BasisPoint.calculateBasisPoint(
+                purchasePrice,
+                MIN_RESERVE_PRICE_BPS
+            );
     }
 
     function calculateMaxReservePrice(
         uint256 purchasePrice
     ) public pure returns (uint256 maxReservePrice) {
         return
-            calculateBasisPoint(purchasePrice, MAX_RESERVE_PRICE_BASIS_POINT);
+            BasisPoint.calculateBasisPoint(
+                purchasePrice,
+                MAX_RESERVE_PRICE_BPS
+            );
     }
 
     //
@@ -344,16 +350,6 @@ contract CryptoPunksGroupRegistry is
         return
             ERC1155.supportsInterface(interfaceId) ||
             AccessControl.supportsInterface(interfaceId);
-    }
-
-    // Basis point calculation
-    // TODO: Move this to a common library
-    function calculateBasisPoint(
-        uint256 amount,
-        uint256 basisPoints
-    ) public pure returns (uint256) {
-        require((amount * basisPoints) >= 10_000);
-        return (amount * basisPoints) / 10_000;
     }
 
     // TODO: fallback

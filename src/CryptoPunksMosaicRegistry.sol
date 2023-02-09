@@ -5,6 +5,7 @@ import {ERC721} from "@openzeppelin/token/ERC721/ERC721.sol";
 import {SafeCast} from "@openzeppelin/utils/math/SafeCast.sol";
 import {AccessControl} from "@openzeppelin/access/AccessControl.sol";
 
+import "./lib/BasisPoint.sol";
 import "./external/ICryptoPunksMarket.sol";
 import "./ICryptoPunksMosaicRegistry.sol";
 import "./CryptoPunksGroupRegistry.sol";
@@ -25,7 +26,7 @@ contract CryptoPunksMosaicRegistry is
 
     address private constant NO_BIDDER = address(0x0);
     uint40 public constant BID_EXPIRY = 604800;
-    uint256 public constant BID_ACCEPTANCE_THRESHOLD_PERCENTAGE = 51;
+    uint256 public constant BID_ACCEPTANCE_THRESHOLD_BPS = 5100;
 
     ICryptoPunksMarket public immutable cryptoPunksMarket;
 
@@ -56,7 +57,7 @@ contract CryptoPunksMosaicRegistry is
     mapping(uint256 => uint256) public bidDeposits;
 
     // @dev originalId => value
-    mapping(uint192 => uint256) public resalePrice;
+    mapping(uint192 => uint256) public resalePrices;
 
     constructor(
         address _mintAuthority,
@@ -99,7 +100,7 @@ contract CryptoPunksMosaicRegistry is
         originals[originalId] = Original({
             id: originalId,
             punkId: punkId,
-            totalMonoCount: totalClaimableCount,
+            totalMonoSupply: totalClaimableCount,
             claimedMonoCount: 0,
             purchasePrice: purchasePrice,
             minReservePrice: minReservePrice,
@@ -260,7 +261,7 @@ contract CryptoPunksMosaicRegistry is
         require(bid.state == BidState.Accepted, "Bid must be accepted");
 
         Original storage original = originals[bid.originalId];
-        resalePrice[original.id] = bid.price;
+        resalePrices[original.id] = bid.price;
         original.status = OriginalStatus.Sold;
 
         cryptoPunksMarket.transferPunk(bid.bidder, original.punkId);
@@ -268,8 +269,30 @@ contract CryptoPunksMosaicRegistry is
         bid.state = BidState.Won;
     }
 
-    function receiveResaleFund(uint256 originalId) public {
-        // TODO: Implement: enable Mosaic owners to retrieve the fund pro rata
+    // @dev Burn all owned Monos and send refunds
+    function refundOnSold(uint192 originalId) public returns (uint256 totalResaleFund){
+        // TODO: Double-check whether arithmetic division may cause under/over-refunding
+        uint256 burnedMonoCount = 0;
+        uint64 latestMonoId = latestMonoIds[originalId];
+        for (uint64 monoId = 1; monoId <= latestMonoId; monoId++) {
+            uint256 mosaicId = toMosaicId(originalId, monoId);
+            Mono storage mono = monos[mosaicId];
+            if (_ownerOf(mosaicId) == msg.sender) {
+                _burn(mosaicId);
+                burnedMonoCount++;
+            }
+        }
+        totalResaleFund = burnedMonoCount * getPerMonoResaleFund(originalId);
+        (bool sent, ) = msg.sender.call{value: totalResaleFund}("");
+        require(sent, "Failed to refund");
+    }
+
+    function getPerMonoResaleFund(uint192 originalId) public view returns (uint256 perMonoResaleFund) {
+        uint256 resalePrice = resalePrices[originalId];
+        require(resalePrice > 0, "No resale price set");
+        uint256 perMonoBps = BasisPoint.WHOLE_BPS / originals[originalId].totalMonoSupply;
+
+        return BasisPoint.calculateBasisPoint(resalePrice, perMonoBps);
     }
 
     //
@@ -314,10 +337,14 @@ contract CryptoPunksMosaicRegistry is
 
     function isBidAcceptable(uint192 originalId) public view returns (bool) {
         // TODO(@jyterencekim): Revisit the bid acceptance condition with respect to the planned spec
-        (uint64 yes, uint64 no) = sumBidResponses(originalId);
-        uint128 totalVotable = originals[originalId].totalMonoCount;
+        (uint64 yes, ) = sumBidResponses(originalId);
+        uint128 totalVotable = originals[originalId].totalMonoSupply;
         return
-            ((yes * 100) / totalVotable) >= BID_ACCEPTANCE_THRESHOLD_PERCENTAGE;
+            yes >=
+            BasisPoint.calculateBasisPoint(
+                totalVotable,
+                BID_ACCEPTANCE_THRESHOLD_BPS
+            );
     }
 
     //
