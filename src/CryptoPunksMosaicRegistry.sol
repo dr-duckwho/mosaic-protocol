@@ -82,8 +82,9 @@ contract CryptoPunksMosaicRegistry is
     }
 
     //
-    // For mint authority
+    // Core
     //
+
     function create(
         uint256 punkId,
         uint64 totalClaimableCount,
@@ -138,8 +139,9 @@ contract CryptoPunksMosaicRegistry is
     }
 
     //
-    // For Mosaic owners
+    // Governance: Mosaic owners
     //
+
     function proposeReservePrice(
         uint256 mosaicId,
         uint256 price
@@ -168,8 +170,9 @@ contract CryptoPunksMosaicRegistry is
     }
 
     //
-    // Reconstitution
+    // Reconstitution: bidder
     //
+
     function bid(
         uint192 originalId,
         uint256 price
@@ -236,6 +239,10 @@ contract CryptoPunksMosaicRegistry is
         bid.state = BidState.Refunded;
     }
 
+    //
+    // Reconstitution: common
+    //
+
     function finalizeProposedBid(uint256 bidId) public returns (BidState) {
         // TODO: Double-check the prerequisites, including Original check
         Bid storage bid = bids[bidId];
@@ -269,6 +276,10 @@ contract CryptoPunksMosaicRegistry is
         bid.state = BidState.Won;
     }
 
+    //
+    // Reconstitution: Mosaic owners
+    //
+
     // @dev Burn all owned Monos and send refunds
     function refundOnSold(uint192 originalId) public returns (uint256 totalResaleFund){
         // TODO: Double-check whether arithmetic division may cause under/over-refunding
@@ -287,17 +298,10 @@ contract CryptoPunksMosaicRegistry is
         require(sent, "Failed to refund");
     }
 
-    function getPerMonoResaleFund(uint192 originalId) public view returns (uint256 perMonoResaleFund) {
-        uint256 resalePrice = resalePrices[originalId];
-        require(resalePrice > 0, "No resale price set");
-        uint256 perMonoBps = BasisPoint.WHOLE_BPS / originals[originalId].totalMonoSupply;
-
-        return BasisPoint.calculateBasisPoint(resalePrice, perMonoBps);
-    }
-
     //
     // Reconstitution helpers
     //
+
     function sumReservePriceProposals(
         uint192 originalId
     ) public view returns (uint64 validProposalCount, uint256 priceSum) {
@@ -347,6 +351,14 @@ contract CryptoPunksMosaicRegistry is
             );
     }
 
+    function getPerMonoResaleFund(uint192 originalId) public view returns (uint256 perMonoResaleFund) {
+        uint256 resalePrice = resalePrices[originalId];
+        require(resalePrice > 0, "No resale price set");
+        uint256 perMonoBps = BasisPoint.WHOLE_BPS / originals[originalId].totalMonoSupply;
+
+        return BasisPoint.calculateBasisPoint(resalePrice, perMonoBps);
+    }
+
     //
     // Model views
     //
@@ -367,6 +379,7 @@ contract CryptoPunksMosaicRegistry is
     //
     // Internal Helpers
     //
+
     function toMosaicId(
         uint192 originalId,
         uint64 monoId
@@ -415,6 +428,10 @@ contract CryptoPunksMosaicRegistry is
             bid.createdAt + bid.expiry >= block.timestamp;
     }
 
+    //
+    // Implementation internals
+    //
+
     // ERC721
     function tokenURI(
         uint256 mosaicId
@@ -426,9 +443,6 @@ contract CryptoPunksMosaicRegistry is
         return monos[mosaicId].metadataUri;
     }
 
-    //
-    // Internals
-    //
     function supportsInterface(
         bytes4 interfaceId
     ) public view override(ERC721, AccessControl) returns (bool) {
