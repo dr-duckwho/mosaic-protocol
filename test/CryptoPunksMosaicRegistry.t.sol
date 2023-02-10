@@ -20,7 +20,8 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils {
         mosaicRegistry = new MockCryptoPunksMosaicRegistry(mintAuthority, address(mockCryptoPunksMarket));
     }
 
-    function test_id() public {
+    // TODO(@jyterencekim): Write unit tests for the main functions
+    function test_toMosaicId_fromMosaicId() public {
         // given
         uint192 expectedGroupId = 581019;
         uint64 expectedMonoId = 830404;
@@ -33,6 +34,4 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils {
         assertEq(originalId, expectedGroupId);
         assertEq(monoId, expectedMonoId);
     }
-
-    // TODO(@jyterencekim): Write unit tests for `mint`
 }

@@ -381,6 +381,32 @@ contract CryptoPunksMosaicRegistry is
         return originals[originalId];
     }
 
+    function getMonoLifeCycle(
+        uint256 mosaicId
+    ) public view returns (MonoLifeCycle) {
+        // TODO: Check valid mosaicId
+        Mono storage mono = monos[mosaicId];
+        (uint192 originalId, ) = fromMosaicId(mosaicId);
+        Original storage original = originals[originalId];
+        if (original.status == OriginalStatus.Sold) {
+            return MonoLifeCycle.Dead;
+        }
+        if (bytes(mono.metadataUri).length == 0) {
+            return MonoLifeCycle.Raw;
+        }
+        return MonoLifeCycle.Active;
+    }
+
+    // TODO(@jyterencekim): Revisit the conditions
+    function hasOngoingBid(uint192 originalId) public view returns (bool) {
+        uint256 bidId = originals[originalId].activeBidId;
+        Bid storage bid = bids[bidId];
+        return
+        bidId != 0 &&
+        bid.bidder != NO_BIDDER &&
+        bid.createdAt + bid.expiry >= block.timestamp;
+    }
+
     //
     // Internal Helpers
     //
@@ -401,43 +427,17 @@ contract CryptoPunksMosaicRegistry is
         );
     }
 
-    function getMonoLifeCycle(
-        uint256 mosaicId
-    ) public view returns (MonoLifeCycle) {
-        // TODO: Check valid mosaicId
-        Mono storage mono = monos[mosaicId];
-        (uint192 originalId, ) = fromMosaicId(mosaicId);
-        Original storage original = originals[originalId];
-        if (original.status == OriginalStatus.Sold) {
-            return MonoLifeCycle.Dead;
-        }
-        if (bytes(mono.metadataUri).length == 0) {
-            return MonoLifeCycle.Raw;
-        }
-        return MonoLifeCycle.Active;
-    }
+    //
+    // Implementation internals
+    //
 
+    // ERC721
     function setInvalidMetadataUri(
         string calldata _uri
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         invalidMetadataUri = _uri;
     }
 
-    // TODO(@jyterencekim): Revisit the conditions
-    function hasOngoingBid(uint192 originalId) public view returns (bool) {
-        uint256 bidId = originals[originalId].activeBidId;
-        Bid storage bid = bids[bidId];
-        return
-            bidId != 0 &&
-            bid.bidder != NO_BIDDER &&
-            bid.createdAt + bid.expiry >= block.timestamp;
-    }
-
-    //
-    // Implementation internals
-    //
-
-    // ERC721
     function tokenURI(
         uint256 mosaicId
     ) public view override returns (string memory) {
