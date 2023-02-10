@@ -281,7 +281,9 @@ contract CryptoPunksMosaicRegistry is
     //
 
     // @dev Burn all owned Monos and send refunds
-    function refundOnSold(uint192 originalId) public returns (uint256 totalResaleFund){
+    function refundOnSold(
+        uint192 originalId
+    ) public returns (uint256 totalResaleFund) {
         // TODO: Double-check whether arithmetic division may cause under/over-refunding
         uint256 burnedMonoCount = 0;
         uint64 latestMonoId = latestMonoIds[originalId];
@@ -351,10 +353,13 @@ contract CryptoPunksMosaicRegistry is
             );
     }
 
-    function getPerMonoResaleFund(uint192 originalId) public view returns (uint256 perMonoResaleFund) {
+    function getPerMonoResaleFund(
+        uint192 originalId
+    ) public view returns (uint256 perMonoResaleFund) {
         uint256 resalePrice = resalePrices[originalId];
         require(resalePrice > 0, "No resale price set");
-        uint256 perMonoBps = BasisPoint.WHOLE_BPS / originals[originalId].totalMonoSupply;
+        uint256 perMonoBps = BasisPoint.WHOLE_BPS /
+            originals[originalId].totalMonoSupply;
 
         return BasisPoint.calculateBasisPoint(resalePrice, perMonoBps);
     }

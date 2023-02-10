@@ -7,6 +7,7 @@ import {TestUtils} from "./TestUtils.sol";
 
 import {CryptoPunksMosaicRegistry} from "../src/CryptoPunksMosaicRegistry.sol";
 import {MockCryptoPunksMarketProvider} from "./MockCryptoPunksMarketProvider.sol";
+import "./MockCryptoPunksMosaicRegistry.sol";
 
 contract CryptoPunksMosaicRegistryTest is Test, TestUtils {
     address public mintAuthority;
@@ -16,7 +17,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils {
     function setUp() public {
         mintAuthority = _randomAddress();
         mockCryptoPunksMarket = new MockCryptoPunksMarketProvider();
-        mosaicRegistry = new CryptoPunksMosaicRegistry(mintAuthority, address(mockCryptoPunksMarket));
+        mosaicRegistry = new MockCryptoPunksMosaicRegistry(mintAuthority, address(mockCryptoPunksMarket));
     }
 
     function test_id() public {
