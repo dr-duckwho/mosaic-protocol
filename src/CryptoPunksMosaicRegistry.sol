@@ -133,9 +133,23 @@ contract CryptoPunksMosaicRegistry is
             })
         });
         originals[originalId].claimedMonoCount++;
-        _mint(contributor, mosaicId);
+        _safeMint(contributor, mosaicId);
 
         return mosaicId;
+    }
+
+    //
+    // Design: Mosaic owners
+    //
+
+    // @dev only for dev
+    // TODO: Remove this after the test phase
+    function setMetadataUri(
+        uint256 mosaicId,
+        string memory metadataUri
+    ) public onlyMosaicOwner(mosaicId) {
+        Mono storage mono = monos[mosaicId];
+        mono.metadataUri = metadataUri;
     }
 
     //
@@ -402,9 +416,9 @@ contract CryptoPunksMosaicRegistry is
         uint256 bidId = originals[originalId].activeBidId;
         Bid storage bid = bids[bidId];
         return
-        bidId != 0 &&
-        bid.bidder != NO_BIDDER &&
-        bid.createdAt + bid.expiry >= block.timestamp;
+            bidId != 0 &&
+            bid.bidder != NO_BIDDER &&
+            bid.createdAt + bid.expiry >= block.timestamp;
     }
 
     //
