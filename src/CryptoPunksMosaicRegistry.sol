@@ -42,6 +42,7 @@ contract CryptoPunksMosaicRegistry is
     mapping(uint192 => Original) public originals;
 
     // @dev 0 represents the Original; each Mono is assigned an ID starting from 1.
+    //  The value represents the next ID to assign for a new Mono.
     //  originalId => latestMonoId
     mapping(uint192 => uint64) public latestMonoIds;
 
@@ -301,7 +302,7 @@ contract CryptoPunksMosaicRegistry is
         // TODO: Double-check whether arithmetic division may cause under/over-refunding
         uint256 burnedMonoCount = 0;
         uint64 latestMonoId = latestMonoIds[originalId];
-        for (uint64 monoId = 1; monoId <= latestMonoId; monoId++) {
+        for (uint64 monoId = 1; monoId < latestMonoId; monoId++) {
             uint256 mosaicId = toMosaicId(originalId, monoId);
             Mono storage mono = monos[mosaicId];
             if (_ownerOf(mosaicId) == msg.sender) {
@@ -322,7 +323,7 @@ contract CryptoPunksMosaicRegistry is
         uint192 originalId
     ) public view returns (uint64 validProposalCount, uint256 priceSum) {
         uint64 latestMonoId = latestMonoIds[originalId];
-        for (uint64 monoId = 1; monoId <= latestMonoId; monoId++) {
+        for (uint64 monoId = 1; monoId < latestMonoId; monoId++) {
             Mono storage mono = monos[toMosaicId(originalId, monoId)];
             if (mono.governanceOptions.proposedReservePrice > 0) {
                 validProposalCount++;
@@ -340,7 +341,7 @@ contract CryptoPunksMosaicRegistry is
         }
         uint64 latestMonoId = latestMonoIds[originalId];
         uint256 activeBidId = originals[originalId].activeBidId;
-        for (uint64 monoId = 1; monoId <= latestMonoId; monoId++) {
+        for (uint64 monoId = 1; monoId < latestMonoId; monoId++) {
             MonoGovernanceOptions storage options = monos[
                 toMosaicId(originalId, monoId)
             ].governanceOptions;
@@ -389,6 +390,12 @@ contract CryptoPunksMosaicRegistry is
     }
 
     function getOriginal(
+        uint192 originalId
+    ) external view returns (Original memory) {
+        return originals[originalId];
+    }
+
+    function getOriginalFromMosaicId(
         uint256 mosaicId
     ) external view returns (Original memory) {
         (uint192 originalId, ) = fromMosaicId(mosaicId);
