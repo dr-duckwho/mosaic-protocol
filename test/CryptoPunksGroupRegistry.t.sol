@@ -210,7 +210,7 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
 
         // expired
         Group memory group = groupRegistry.getGroup(groupId);
-        vm.warp(group.expiry + 1);
+        vm.warp(group.expiresAt + 1);
 
         // when
         vm.prank(alice);

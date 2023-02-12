@@ -28,7 +28,7 @@ interface UsingCryptoPunksGroupRegistryStructs {
         uint256 unitTicketPrice;
         uint256 totalContribution;
         uint64 ticketsBought;
-        uint40 expiry; // inclusive, in seconds, as in block.timestamp
+        uint40 expiresAt; // inclusive, in seconds, as in block.timestamp
         GroupStatus status;
         uint256 purchasePrice; // price at which the target is bought
         uint192 originalId;

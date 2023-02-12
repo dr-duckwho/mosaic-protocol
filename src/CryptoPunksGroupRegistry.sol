@@ -91,7 +91,7 @@ contract CryptoPunksGroupRegistry is
         newGroup.unitTicketPrice = unitTicketPrice;
         newGroup.status = GroupStatus.Open;
         // TODO: Make it configurable
-        newGroup.expiry = uint40(block.timestamp + 604800);
+        newGroup.expiresAt = uint40(block.timestamp + 604800);
 
         emit GroupCreated(
             latestGroupId,
@@ -279,7 +279,7 @@ contract CryptoPunksGroupRegistry is
             return GroupLifeCycle.Won;
         }
         if (group.status == GroupStatus.Open) {
-            if (group.expiry >= block.timestamp) {
+            if (group.expiresAt >= block.timestamp) {
                 return GroupLifeCycle.Active;
             }
             return GroupLifeCycle.Expired;
