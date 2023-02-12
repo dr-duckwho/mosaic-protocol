@@ -2,16 +2,22 @@
 pragma solidity ^0.8.17;
 
 interface UsingCryptoPunksGroupRegistryStructs {
-    /**
-     * @dev WON if the group has successfully purchased and acquired the target original;
-     *  LOST if the group has not procured the target original within the expiry.
-     */
+
     enum GroupStatus {
-        None,
+        Invalid,
         Open,
-        Won,
-        Lost,
         Claimable
+    }
+
+    enum GroupLifeCycle {
+        // the group does not exist
+        Nonexistent,
+        // the group is open and funding is ongoing
+        Active,
+        // the group has not procured the target original within the expiry
+        Expired,
+        // the group has successfully purchased and acquired the target original
+        Won
     }
 
     struct Group {
@@ -23,7 +29,7 @@ interface UsingCryptoPunksGroupRegistryStructs {
         uint256 unitTicketPrice;
         uint256 totalContribution;
         uint64 ticketsBought;
-        uint40 expiry; // in seconds, with respect to block.timestamp
+        uint40 expiry; // inclusive, in seconds, as in block.timestamp
         GroupStatus status;
         uint256 purchasePrice; // price at which the target is bought
         uint192 originalId;

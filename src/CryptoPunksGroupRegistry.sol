@@ -41,7 +41,8 @@ contract CryptoPunksGroupRegistry is
     ICryptoPunksMosaicRegistry private mosaicRegistry;
 
     /**
-     * @dev also used as a `groupId`, starting from 1.
+     * @dev Starts from 1.
+     *  Must increment this first when creating a new group.
      */
     uint192 public latestGroupId;
     mapping(uint192 => Group) private groups;
@@ -73,7 +74,7 @@ contract CryptoPunksGroupRegistry is
         uint256 targetMaxPrice
     ) external onlyRole(CURATOR_ROLE) returns (uint192 groupId) {
         require(
-            groups[latestGroupId].status != GroupStatus.Open,
+            getGroupLifeCycle(latestGroupId) != GroupLifeCycle.Active,
             "Ongoing group exists"
         );
 
@@ -134,6 +135,13 @@ contract CryptoPunksGroupRegistry is
     function buy(
         uint192 groupId
     ) external nonReentrant onlyValidGroup(groupId) {
+        // Internal prerequisites
+        require(
+            address(mosaicRegistry) != address(0x0),
+            "Exhibit registry must be set"
+        );
+
+        // Stakeholder and group status prerequisites
         Group storage group = groups[groupId];
         require(
             hasContribution(msg.sender, groupId),
@@ -148,31 +156,21 @@ contract CryptoPunksGroupRegistry is
             group.totalContribution >= offeredPrice,
             "Offered price is greater than the current contribution"
         );
+
+        // Purchase
         cryptoPunksMarket.buyPunk{value: offeredPrice}(punkId);
         require(
             cryptoPunksMarket.punkIndexToAddress(punkId) == address(this),
             "Unexpected ownership"
         );
-        group.purchasePrice = offeredPrice;
-        group.status = GroupStatus.Won;
-        emit GroupWon(groupId);
-        finalizeOnWon(groupId);
-    }
 
-    function finalizeOnWon(uint192 groupId) public onlyValidGroup(groupId) {
-        // TODO: Consider removing `getValidGroup` invocation if it costs too much gas
-        Group storage group = groups[groupId];
-        require(group.status == GroupStatus.Won, "The group has not won");
-        require(
-            address(mosaicRegistry) != address(0x0),
-            "Exhibit registry must be set"
-        );
-
-        // FIXME: Defend against reentrancy attacks in edge cases where the same cryptopunk ID is used later
+        // TODO: Double-check the possibility of reentrancy attacks when the same punk ID is used again later
         cryptoPunksMarket.transferPunk(
             address(mosaicRegistry),
             group.targetPunkId
         );
+
+        group.purchasePrice = offeredPrice;
         group.originalId = mosaicRegistry.create(
             group.targetPunkId,
             group.ticketsBought,
@@ -180,8 +178,9 @@ contract CryptoPunksGroupRegistry is
             calculateMinReservePrice(group.purchasePrice),
             calculateMaxReservePrice(group.purchasePrice)
         );
-        // TODO: Consider whether to explicitly mark other competing groups as LOST
         group.status = GroupStatus.Claimable;
+
+        emit GroupWon(groupId);
     }
 
     // @dev Batch claim-refund as many Mosaic Monos as tickets held
@@ -223,16 +222,15 @@ contract CryptoPunksGroupRegistry is
     }
 
     // @dev only for lost/expired groups to invoke explicitly
-    function refund(
+    function refundExpired(
         uint192 groupId
     ) public nonReentrant onlyValidGroup(groupId) {
         address payable contributor = payable(msg.sender);
         Group storage group = groups[groupId];
+        // FIXME
         require(
-            group.status != GroupStatus.Claimable &&
-                group.status != GroupStatus.Won &&
-                group.expiry < block.timestamp,
-            "The group is not expired yet"
+            getGroupLifeCycle(groupId) == GroupLifeCycle.Expired,
+            "The group must be expired"
         );
         uint256 ticketsHeld = getTickets(msg.sender, groupId);
         require(ticketsHeld > 0, "Only ticket holders can get refunds");
@@ -263,14 +261,6 @@ contract CryptoPunksGroupRegistry is
         return group.metadataUri;
     }
 
-    function setMetadataUri(
-        uint256 groupId,
-        string calldata _uri
-    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        Group storage group = groups[uint192(groupId)];
-        group.metadataUri = uri;
-    }
-
     //
     // Group-related views
     //
@@ -279,6 +269,20 @@ contract CryptoPunksGroupRegistry is
         uint192 groupId
     ) public view onlyValidGroup(groupId) returns (Group memory) {
         return groups[groupId];
+    }
+
+    function getGroupLifeCycle(uint192 groupId) public view onlyValidGroup(groupId) returns (GroupLifeCycle) {
+        Group storage group = groups[groupId];
+        if (group.status == GroupStatus.Claimable) {
+            return GroupLifeCycle.Won;
+        }
+        if (group.status == GroupStatus.Open) {
+            if (group.expiry >= block.timestamp) {
+                return GroupLifeCycle.Active;
+            }
+            return GroupLifeCycle.Expired;
+        }
+        return GroupLifeCycle.Nonexistent;
     }
 
     function getGroupTotalContribution(

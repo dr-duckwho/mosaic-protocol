@@ -214,11 +214,11 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
 
         // when
         vm.prank(alice);
-        groupRegistry.refund(groupId);
+        groupRegistry.refundExpired(groupId);
         vm.prank(bob);
-        groupRegistry.refund(groupId);
+        groupRegistry.refundExpired(groupId);
         vm.prank(carol);
-        groupRegistry.refund(groupId);
+        groupRegistry.refundExpired(groupId);
 
         // then
         assertEq(alice.balance, 40 ether);
@@ -229,7 +229,7 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
         vm.prank(carol);
         // TODO: Keep the error messages in a separate contract
         vm.expectRevert("Only ticket holders can get refunds");
-        groupRegistry.refund(groupId);
+        groupRegistry.refundExpired(groupId);
     }
 
     function test_calculateReservePrice() public {
