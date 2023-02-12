@@ -4,6 +4,7 @@ pragma solidity ^0.8.17;
 import {ERC721} from "@openzeppelin/token/ERC721/ERC721.sol";
 import {SafeCast} from "@openzeppelin/utils/math/SafeCast.sol";
 import {AccessControl} from "@openzeppelin/access/AccessControl.sol";
+import {Strings} from "@openzeppelin/utils/Strings.sol";
 
 import "./lib/BasisPoint.sol";
 import "./external/ICryptoPunksMarket.sol";
@@ -108,7 +109,8 @@ contract CryptoPunksMosaicRegistry is
             minReservePrice: minReservePrice,
             maxReservePrice: maxReservePrice,
             status: OriginalStatus.Active,
-            activeBidId: 0
+            activeBidId: 0,
+            metadataBaseUri: ""
         });
         return originalId;
     }
@@ -123,10 +125,9 @@ contract CryptoPunksMosaicRegistry is
         );
         uint64 monoId = latestMonoIds[originalId]++;
         mosaicId = toMosaicId(originalId, monoId);
-        // TODO: Handle metadataUri
         monos[mosaicId] = Mono({
             mosaicId: mosaicId,
-            metadataUri: "",
+            presetId: 0,
             governanceOptions: MonoGovernanceOptions({
                 proposedReservePrice: 0,
                 bidResponse: MonoBidResponse.None,
@@ -143,14 +144,12 @@ contract CryptoPunksMosaicRegistry is
     // Design: Mosaic owners
     //
 
-    // @dev only for dev
-    // TODO: Remove this after the test phase
-    function setMetadataUri(
+    function setPresetId(
         uint256 mosaicId,
-        string memory metadataUri
+        uint8 presetId
     ) public onlyMosaicOwner(mosaicId) {
         Mono storage mono = monos[mosaicId];
-        mono.metadataUri = metadataUri;
+        mono.presetId = presetId;
     }
 
     //
@@ -304,7 +303,6 @@ contract CryptoPunksMosaicRegistry is
         uint64 latestMonoId = latestMonoIds[originalId];
         for (uint64 monoId = 1; monoId < latestMonoId; monoId++) {
             uint256 mosaicId = toMosaicId(originalId, monoId);
-            Mono storage mono = monos[mosaicId];
             if (_ownerOf(mosaicId) == msg.sender) {
                 _burn(mosaicId);
                 burnedMonoCount++;
@@ -412,7 +410,7 @@ contract CryptoPunksMosaicRegistry is
         if (original.status == OriginalStatus.Sold) {
             return MonoLifeCycle.Dead;
         }
-        if (bytes(mono.metadataUri).length == 0) {
+        if (mono.presetId == 0) {
             return MonoLifeCycle.Raw;
         }
         return MonoLifeCycle.Active;
@@ -459,14 +457,36 @@ contract CryptoPunksMosaicRegistry is
         invalidMetadataUri = _uri;
     }
 
+    function setMetadataBaseUri(
+        uint192 originalId,
+        string calldata _uri
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        Original storage original = originals[originalId];
+        original.metadataBaseUri = _uri;
+    }
+
+    //
+    // ERC721
+    //
     function tokenURI(
         uint256 mosaicId
     ) public view override returns (string memory) {
         (uint192 originalId, ) = fromMosaicId(mosaicId);
-        if (originals[originalId].status == OriginalStatus.Sold) {
+        Original storage original = originals[originalId];
+        if (original.status == OriginalStatus.Sold) {
             return invalidMetadataUri;
         }
-        return monos[mosaicId].metadataUri;
+        string memory baseUrl = original.metadataBaseUri;
+        uint8 presetId = monos[mosaicId].presetId;
+        return
+            string.concat(
+                baseUrl,
+                "/",
+                Strings.toString(original.punkId),
+                "_",
+                Strings.toString(uint256(presetId)),
+                ".json"
+            );
     }
 
     function supportsInterface(

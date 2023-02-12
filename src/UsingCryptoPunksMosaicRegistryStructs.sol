@@ -15,6 +15,7 @@ interface UsingCryptoPunksMosaicRegistryStructs {
         uint256 purchasePrice;
         uint256 minReservePrice;
         uint256 maxReservePrice;
+        string metadataBaseUri;
         OriginalStatus status;
         uint256 activeBidId;
     }
@@ -26,12 +27,7 @@ interface UsingCryptoPunksMosaicRegistryStructs {
 
     struct Mono {
         uint256 mosaicId;
-        /**
-         * @dev mosaicId (originalId + monoId) => uri
-         *
-         * TODO: Decide whether to use URI or JSON data
-         */
-        string metadataUri;
+        uint8 presetId;
         MonoGovernanceOptions governanceOptions;
     }
 
