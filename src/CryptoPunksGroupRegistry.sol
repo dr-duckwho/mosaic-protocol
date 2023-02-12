@@ -227,7 +227,6 @@ contract CryptoPunksGroupRegistry is
     ) public nonReentrant onlyValidGroup(groupId) {
         address payable contributor = payable(msg.sender);
         Group storage group = groups[groupId];
-        // FIXME
         require(
             getGroupLifeCycle(groupId) == GroupLifeCycle.Expired,
             "The group must be expired"
