@@ -200,7 +200,6 @@ contract CryptoPunksGroupRegistry is
         );
         uint256 ticketsHeld = getTickets(msg.sender, groupId);
         require(ticketsHeld > 0, "Only ticket holders can claim tokens");
-
         _burn(msg.sender, groupId, ticketsHeld);
 
         // Refund
@@ -262,6 +261,14 @@ contract CryptoPunksGroupRegistry is
     function uri(uint256 groupId) public view override returns (string memory) {
         Group storage group = groups[uint192(groupId)];
         return group.metadataUri;
+    }
+
+    function setMetadataUri(
+        uint256 groupId,
+        string calldata _uri
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        Group storage group = groups[uint192(groupId)];
+        group.metadataUri = uri;
     }
 
     //
