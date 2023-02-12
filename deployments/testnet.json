@@ -3,7 +3,7 @@
   "chainId": "5",
   "contracts": {
     "CryptoPunksGroupRegistry": {
-      "address": "0xccB9f40a4954783176B5676A230bC0AED4e466ca",
+      "address": "0x418ea964e402a75F6105bdA72B933201BCA7158a",
       "abi": [
         {
           "inputs": [
@@ -583,19 +583,6 @@
               "type": "uint192"
             }
           ],
-          "name": "finalizeOnWon",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint192",
-              "name": "groupId",
-              "type": "uint192"
-            }
-          ],
           "name": "getGroup",
           "outputs": [
             {
@@ -669,6 +656,25 @@
               "internalType": "struct UsingCryptoPunksGroupRegistryStructs.Group",
               "name": "",
               "type": "tuple"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint192",
+              "name": "groupId",
+              "type": "uint192"
+            }
+          ],
+          "name": "getGroupLifeCycle",
+          "outputs": [
+            {
+              "internalType": "enum UsingCryptoPunksGroupRegistryStructs.GroupLifeCycle",
+              "name": "",
+              "type": "uint8"
             }
           ],
           "stateMutability": "view",
@@ -871,7 +877,7 @@
               "type": "uint192"
             }
           ],
-          "name": "refund",
+          "name": "refundExpired",
           "outputs": [],
           "stateMutability": "nonpayable",
           "type": "function"

@@ -271,7 +271,9 @@ contract CryptoPunksGroupRegistry is
         return groups[groupId];
     }
 
-    function getGroupLifeCycle(uint192 groupId) public view onlyValidGroup(groupId) returns (GroupLifeCycle) {
+    function getGroupLifeCycle(
+        uint192 groupId
+    ) public view onlyValidGroup(groupId) returns (GroupLifeCycle) {
         Group storage group = groups[groupId];
         if (group.status == GroupStatus.Claimable) {
             return GroupLifeCycle.Won;

@@ -2,7 +2,6 @@
 pragma solidity ^0.8.17;
 
 interface UsingCryptoPunksGroupRegistryStructs {
-
     enum GroupStatus {
         Invalid,
         Open,
