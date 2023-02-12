@@ -10,8 +10,8 @@ import "./lib/BasisPoint.sol";
 import "./external/ICryptoPunksMarket.sol";
 import "./ICryptoPunksMosaicRegistry.sol";
 import "./CryptoPunksGroupRegistry.sol";
+import "./CryptoPunksMuseum.sol";
 
-// TODO: Make global settings configurable
 // TODO: Reconsider the ID scheme so that the same origin contract's same groups map to the same ID (contract, group) => (internal id)
 contract CryptoPunksMosaicRegistry is
     ICryptoPunksMosaicRegistry,
@@ -20,7 +20,7 @@ contract CryptoPunksMosaicRegistry is
 {
     using SafeCast for uint256;
 
-    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    bytes32 private constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     uint256 private constant MONO_ID_BITS = 64;
     uint256 private constant MONO_ID_BITMASK = (1 << (MONO_ID_BITS + 1)) - 1; // lower 64 bits
@@ -29,7 +29,7 @@ contract CryptoPunksMosaicRegistry is
     uint40 public constant BID_EXPIRY = 604800;
     uint256 public constant BID_ACCEPTANCE_THRESHOLD_BPS = 5100;
 
-    ICryptoPunksMarket public immutable cryptoPunksMarket;
+    CryptoPunksMuseum public immutable museum;
 
     string public invalidMetadataUri;
 
@@ -62,12 +62,16 @@ contract CryptoPunksMosaicRegistry is
     mapping(uint192 => uint256) public resalePrices;
 
     constructor(
-        address _mintAuthority,
-        address cryptoPunksMarketAddress
+        address museumAddress
     ) ERC721("CryptoPunks Mosaic", "PUNKSMOSAIC") {
+        museum = CryptoPunksMuseum(museumAddress);
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _grantRole(MINTER_ROLE, _mintAuthority);
-        cryptoPunksMarket = ICryptoPunksMarket(cryptoPunksMarketAddress);
+        _grantRole(DEFAULT_ADMIN_ROLE, museumAddress);
+    }
+
+    modifier onlyWhenActive() {
+        require(museum.isActive(), "Museum must be active");
+        _;
     }
 
     modifier onlyActiveOriginal(uint192 originalId) {
@@ -93,9 +97,16 @@ contract CryptoPunksMosaicRegistry is
         uint256 purchasePrice,
         uint256 minReservePrice,
         uint256 maxReservePrice
-    ) external override onlyRole(MINTER_ROLE) returns (uint192 originalId) {
+    )
+        external
+        override
+        onlyWhenActive
+        onlyRole(MINTER_ROLE)
+        returns (uint192 originalId)
+    {
         require(
-            cryptoPunksMarket.punkIndexToAddress(punkId) == address(this),
+            museum.cryptoPunksMarket().punkIndexToAddress(punkId) ==
+                address(this),
             "The contract must own the punk"
         );
         originalId = ++latestOriginalId;
@@ -118,7 +129,13 @@ contract CryptoPunksMosaicRegistry is
     function mint(
         address contributor,
         uint192 originalId
-    ) external override onlyRole(MINTER_ROLE) returns (uint256 mosaicId) {
+    )
+        external
+        override
+        onlyWhenActive
+        onlyRole(MINTER_ROLE)
+        returns (uint256 mosaicId)
+    {
         require(
             latestMonoIds[originalId] > 0,
             "Original must be initialized first"
@@ -159,7 +176,7 @@ contract CryptoPunksMosaicRegistry is
     function proposeReservePrice(
         uint256 mosaicId,
         uint256 price
-    ) public onlyMosaicOwner(mosaicId) {
+    ) public onlyWhenActive onlyMosaicOwner(mosaicId) {
         (uint192 originalId, ) = fromMosaicId(mosaicId);
         Original storage original = originals[originalId];
         require(
@@ -174,7 +191,7 @@ contract CryptoPunksMosaicRegistry is
     function respondToBid(
         uint256 mosaicId,
         MonoBidResponse response
-    ) public onlyMosaicOwner(mosaicId) {
+    ) public onlyWhenActive onlyMosaicOwner(mosaicId) {
         (uint192 originalId, ) = fromMosaicId(mosaicId);
         require(hasOngoingBid(originalId), "No bid ongoing");
         MonoGovernanceOptions storage governanceOptions = monos[mosaicId]
@@ -193,6 +210,7 @@ contract CryptoPunksMosaicRegistry is
     )
         external
         payable
+        onlyWhenActive
         onlyActiveOriginal(originalId)
         returns (uint256 newBidId)
     {
@@ -239,7 +257,9 @@ contract CryptoPunksMosaicRegistry is
         return newBidId;
     }
 
-    function refundBidDeposit(uint256 bidId) external {
+    function refundBidDeposit(
+        uint256 bidId
+    ) external onlyWhenActive onlyWhenActive {
         Bid storage bid = bids[bidId];
         require(
             bid.state == BidState.Rejected,
@@ -257,7 +277,9 @@ contract CryptoPunksMosaicRegistry is
     // Reconstitution: common
     //
 
-    function finalizeProposedBid(uint256 bidId) public returns (BidState) {
+    function finalizeProposedBid(
+        uint256 bidId
+    ) public onlyWhenActive returns (BidState) {
         // TODO: Double-check the prerequisites, including Original check
         Bid storage bid = bids[bidId];
         require(
@@ -276,7 +298,7 @@ contract CryptoPunksMosaicRegistry is
 
     // TODO: Introduce a way for Mosaic owners to force Bid finalization to prevent limbo cases where
     //  the winning bidder makes no further transaction
-    function finalizeAcceptedBid(uint256 bidId) public {
+    function finalizeAcceptedBid(uint256 bidId) public onlyWhenActive {
         // TODO: Transfer the original and update the Mosaic state
         Bid storage bid = bids[bidId];
         require(bid.state == BidState.Accepted, "Bid must be accepted");
@@ -285,7 +307,7 @@ contract CryptoPunksMosaicRegistry is
         resalePrices[original.id] = bid.price;
         original.status = OriginalStatus.Sold;
 
-        cryptoPunksMarket.transferPunk(bid.bidder, original.punkId);
+        museum.cryptoPunksMarket().transferPunk(bid.bidder, original.punkId);
 
         bid.state = BidState.Won;
     }
@@ -297,7 +319,7 @@ contract CryptoPunksMosaicRegistry is
     // @dev Burn all owned Monos and send refunds
     function refundOnSold(
         uint192 originalId
-    ) public returns (uint256 totalResaleFund) {
+    ) public onlyWhenActive returns (uint256 totalResaleFund) {
         // TODO: Double-check whether arithmetic division may cause under/over-refunding
         uint256 burnedMonoCount = 0;
         uint64 latestMonoId = latestMonoIds[originalId];
@@ -450,7 +472,12 @@ contract CryptoPunksMosaicRegistry is
     // Implementation internals
     //
 
-    // ERC721
+    function grantMintAuthority(
+        address addr
+    ) external override onlyRole(DEFAULT_ADMIN_ROLE) {
+        return _grantRole(MINTER_ROLE, addr);
+    }
+
     function setInvalidMetadataUri(
         string calldata _uri
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {

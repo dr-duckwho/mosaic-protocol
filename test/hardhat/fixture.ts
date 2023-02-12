@@ -6,6 +6,8 @@ import {
   CryptoPunksMarket__factory,
   CryptoPunksMosaicRegistry,
   CryptoPunksMosaicRegistry__factory,
+  CryptoPunksMuseum,
+  CryptoPunksMuseum__factory
 } from "../../typechain-types";
 
 export async function afterDeploy() {
@@ -14,6 +16,8 @@ export async function afterDeploy() {
 
   const CryptoPunks: CryptoPunksMarket__factory =
     await ethers.getContractFactory("CryptoPunksMarket");
+  const CryptoPunksMuseum: CryptoPunksMuseum__factory =
+    await ethers.getContractFactory("CryptoPunksMuseum");
   const GroupContract: CryptoPunksGroupRegistry__factory =
     await ethers.getContractFactory("CryptoPunksGroupRegistry");
   const MosaicContract: CryptoPunksMosaicRegistry__factory =
@@ -21,20 +25,14 @@ export async function afterDeploy() {
 
   // deploy contracts
   const cryptoPunks: CryptoPunksMarket = await CryptoPunks.deploy();
-  const mosaicRegistry: CryptoPunksMosaicRegistry = await MosaicContract.deploy(
-    ownerAddress,
-    cryptoPunks.address
-  );
-  const groupRegistry: CryptoPunksGroupRegistry = await GroupContract.deploy(
-    cryptoPunks.address,
-    mosaicRegistry.address
-  );
+  const museum: CryptoPunksMuseum = await CryptoPunksMuseum.deploy(cryptoPunks.address);
+  const mosaicRegistry: CryptoPunksMosaicRegistry = await MosaicContract.deploy(museum.address);
+  const groupRegistry: CryptoPunksGroupRegistry = await GroupContract.deploy(museum.address);
 
-  // grant mosaic minter role to group contract
-  const minterRole = await mosaicRegistry.MINTER_ROLE();
-  await mosaicRegistry
-    .connect(owner)
-    .grantRole(minterRole, groupRegistry.address);
+  // set up Museum and activate
+  await museum.connect(owner).setMosaicRegistry(mosaicRegistry.address);
+  await museum.connect(owner).setGroupRegistry(groupRegistry.address);
+  await museum.connect(owner).activate();
 
   // enable cryptoPunks to be minted for everyone
   await cryptoPunks.connect(owner).allInitialOwnersAssigned();

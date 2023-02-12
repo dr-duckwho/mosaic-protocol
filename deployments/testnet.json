@@ -3,18 +3,13 @@
   "chainId": "5",
   "contracts": {
     "CryptoPunksGroupRegistry": {
-      "address": "0x418ea964e402a75F6105bdA72B933201BCA7158a",
+      "address": "0xEb53287d11fe65f2FaB9D151853cDE43b80f136A",
       "abi": [
         {
           "inputs": [
             {
               "internalType": "address",
-              "name": "cryptoPunksMarketAddress",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "mosaicRegistryAddress",
+              "name": "museumAddress",
               "type": "address"
             }
           ],
@@ -563,19 +558,6 @@
           "type": "function"
         },
         {
-          "inputs": [],
-          "name": "cryptoPunksMarket",
-          "outputs": [
-            {
-              "internalType": "contract ICryptoPunksMarket",
-              "name": "",
-              "type": "address"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
           "inputs": [
             {
               "internalType": "uint192",
@@ -629,7 +611,7 @@
                 },
                 {
                   "internalType": "uint40",
-                  "name": "expiry",
+                  "name": "expiresAt",
                   "type": "uint40"
                 },
                 {
@@ -870,6 +852,19 @@
           "type": "function"
         },
         {
+          "inputs": [],
+          "name": "museum",
+          "outputs": [
+            {
+              "internalType": "contract CryptoPunksMuseum",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
           "inputs": [
             {
               "internalType": "uint192",
@@ -1043,18 +1038,13 @@
       ]
     },
     "CryptoPunksMosaicRegistry": {
-      "address": "0xb9CdC263446573a8A5554B7cbbbE09c6caEE3d3a",
+      "address": "0x252b6979a51A4EE974612094D867b7849C8ab19A",
       "abi": [
         {
           "inputs": [
             {
               "internalType": "address",
-              "name": "_mintAuthority",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "cryptoPunksMarketAddress",
+              "name": "museumAddress",
               "type": "address"
             }
           ],
@@ -1251,19 +1241,6 @@
           "type": "function"
         },
         {
-          "inputs": [],
-          "name": "MINTER_ROLE",
-          "outputs": [
-            {
-              "internalType": "bytes32",
-              "name": "",
-              "type": "bytes32"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
           "inputs": [
             {
               "internalType": "address",
@@ -1429,19 +1406,6 @@
             }
           ],
           "stateMutability": "nonpayable",
-          "type": "function"
-        },
-        {
-          "inputs": [],
-          "name": "cryptoPunksMarket",
-          "outputs": [
-            {
-              "internalType": "contract ICryptoPunksMarket",
-              "name": "",
-              "type": "address"
-            }
-          ],
-          "stateMutability": "view",
           "type": "function"
         },
         {
@@ -1779,6 +1743,19 @@
         {
           "inputs": [
             {
+              "internalType": "address",
+              "name": "addr",
+              "type": "address"
+            }
+          ],
+          "name": "grantMintAuthority",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
               "internalType": "bytes32",
               "name": "role",
               "type": "bytes32"
@@ -1990,6 +1967,19 @@
               "internalType": "struct UsingCryptoPunksMosaicRegistryStructs.MonoGovernanceOptions",
               "name": "governanceOptions",
               "type": "tuple"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "museum",
+          "outputs": [
+            {
+              "internalType": "contract CryptoPunksMuseum",
+              "name": "",
+              "type": "address"
             }
           ],
           "stateMutability": "view",
@@ -2480,8 +2470,320 @@
         }
       ]
     },
+    "CryptoPunksMuseum": {
+      "address": "0xDA6a8c7484250d336772B3eeF8B55b7c0De104d9",
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "cryptoPunksMarketAddress",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "constructor"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "previousAdminRole",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "newAdminRole",
+              "type": "bytes32"
+            }
+          ],
+          "name": "RoleAdminChanged",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "sender",
+              "type": "address"
+            }
+          ],
+          "name": "RoleGranted",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "sender",
+              "type": "address"
+            }
+          ],
+          "name": "RoleRevoked",
+          "type": "event"
+        },
+        {
+          "inputs": [],
+          "name": "DEFAULT_ADMIN_ROLE",
+          "outputs": [
+            {
+              "internalType": "bytes32",
+              "name": "",
+              "type": "bytes32"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "activate",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "cryptoPunksMarket",
+          "outputs": [
+            {
+              "internalType": "contract ICryptoPunksMarket",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "deactivate",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            }
+          ],
+          "name": "getRoleAdmin",
+          "outputs": [
+            {
+              "internalType": "bytes32",
+              "name": "",
+              "type": "bytes32"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "grantRole",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "groupRegistry",
+          "outputs": [
+            {
+              "internalType": "contract ICryptoPunksGroupRegistry",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "hasRole",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "isActive",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "mosaicRegistry",
+          "outputs": [
+            {
+              "internalType": "contract ICryptoPunksMosaicRegistry",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "renounceRole",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "revokeRole",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "addr",
+              "type": "address"
+            }
+          ],
+          "name": "setGroupRegistry",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "addr",
+              "type": "address"
+            }
+          ],
+          "name": "setMosaicRegistry",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes4",
+              "name": "interfaceId",
+              "type": "bytes4"
+            }
+          ],
+          "name": "supportsInterface",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        }
+      ]
+    },
     "TestCryptoPunksMarket": {
-      "address": "0x16C2980c709900003Aabbdd687aC7A3498D1E955",
+      "address": "0xA53f1136285Bc6B9ED8A9902A0a0672a407679d8",
       "abi": [
         {
           "inputs": [],

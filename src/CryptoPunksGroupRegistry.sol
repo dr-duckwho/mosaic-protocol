@@ -11,8 +11,8 @@ import "./lib/BasisPoint.sol";
 import "./external/ICryptoPunksMarket.sol";
 import "./ICryptoPunksGroupRegistry.sol";
 import "./ICryptoPunksMosaicRegistry.sol";
+import "./CryptoPunksMuseum.sol";
 
-// TODO: Wire with Museum
 // TODO: Migrate custom revert error messages to byte constants
 contract CryptoPunksGroupRegistry is
     ICryptoPunksGroupRegistry,
@@ -28,8 +28,6 @@ contract CryptoPunksGroupRegistry is
 
     /**
      * Business logic constants
-     *
-     * TODO: Introduce a global explicit storage contract
      */
     uint64 public constant TICKET_SUPPLY_PER_GROUP = 100;
     /**
@@ -37,8 +35,7 @@ contract CryptoPunksGroupRegistry is
      */
     bytes32 public constant CURATOR_ROLE = keccak256("CURATOR_ROLE");
 
-    ICryptoPunksMarket public immutable cryptoPunksMarket;
-    ICryptoPunksMosaicRegistry private mosaicRegistry;
+    CryptoPunksMuseum public immutable museum;
 
     /**
      * @dev Starts from 1.
@@ -52,16 +49,15 @@ contract CryptoPunksGroupRegistry is
      */
     mapping(uint192 => mapping(address => uint256)) private refundableTickets;
 
-    constructor(
-        address cryptoPunksMarketAddress,
-        address mosaicRegistryAddress
-    ) ERC1155("CryptoPunks Mosaic Ticket") {
-        // TODO: Inherit a configuration storage from a Museum
+    constructor(address museumAddress) ERC1155("CryptoPunks Mosaic Ticket") {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(CURATOR_ROLE, msg.sender);
-        // TODO: code it up with config passing
-        cryptoPunksMarket = ICryptoPunksMarket(cryptoPunksMarketAddress);
-        mosaicRegistry = ICryptoPunksMosaicRegistry(mosaicRegistryAddress);
+        museum = CryptoPunksMuseum(museumAddress);
+    }
+
+    modifier onlyWhenActive() {
+        require(museum.isActive(), "Museum must be active");
+        _;
     }
 
     modifier onlyValidGroup(uint192 groupId) {
@@ -72,7 +68,7 @@ contract CryptoPunksGroupRegistry is
     function create(
         uint256 targetPunkId,
         uint256 targetMaxPrice
-    ) external onlyRole(CURATOR_ROLE) returns (uint192 groupId) {
+    ) external onlyRole(CURATOR_ROLE) onlyWhenActive returns (uint192 groupId) {
         require(
             getGroupLifeCycle(latestGroupId) != GroupLifeCycle.Active,
             "Ongoing group exists"
@@ -106,7 +102,7 @@ contract CryptoPunksGroupRegistry is
     function contribute(
         uint192 groupId,
         uint64 ticketQuantity
-    ) external payable onlyValidGroup(groupId) {
+    ) external payable onlyValidGroup(groupId) onlyWhenActive {
         Group storage group = groups[groupId];
 
         uint256 ticketsLeft = group.totalTicketSupply - group.ticketsBought;
@@ -134,10 +130,10 @@ contract CryptoPunksGroupRegistry is
      */
     function buy(
         uint192 groupId
-    ) external nonReentrant onlyValidGroup(groupId) {
+    ) external nonReentrant onlyValidGroup(groupId) onlyWhenActive {
         // Internal prerequisites
         require(
-            address(mosaicRegistry) != address(0x0),
+            address(museum.mosaicRegistry()) != address(0x0),
             "Exhibit registry must be set"
         );
 
@@ -148,9 +144,9 @@ contract CryptoPunksGroupRegistry is
             "Only ticket holders can initiate a buy"
         );
         uint256 punkId = group.targetPunkId;
-        (, , , uint256 offeredPrice, ) = cryptoPunksMarket.punksOfferedForSale(
-            punkId
-        );
+        (, , , uint256 offeredPrice, ) = museum
+            .cryptoPunksMarket()
+            .punksOfferedForSale(punkId);
         require(group.ticketsBought == TICKET_SUPPLY_PER_GROUP, "Not sold out");
         require(
             group.totalContribution >= offeredPrice,
@@ -158,20 +154,21 @@ contract CryptoPunksGroupRegistry is
         );
 
         // Purchase
-        cryptoPunksMarket.buyPunk{value: offeredPrice}(punkId);
+        museum.cryptoPunksMarket().buyPunk{value: offeredPrice}(punkId);
         require(
-            cryptoPunksMarket.punkIndexToAddress(punkId) == address(this),
+            museum.cryptoPunksMarket().punkIndexToAddress(punkId) ==
+                address(this),
             "Unexpected ownership"
         );
 
         // TODO: Double-check the possibility of reentrancy attacks when the same punk ID is used again later
-        cryptoPunksMarket.transferPunk(
-            address(mosaicRegistry),
+        museum.cryptoPunksMarket().transferPunk(
+            address(museum.mosaicRegistry()),
             group.targetPunkId
         );
 
         group.purchasePrice = offeredPrice;
-        group.originalId = mosaicRegistry.create(
+        group.originalId = museum.mosaicRegistry().create(
             group.targetPunkId,
             group.ticketsBought,
             group.purchasePrice,
@@ -190,6 +187,7 @@ contract CryptoPunksGroupRegistry is
         external
         nonReentrant
         onlyValidGroup(groupId)
+        onlyWhenActive
         returns (uint256[] memory mosaicIds)
     {
         Group storage group = groups[groupId];
@@ -210,7 +208,7 @@ contract CryptoPunksGroupRegistry is
         // Mint
         uint256[] memory mosaicIds = new uint256[](ticketsHeld);
         for (uint256 i = 0; i < ticketsHeld; i++) {
-            uint256 mosaicId = mosaicRegistry.mint(
+            uint256 mosaicId = museum.mosaicRegistry().mint(
                 msg.sender,
                 group.originalId
             );
@@ -224,7 +222,7 @@ contract CryptoPunksGroupRegistry is
     // @dev only for lost/expired groups to invoke explicitly
     function refundExpired(
         uint192 groupId
-    ) public nonReentrant onlyValidGroup(groupId) {
+    ) public nonReentrant onlyValidGroup(groupId) onlyWhenActive {
         address payable contributor = payable(msg.sender);
         Group storage group = groups[groupId];
         require(
