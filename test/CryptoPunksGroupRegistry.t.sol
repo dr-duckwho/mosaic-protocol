@@ -7,6 +7,7 @@ import {TestUtils} from "./TestUtils.sol";
 import {MockProvider} from "mockprovider/MockProvider.sol";
 
 import {CryptoPunksGroupRegistry} from "../src/CryptoPunksGroupRegistry.sol";
+import {CryptoPunksMuseum} from "../src/CryptoPunksMuseum.sol";
 import {UsingCryptoPunksGroupRegistryStructs} from "../src/UsingCryptoPunksGroupRegistryStructs.sol";
 import {ICryptoPunksMosaicRegistry} from "../src/ICryptoPunksMosaicRegistry.sol";
 import {MockCryptoPunksMarketProvider} from "./MockCryptoPunksMarketProvider.sol";
@@ -16,6 +17,7 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
     MockCryptoPunksMarketProvider public mockCryptoPunksMarket;
     MockProvider public mockMosaicRegistry;
     CryptoPunksGroupRegistry public groupRegistry;
+    CryptoPunksMuseum public museum;
     uint256 targetPunkId;
 
     address public originalOwner;
@@ -23,14 +25,18 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
     function setUp() public {
         mockCryptoPunksMarket = new MockCryptoPunksMarketProvider();
         mockMosaicRegistry = new MockProvider();
+        museum = new CryptoPunksMuseum(address(mockCryptoPunksMarket));
 
         originalOwner = _randomAddress();
         targetPunkId = 1;
 
         groupRegistry = new CryptoPunksGroupRegistry(
-            address(mockCryptoPunksMarket),
-            address(mockMosaicRegistry)
+            address(museum)
         );
+
+        museum.setMosaicRegistry(address(mockMosaicRegistry));
+        museum.setGroupRegistry(address(groupRegistry));
+        museum.activate();
     }
 
     function test_create() public {

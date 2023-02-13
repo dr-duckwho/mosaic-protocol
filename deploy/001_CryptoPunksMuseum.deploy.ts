@@ -2,7 +2,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { contracts } from "../deployments/testnet.json";
 
-const CryptoPunksMuseumAddress = contracts.CryptoPunksMuseum.address;
+const CryptoPunksMarketAddress = contracts.TestCryptoPunksMarket.address;
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const {
@@ -12,11 +12,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const { deployer } = await getNamedAccounts();
 
-  await deploy("CryptoPunksGroupRegistry", {
+  await deploy("CryptoPunksMuseum", {
     from: deployer,
-    args: [CryptoPunksMuseumAddress],
+    args: [CryptoPunksMarketAddress],
     log: true,
   });
 };
 export default func;
-func.tags = ["CryptoPunksGroupRegistry"];
+func.tags = ["CryptoPunksMuseum"];

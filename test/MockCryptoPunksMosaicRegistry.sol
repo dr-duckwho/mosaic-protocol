@@ -4,8 +4,7 @@ pragma solidity ^0.8.17;
 import "../src/CryptoPunksMosaicRegistry.sol";
 
 contract MockCryptoPunksMosaicRegistry is CryptoPunksMosaicRegistry {
-    constructor(address _mintAuthority,
-        address cryptoPunksMarketAddress) public CryptoPunksMosaicRegistry(_mintAuthority, cryptoPunksMarketAddress) {}
+    constructor(address museumAddress) public CryptoPunksMosaicRegistry(museumAddress) {}
 
     function setLatestOriginalId(uint192 value) public {
         latestOriginalId = value;

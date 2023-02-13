@@ -11,14 +11,20 @@ import "./MockCryptoPunksMosaicRegistry.sol";
 import "../src/UsingCryptoPunksMosaicRegistryStructs.sol";
 
 contract CryptoPunksMosaicRegistryTest is Test, TestUtils {
-    address public mintAuthority;
     MockCryptoPunksMosaicRegistry public mosaicRegistry;
     MockCryptoPunksMarketProvider public mockCryptoPunksMarket;
+    CryptoPunksMuseum public museum;
+    address public mintAuthority;
 
     function setUp() public {
-        mintAuthority = _randomAddress();
         mockCryptoPunksMarket = new MockCryptoPunksMarketProvider();
-        mosaicRegistry = new MockCryptoPunksMosaicRegistry(mintAuthority, address(mockCryptoPunksMarket));
+        museum = new CryptoPunksMuseum(address(mockCryptoPunksMarket));
+        mosaicRegistry = new MockCryptoPunksMosaicRegistry(address(museum));
+
+        mintAuthority = _randomAddress();
+        museum.setGroupRegistry(mintAuthority);
+        museum.setMosaicRegistry(address(mosaicRegistry));
+        museum.activate();
     }
 
     function test_create() public {

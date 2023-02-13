@@ -22,4 +22,6 @@ interface ICryptoPunksMosaicRegistry is UsingCryptoPunksMosaicRegistryStructs {
         uint192 originalId,
         uint256 price
     ) external payable returns (uint256 newBidId);
+
+    function grantMintAuthority(address addr) external;
 }
