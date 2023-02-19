@@ -16,11 +16,9 @@ import "./CryptoPunksMuseum.sol";
 contract CryptoPunksMosaicRegistry is
     ICryptoPunksMosaicRegistry,
     ERC721,
-    AccessControl
+AccessControl
 {
     using SafeCast for uint256;
-
-    bytes32 private constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     uint256 private constant MONO_ID_BITS = 64;
     uint256 private constant MONO_ID_BITMASK = (1 << (MONO_ID_BITS + 1)) - 1; // lower 64 bits
@@ -28,6 +26,8 @@ contract CryptoPunksMosaicRegistry is
     address private constant NO_BIDDER = address(0x0);
     uint40 public constant BID_EXPIRY = 604800;
     uint256 public constant BID_ACCEPTANCE_THRESHOLD_BPS = 5100;
+
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     CryptoPunksMuseum public immutable museum;
 
