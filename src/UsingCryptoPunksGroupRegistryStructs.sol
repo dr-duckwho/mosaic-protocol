@@ -24,6 +24,7 @@ interface UsingCryptoPunksGroupRegistryStructs {
         address creator;
         uint256 targetPunkId;
         uint256 targetMaxPrice;
+        // @dev Must be a divisor (10, 100, etc.)
         uint64 totalTicketSupply;
         uint256 unitTicketPrice;
         uint256 totalContribution;

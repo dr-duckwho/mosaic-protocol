@@ -238,10 +238,11 @@ contract CryptoPunksGroupRegistry is
     function getRefundPerTicket(
         Group storage group
     ) private view returns (uint256 refundPerTicket) {
-        if (group.totalContribution <= group.purchasePrice) {
+        uint256 surplus = group.totalContribution - group.purchasePrice;
+
+        if (surplus <= 0) {
             return 0;
         }
-        uint256 surplus = group.totalContribution - group.purchasePrice;
         return surplus / group.ticketsBought;
     }
 

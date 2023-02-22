@@ -180,7 +180,7 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
         groupRegistry.claim(groupId);
     }
 
-    function test_refund_expired() public {
+    function test_refundExpired() public {
         // given conditions
         address payable alice = _randomAddress();
         address payable bob = _randomAddress();
