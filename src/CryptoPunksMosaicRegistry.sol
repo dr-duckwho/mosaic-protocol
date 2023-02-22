@@ -16,7 +16,7 @@ import "./CryptoPunksMuseum.sol";
 contract CryptoPunksMosaicRegistry is
     ICryptoPunksMosaicRegistry,
     ERC721,
-AccessControl
+    AccessControl
 {
     using SafeCast for uint256;
 

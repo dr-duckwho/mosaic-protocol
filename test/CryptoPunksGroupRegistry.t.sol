@@ -65,7 +65,7 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
         // given & when
         address payable creator = _randomAddress();
         groupRegistry.grantRole(groupRegistry.CURATOR_ROLE(), creator);
-        uint192 groupId = _createAndBuy(creator, targetPunkId);
+        uint192 groupId = _createContributeAndBuy(creator, targetPunkId);
 
         // then
         Group memory group = groupRegistry.getGroup(groupId);
@@ -76,7 +76,7 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
     function test_claim() public {
         // given
         address payable creator = _randomAddress();
-        uint192 groupId = _createAndBuy(creator, targetPunkId);
+        uint192 groupId = _createContributeAndBuy(creator, targetPunkId);
         assertEq(groupRegistry.balanceOf(creator, groupId), 100);
 
         uint256 expectedMosaicId = 581019;
@@ -260,7 +260,7 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
     }
 
     // TODO: Refactor the test helpers
-    function _createAndBuy(address payable creator, uint256 targetPunkId) internal returns (uint192 groupId) {
+    function _createContributeAndBuy(address payable creator, uint256 targetPunkId) internal returns (uint192 groupId) {
         // given conditions
         uint256 targetMaxPrice = 10 ether;
         vm.deal(creator, 100 ether);
@@ -272,6 +272,8 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
 
         // contribute
         vm.prank(creator);
+        vm.expectEmit(true, true, false, false);
+        emit Contributed(creator, groupId, 100);
         groupRegistry.contribute{value : targetMaxPrice}(groupId, 100);
         assertEq(groupRegistry.getGroupTotalContribution(groupId), 10 ether);
 

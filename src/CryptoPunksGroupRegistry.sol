@@ -130,7 +130,7 @@ contract CryptoPunksGroupRegistry is
      */
     function buy(
         uint192 groupId
-    ) external nonReentrant onlyValidGroup(groupId) onlyWhenActive {
+    ) external nonReentrant onlyRole(CURATOR_ROLE) onlyValidGroup(groupId) onlyWhenActive {
         // Internal prerequisites
         require(
             address(museum.mosaicRegistry()) != address(0x0),
@@ -139,10 +139,6 @@ contract CryptoPunksGroupRegistry is
 
         // Stakeholder and group status prerequisites
         Group storage group = groups[groupId];
-        require(
-            hasContribution(msg.sender, groupId),
-            "Only ticket holders can initiate a buy"
-        );
         uint256 punkId = group.targetPunkId;
         (, , , uint256 offeredPrice, ) = museum
             .cryptoPunksMarket()
