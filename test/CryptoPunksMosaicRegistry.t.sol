@@ -10,7 +10,7 @@ import {MockCryptoPunksMarketProvider} from "./MockCryptoPunksMarketProvider.sol
 import "./MockCryptoPunksMosaicRegistry.sol";
 import "../src/UsingCryptoPunksMosaicRegistryStructs.sol";
 
-contract CryptoPunksMosaicRegistryTest is Test, TestUtils {
+contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosaicRegistryStructs {
     MockCryptoPunksMosaicRegistry public mosaicRegistry;
     MockCryptoPunksMarketProvider public mockCryptoPunksMarket;
     CryptoPunksMuseum public museum;
@@ -61,6 +61,30 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils {
         vm.prank(mintAuthority);
         vm.expectRevert("The contract must own the punk");
         uint192 originalId = mosaicRegistry.create(1, 100, 100 ether, 70 ether, 500 ether);
+    }
+
+    function test_mint() public {
+        // given
+        address alice = _randomAddress();
+        assertEq(mosaicRegistry.balanceOf(alice), 0);
+
+        // assume that the original is initialized
+        uint192 originalId = 830404;
+        mosaicRegistry.setLatestMonoId(originalId, 1);
+
+        // when
+        vm.prank(mintAuthority);
+        uint256 mosaicId = mosaicRegistry.mint(alice, originalId);
+
+        // then
+        assertEq(mosaicRegistry.balanceOf(alice), 1);
+        assertEq(mosaicRegistry.ownerOf(mosaicId), alice);
+
+        (uint256 actualMosaicId, uint8 actualPresetId, ) = mosaicRegistry.monos(mosaicId);
+        assertEq(actualMosaicId, mosaicId);
+        assertEq(actualPresetId, 0);
+        Original memory original = mosaicRegistry.getOriginal(originalId);
+        assertEq(original.claimedMonoCount, 1);
     }
 
     // TODO(@jyterencekim): Write unit tests for the main functions
