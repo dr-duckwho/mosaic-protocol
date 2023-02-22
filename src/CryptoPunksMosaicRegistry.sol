@@ -181,23 +181,11 @@ contract CryptoPunksMosaicRegistry is
         Original storage original = originals[originalId];
         require(
             original.minReservePrice <= price &&
-                price <= original.maxReservePrice,
+            price <= original.maxReservePrice,
             "Must be within the range"
         );
         Mono storage mono = monos[mosaicId];
         mono.governanceOptions.proposedReservePrice = price;
-    }
-
-    function respondToBid(
-        uint256 mosaicId,
-        MonoBidResponse response
-    ) public onlyWhenActive onlyMosaicOwner(mosaicId) {
-        (uint192 originalId, ) = fromMosaicId(mosaicId);
-        require(hasOngoingBid(originalId), "No bid ongoing");
-        MonoGovernanceOptions storage governanceOptions = monos[mosaicId]
-            .governanceOptions;
-        governanceOptions.bidId = originals[originalId].activeBidId;
-        governanceOptions.bidResponse = response;
     }
 
     //
@@ -208,17 +196,17 @@ contract CryptoPunksMosaicRegistry is
         uint192 originalId,
         uint256 price
     )
-        external
-        payable
-        onlyWhenActive
-        onlyActiveOriginal(originalId)
-        returns (uint256 newBidId)
+    external
+    payable
+    onlyWhenActive
+    onlyActiveOriginal(originalId)
+    returns (uint256 newBidId)
     {
         Original storage original = originals[originalId];
         // TODO: Make bid respect min reserve prices decided by GovernanceOptions
         require(
             price >= original.minReservePrice &&
-                price <= original.maxReservePrice,
+            price <= original.maxReservePrice,
             "Bid price must be within the reserve price range"
         );
         require(msg.value == price, "Must send the exact value as proposed");
@@ -242,13 +230,13 @@ contract CryptoPunksMosaicRegistry is
             )
         );
         bids[newBidId] = Bid({
-            id: newBidId,
-            originalId: originalId,
-            bidder: payable(msg.sender),
-            createdAt: uint40(block.timestamp),
-            expiry: BID_EXPIRY,
-            price: price,
-            state: BidState.Proposed
+        id: newBidId,
+        originalId: originalId,
+        bidder: payable(msg.sender),
+        createdAt: uint40(block.timestamp),
+        expiry: BID_EXPIRY,
+        price: price,
+        state: BidState.Proposed
         });
         bidDeposits[newBidId] = msg.value;
         original.activeBidId = newBidId;
@@ -271,6 +259,22 @@ contract CryptoPunksMosaicRegistry is
         require(sent, "Failed to refund");
 
         bid.state = BidState.Refunded;
+    }
+
+    //
+    // Reconstitution: Mosaic owners
+    //
+
+    function respondToBid(
+        uint256 mosaicId,
+        MonoBidResponse response
+    ) public onlyWhenActive onlyMosaicOwner(mosaicId) {
+        (uint192 originalId, ) = fromMosaicId(mosaicId);
+        require(hasOngoingBid(originalId), "No bid ongoing");
+        MonoGovernanceOptions storage governanceOptions = monos[mosaicId]
+            .governanceOptions;
+        governanceOptions.bidId = originals[originalId].activeBidId;
+        governanceOptions.bidResponse = response;
     }
 
     //
@@ -313,7 +317,7 @@ contract CryptoPunksMosaicRegistry is
     }
 
     //
-    // Reconstitution: Mosaic owners
+    // Post-reconstitution: Mosaic owners
     //
 
     // @dev Burn all owned Monos and send refunds
