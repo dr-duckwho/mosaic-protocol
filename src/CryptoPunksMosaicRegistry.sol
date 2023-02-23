@@ -181,7 +181,7 @@ contract CryptoPunksMosaicRegistry is
         Original storage original = originals[originalId];
         require(
             original.minReservePrice <= price &&
-            price <= original.maxReservePrice,
+                price <= original.maxReservePrice,
             "Must be within the range"
         );
         Mono storage mono = monos[mosaicId];
@@ -196,17 +196,17 @@ contract CryptoPunksMosaicRegistry is
         uint192 originalId,
         uint256 price
     )
-    external
-    payable
-    onlyWhenActive
-    onlyActiveOriginal(originalId)
-    returns (uint256 newBidId)
+        external
+        payable
+        onlyWhenActive
+        onlyActiveOriginal(originalId)
+        returns (uint256 newBidId)
     {
         Original storage original = originals[originalId];
         // TODO: Make bid respect min reserve prices decided by GovernanceOptions
         require(
             price >= original.minReservePrice &&
-            price <= original.maxReservePrice,
+                price <= original.maxReservePrice,
             "Bid price must be within the reserve price range"
         );
         require(msg.value == price, "Must send the exact value as proposed");
@@ -230,13 +230,13 @@ contract CryptoPunksMosaicRegistry is
             )
         );
         bids[newBidId] = Bid({
-        id: newBidId,
-        originalId: originalId,
-        bidder: payable(msg.sender),
-        createdAt: uint40(block.timestamp),
-        expiry: BID_EXPIRY,
-        price: price,
-        state: BidState.Proposed
+            id: newBidId,
+            originalId: originalId,
+            bidder: payable(msg.sender),
+            createdAt: uint40(block.timestamp),
+            expiry: BID_EXPIRY,
+            price: price,
+            state: BidState.Proposed
         });
         bidDeposits[newBidId] = msg.value;
         original.activeBidId = newBidId;

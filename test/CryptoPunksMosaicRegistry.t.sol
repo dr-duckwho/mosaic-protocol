@@ -87,18 +87,56 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         assertEq(original.claimedMonoCount, 1);
     }
 
+    function test_proposeReservePrice() public {
+        // given
+        address alice = _randomAddress();
+        uint192 originalId = 530923;
+        uint64 monoId = 581019;
+        uint256 mosaicId = mosaicRegistry.toMosaicId(originalId, monoId);
+        uint256 price = 100 ether;
+
+        Original memory original = Original({
+            id: originalId,
+            punkId: 1,
+            totalMonoSupply: 100,
+            claimedMonoCount: 0,
+            purchasePrice: 100 ether,
+            minReservePrice: price / 2,
+            maxReservePrice: price * 5,
+            status: OriginalStatus.Active,
+            activeBidId: 0,
+            metadataBaseUri: ""
+        });
+        mosaicRegistry.setOriginal(originalId, original);
+
+        // set up the ownership
+        mosaicRegistry.mockMint(alice, mosaicId);
+
+        // initial condition
+        Mono memory mono = mosaicRegistry.getMono(originalId, monoId);
+        assertEq(mono.governanceOptions.proposedReservePrice, 0);
+
+        // when
+        vm.prank(alice);
+        mosaicRegistry.proposeReservePrice(mosaicId, price);
+
+        // then
+        mono = mosaicRegistry.getMono(originalId, monoId);
+        assertEq(mono.governanceOptions.proposedReservePrice, price);
+    }
+
     // TODO(@jyterencekim): Write unit tests for the main functions
     function test_toMosaicId_fromMosaicId() public {
         // given
-        uint192 expectedGroupId = 581019;
+        uint192 expectedOriginalId = 581019;
         uint64 expectedMonoId = 830404;
 
         // when
-        uint256 mosaicId = mosaicRegistry.toMosaicId(expectedGroupId, expectedMonoId);
+        uint256 mosaicId = mosaicRegistry.toMosaicId(expectedOriginalId, expectedMonoId);
         (uint192 originalId, uint64 monoId) = mosaicRegistry.fromMosaicId(mosaicId);
 
         // then
-        assertEq(originalId, expectedGroupId);
+        assertEq(originalId, expectedOriginalId);
         assertEq(monoId, expectedMonoId);
     }
 }

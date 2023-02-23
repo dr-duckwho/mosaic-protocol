@@ -33,4 +33,8 @@ contract MockCryptoPunksMosaicRegistry is CryptoPunksMosaicRegistry {
     function setResalePrice(uint192 originalId, uint256 resalePrice) public {
         resalePrices[originalId] = resalePrice;
     }
+
+    function mockMint(address to, uint256 mosaicId) public {
+        _mint(to, mosaicId);
+    }
 }

@@ -130,7 +130,13 @@ contract CryptoPunksGroupRegistry is
      */
     function buy(
         uint192 groupId
-    ) external nonReentrant onlyRole(CURATOR_ROLE) onlyValidGroup(groupId) onlyWhenActive {
+    )
+        external
+        nonReentrant
+        onlyRole(CURATOR_ROLE)
+        onlyValidGroup(groupId)
+        onlyWhenActive
+    {
         // Internal prerequisites
         require(
             address(museum.mosaicRegistry()) != address(0x0),
