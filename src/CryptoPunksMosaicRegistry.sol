@@ -204,8 +204,10 @@ contract CryptoPunksMosaicRegistry is
     {
         Original storage original = originals[originalId];
         // TODO: Make bid respect min reserve prices decided by GovernanceOptions
+        // TODO: Check whether the minimum requirement for initiating bids is met (turnout)
         require(
             price >= original.minReservePrice &&
+                price >= getAverageReservePriceProposals(originalId) &&
                 price <= original.maxReservePrice,
             "Bid price must be within the reserve price range"
         );
@@ -342,6 +344,14 @@ contract CryptoPunksMosaicRegistry is
     //
     // Reconstitution helpers
     //
+
+    function getAverageReservePriceProposals(
+        uint192 originalId
+    ) public view returns (uint256 average) {
+        // TODO: Consider governance turnout requirements
+        (uint64 count, uint256 sum) = sumReservePriceProposals(originalId);
+        return sum / count;
+    }
 
     function sumReservePriceProposals(
         uint192 originalId
