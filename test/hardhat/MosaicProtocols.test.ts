@@ -91,7 +91,7 @@ describe("MosaicProtocol", function () {
         ]
       );
 
-      await expect(groupRegistry.connect(bob).buy(groupId)).to.be.revertedWith(
+      await expect(groupRegistry.connect(owner).buy(groupId)).to.be.revertedWith(
         "Not sold out"
       );
 
@@ -108,7 +108,7 @@ describe("MosaicProtocol", function () {
         "Fewer tickets remaining than requested"
       );
 
-      await groupRegistry.connect(bob).buy(groupId);
+      await groupRegistry.connect(owner).buy(groupId);
 
       // TODO: #0 View function for owned Ticket / Mosaic NFT ids
       const ticketBalance = ticketBalanceBy(groupRegistry);
