@@ -222,15 +222,7 @@ contract CryptoPunksMosaicRegistry is
                 "The previous bid must be rejected"
             );
         }
-        uint256 newBidId = uint256(
-            keccak256(
-                abi.encodePacked(
-                    originalId,
-                    msg.sender,
-                    uint40(block.timestamp)
-                )
-            )
-        );
+        uint256 newBidId = toBidId(originalId, msg.sender, block.timestamp);
         bids[newBidId] = Bid({
             id: newBidId,
             originalId: originalId,
@@ -247,13 +239,28 @@ contract CryptoPunksMosaicRegistry is
         return newBidId;
     }
 
-    function refundBidDeposit(
-        uint256 bidId
-    ) external onlyWhenActive onlyWhenActive {
+    function toBidId(
+        uint192 originalId,
+        address bidder,
+        uint256 blockTimestamp
+    ) public pure returns (uint256 id) {
+        return
+            uint256(
+                keccak256(
+                    abi.encodePacked(originalId, bidder, uint40(blockTimestamp))
+                )
+            );
+    }
+
+    function refundBidDeposit(uint256 bidId) external onlyWhenActive {
         Bid storage bid = bids[bidId];
         require(
             bid.state == BidState.Rejected,
             "Only rejected bids can be refunded"
+        );
+        require(
+            bid.bidder == msg.sender,
+            "Only the bidder can retrieve its own fund"
         );
 
         uint256 deposit = bidDeposits[bidId];
