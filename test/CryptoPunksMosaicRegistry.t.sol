@@ -159,6 +159,51 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         assert(state == BidState.Refunded);
     }
 
+    function test_respondToBid() public {
+        // given
+        address alice = _randomAddress();
+        uint192 originalId = 530923;
+        uint64 monoId = 581019;
+        uint256 mosaicId = mosaicRegistry.toMosaicId(originalId, monoId);
+        uint256 bidId = mosaicRegistry.toBidId(originalId, alice, block.timestamp);
+
+        mosaicRegistry.setBid(bidId, Bid({
+            id: bidId,
+            originalId: originalId,
+            bidder: payable(alice),
+            createdAt: uint40(block.timestamp),
+            expiry: mosaicRegistry.BID_EXPIRY(),
+            price: 100 ether,
+            state: BidState.Proposed
+        }));
+        Original memory original = Original({
+            id: originalId,
+            punkId: 1,
+            totalMonoSupply: 100,
+            claimedMonoCount: 0,
+            purchasePrice: 100 ether,
+            minReservePrice: 50 ether,
+            maxReservePrice: 500 ether,
+            status: OriginalStatus.Active,
+            activeBidId: bidId,
+            metadataBaseUri: ""
+        });
+        mosaicRegistry.setOriginal(originalId, original);
+
+        // set up the ownership
+        mosaicRegistry.mockMint(alice, mosaicId);
+
+        // when
+        vm.prank(alice);
+        mosaicRegistry.respondToBid(mosaicId, MonoBidResponse.No);
+
+        // then
+        Mono memory mono = mosaicRegistry.getMono(originalId, monoId);
+        MonoGovernanceOptions memory governanceOptions = mono.governanceOptions;
+        assertEq(governanceOptions.bidId, bidId);
+        assert(governanceOptions.bidResponse == MonoBidResponse.No);
+    }
+
     // TODO(@jyterencekim): Write unit tests for the main functions
     function test_toMosaicId_fromMosaicId() public {
         // given
