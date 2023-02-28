@@ -204,6 +204,39 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         assert(governanceOptions.bidResponse == MonoBidResponse.No);
     }
 
+    function test_finalizeProposedBid() public {
+        doTest_finalizeProposedBid(true);
+        doTest_finalizeProposedBid(false);
+    }
+
+    function doTest_finalizeProposedBid(bool isBidAcceptable) private {
+        // given
+        address alice = _randomAddress();
+        uint192 originalId = 530923;
+        uint64 monoId = 581019;
+        uint256 mosaicId = mosaicRegistry.toMosaicId(originalId, monoId);
+        uint256 bidId = mosaicRegistry.toBidId(originalId, alice, block.timestamp);
+
+        mosaicRegistry.setBid(bidId, Bid({
+            id: bidId,
+            originalId: originalId,
+            bidder: payable(alice),
+            createdAt: uint40(block.timestamp),
+            expiry: mosaicRegistry.BID_EXPIRY(),
+            price: 100 ether,
+            state: BidState.Proposed
+        }));
+
+        // when
+        mosaicRegistry.mockBidAcceptable(true, isBidAcceptable);
+        vm.warp(block.timestamp + mosaicRegistry.BID_EXPIRY() + 1);
+        vm.prank(alice);
+        BidState result = mosaicRegistry.finalizeProposedBid(bidId);
+
+        // then
+        assert(result == (isBidAcceptable ? BidState.Accepted : BidState.Rejected));
+    }
+
     // TODO: write a test for sumBidResponses
 
     // TODO(@jyterencekim): Write unit tests for the main functions

@@ -401,7 +401,7 @@ contract CryptoPunksMosaicRegistry is
         return (yes, no);
     }
 
-    function isBidAcceptable(uint192 originalId) public view returns (bool) {
+    function isBidAcceptable(uint192 originalId) public virtual view returns (bool) {
         // TODO(@jyterencekim): Revisit the bid acceptance condition with respect to the planned spec
         (uint64 yes, ) = sumBidResponses(originalId);
         uint128 totalVotable = originals[originalId].totalMonoSupply;

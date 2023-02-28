@@ -2,8 +2,13 @@
 pragma solidity ^0.8.17;
 
 import "../src/CryptoPunksMosaicRegistry.sol";
+import "mockprovider/MockProvider.sol";
 
-contract MockCryptoPunksMosaicRegistry is CryptoPunksMosaicRegistry {
+contract MockCryptoPunksMosaicRegistry is MockProvider, CryptoPunksMosaicRegistry {
+
+    bool private mockingBidAcceptable;
+    bool private isMockBidAcceptable;
+
     constructor(address museumAddress) public CryptoPunksMosaicRegistry(museumAddress) {}
 
     function setLatestOriginalId(uint192 value) public {
@@ -36,5 +41,18 @@ contract MockCryptoPunksMosaicRegistry is CryptoPunksMosaicRegistry {
 
     function mockMint(address to, uint256 mosaicId) public {
         _mint(to, mosaicId);
+    }
+
+    function mockBidAcceptable(bool enabled, bool value) public {
+        mockingBidAcceptable = enabled;
+        isMockBidAcceptable = value;
+    }
+
+    // TODO: Use MockProvider if possible
+    function isBidAcceptable(uint192 originalId) public override view returns (bool) {
+        if (mockingBidAcceptable) {
+            return isMockBidAcceptable;
+        }
+        return super.isBidAcceptable(originalId);
     }
 }
