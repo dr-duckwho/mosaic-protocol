@@ -204,6 +204,8 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         assert(governanceOptions.bidResponse == MonoBidResponse.No);
     }
 
+    // TODO: write a test for sumBidResponses
+
     // TODO(@jyterencekim): Write unit tests for the main functions
     function test_toMosaicId_fromMosaicId() public {
         // given

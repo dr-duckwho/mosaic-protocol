@@ -306,6 +306,8 @@ contract CryptoPunksMosaicRegistry is
         bid.state = isBidAcceptable(bid.originalId)
             ? BidState.Accepted
             : BidState.Rejected;
+        // TODO: define and emit an event
+
         return bid.state;
     }
 
@@ -323,6 +325,7 @@ contract CryptoPunksMosaicRegistry is
         museum.cryptoPunksMarket().transferPunk(bid.bidder, original.punkId);
 
         bid.state = BidState.Won;
+        // TODO: define and emit an event
     }
 
     //
@@ -346,6 +349,7 @@ contract CryptoPunksMosaicRegistry is
         totalResaleFund = burnedMonoCount * getPerMonoResaleFund(originalId);
         (bool sent, ) = msg.sender.call{value: totalResaleFund}("");
         require(sent, "Failed to refund");
+        // TODO: define and emit an event
     }
 
     //
