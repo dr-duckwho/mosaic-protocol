@@ -325,6 +325,7 @@ contract CryptoPunksMosaicRegistry is
         Original storage original = originals[bid.originalId];
         resalePrices[original.id] = bid.price;
         original.status = OriginalStatus.Sold;
+        emit OriginalSold(bid.originalId, bidId);
 
         museum.cryptoPunksMarket().transferPunk(bid.bidder, original.punkId);
 
@@ -353,7 +354,8 @@ contract CryptoPunksMosaicRegistry is
         totalResaleFund = burnedMonoCount * getPerMonoResaleFund(originalId);
         (bool sent, ) = msg.sender.call{value: totalResaleFund}("");
         require(sent, "Failed to refund");
-        // TODO: define and emit an event
+
+        emit OriginalRefunded(originalId);
     }
 
     //

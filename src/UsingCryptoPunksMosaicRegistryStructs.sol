@@ -25,6 +25,10 @@ interface UsingCryptoPunksMosaicRegistryStructs {
         Sold
     }
 
+    event OriginalSold(uint192 indexed originalId, uint256 indexed bidId);
+
+    event OriginalRefunded(uint192 indexed originalId);
+
     struct Mono {
         uint256 mosaicId;
         uint8 presetId;
