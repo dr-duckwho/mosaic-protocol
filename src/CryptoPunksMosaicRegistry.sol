@@ -306,15 +306,18 @@ contract CryptoPunksMosaicRegistry is
         bid.state = isBidAcceptable(bid.originalId)
             ? BidState.Accepted
             : BidState.Rejected;
-        // TODO: define and emit an event
 
+        if (bid.state == BidState.Accepted) {
+            emit BidAccepted(bidId, bid.originalId);
+        } else {
+            emit BidRejected(bidId, bid.originalId);
+        }
         return bid.state;
     }
 
     // TODO: Introduce a way for Mosaic owners to force Bid finalization to prevent limbo cases where
     //  the winning bidder makes no further transaction
     function finalizeAcceptedBid(uint256 bidId) public onlyWhenActive {
-        // TODO: Transfer the original and update the Mosaic state
         Bid storage bid = bids[bidId];
         require(bid.state == BidState.Accepted, "Bid must be accepted");
 
@@ -325,7 +328,7 @@ contract CryptoPunksMosaicRegistry is
         museum.cryptoPunksMarket().transferPunk(bid.bidder, original.punkId);
 
         bid.state = BidState.Won;
-        // TODO: define and emit an event
+        emit BidWon(bidId, bid.originalId);
     }
 
     //
@@ -401,7 +404,9 @@ contract CryptoPunksMosaicRegistry is
         return (yes, no);
     }
 
-    function isBidAcceptable(uint192 originalId) public virtual view returns (bool) {
+    function isBidAcceptable(
+        uint192 originalId
+    ) public view virtual returns (bool) {
         // TODO(@jyterencekim): Revisit the bid acceptance condition with respect to the planned spec
         (uint64 yes, ) = sumBidResponses(originalId);
         uint128 totalVotable = originals[originalId].totalMonoSupply;

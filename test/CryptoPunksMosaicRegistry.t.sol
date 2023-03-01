@@ -180,7 +180,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
             id: originalId,
             punkId: 1,
             totalMonoSupply: 100,
-            claimedMonoCount: 0,
+            claimedMonoCount: 100,
             purchasePrice: 100 ether,
             minReservePrice: 50 ether,
             maxReservePrice: 500 ether,
@@ -230,6 +230,14 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         // when
         mosaicRegistry.mockBidAcceptable(true, isBidAcceptable);
         vm.warp(block.timestamp + mosaicRegistry.BID_EXPIRY() + 1);
+
+        vm.expectEmit(true, true, false, false);
+        if (isBidAcceptable) {
+            emit BidAccepted(bidId, originalId);
+        } else {
+            emit BidRejected(bidId, originalId);
+        }
+
         vm.prank(alice);
         BidState result = mosaicRegistry.finalizeProposedBid(bidId);
 
@@ -237,7 +245,56 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         assert(result == (isBidAcceptable ? BidState.Accepted : BidState.Rejected));
     }
 
-    // TODO: write a test for sumBidResponses
+    function test_finalizeAcceptedBid() public {
+        // given
+        address bidder = _randomAddress();
+        uint192 originalId = 530923;
+        uint64 monoId = 581019;
+        uint256 mosaicId = mosaicRegistry.toMosaicId(originalId, monoId);
+        uint256 bidId = mosaicRegistry.toBidId(originalId, bidder, block.timestamp);
+
+        mosaicRegistry.setBid(bidId, Bid({
+            id: bidId,
+            originalId: originalId,
+            bidder: payable(bidder),
+            createdAt: uint40(block.timestamp),
+            expiry: mosaicRegistry.BID_EXPIRY(),
+            price: 100 ether,
+            state: BidState.Accepted
+        }));
+        Original memory original = Original({
+            id: originalId,
+            punkId: 1,
+            totalMonoSupply: 100,
+            claimedMonoCount: 100,
+            purchasePrice: 100 ether,
+            minReservePrice: 50 ether,
+            maxReservePrice: 500 ether,
+            status: OriginalStatus.Active,
+            activeBidId: bidId,
+            metadataBaseUri: ""
+        });
+        mosaicRegistry.setOriginal(originalId, original);
+
+        // market
+        mockCryptoPunksMarket.givenQueryReturn(
+            abi.encodePacked(ICryptoPunksMarket.transferPunk.selector), abi.encodePacked(true)
+        );
+
+        // when
+        vm.expectEmit(true, true, false, false);
+        emit BidWon(bidId, originalId);
+
+        address actor = _randomAddress();
+        vm.prank(actor);
+        mosaicRegistry.finalizeAcceptedBid(bidId);
+
+        // then
+        (,,,,,,BidState state) = mosaicRegistry.bids(bidId);
+        assert(state == BidState.Won);
+        (,,,,,,,,OriginalStatus status,) = mosaicRegistry.originals(originalId);
+        assert(status == OriginalStatus.Sold);
+    }
 
     // TODO(@jyterencekim): Write unit tests for the main functions
     function test_toMosaicId_fromMosaicId() public {
