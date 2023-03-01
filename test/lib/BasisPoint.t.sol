@@ -14,7 +14,7 @@ contract BasisPointTest is Test, TestUtils {
         uint256 bps = 37 * 100; // 37%
 
         // then
-        uint256 result = BasisPoint.calculateBasisPoint(amount, bps);
-        assertEq(result, 3700);
+        uint256 actual = BasisPoint.calculateBasisPoint(amount, bps);
+        assertEq(actual, 3700);
     }
 }

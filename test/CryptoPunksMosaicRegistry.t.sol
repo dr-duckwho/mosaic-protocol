@@ -568,6 +568,31 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         assertEq(actual, isAcceptable);
     }
 
+    function test_getPerMonoResaleFund() public {
+        // given
+        uint192 originalId = 530923;
+        uint256 resalePrice = 183 ether;
+        uint96 totalMonoSupply = 100;
+        mosaicRegistry.setResalePrice(originalId, resalePrice);
+
+        mosaicRegistry.setOriginal(originalId, Original({
+            id: originalId,
+            punkId: 1,
+            totalMonoSupply: totalMonoSupply,
+            claimedMonoCount: totalMonoSupply,
+            purchasePrice: 100 ether,
+            minReservePrice: 50 ether,
+            maxReservePrice: 500 ether,
+            status: OriginalStatus.Active,
+            activeBidId: 1234,
+            metadataBaseUri: ""
+        }));
+
+        // then
+        uint256 actual = mosaicRegistry.getPerMonoResaleFund(originalId);
+        assertEq(actual, 1.83 ether);
+    }
+
     function test_toMosaicId_fromMosaicId() public {
         // given
         uint192 expectedOriginalId = 581019;

@@ -10,8 +10,8 @@ interface UsingCryptoPunksMosaicRegistryStructs {
          * @dev To calculate governance quorum and token circulation.
          *      Corresponds to total ticket circulation per group.
          */
-        uint128 totalMonoSupply;
-        uint128 claimedMonoCount;
+        uint96 totalMonoSupply;
+        uint96 claimedMonoCount;
         uint256 purchasePrice;
         uint256 minReservePrice;
         uint256 maxReservePrice;
