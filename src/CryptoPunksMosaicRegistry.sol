@@ -370,7 +370,7 @@ contract CryptoPunksMosaicRegistry is
     function getAverageReservePriceProposals(
         uint192 originalId
     ) public view returns (uint256 average) {
-        // TODO: Consider governance turnout requirements
+        // TODO: Consider governance turnout requirements and write a unit test
         (uint64 count, uint256 sum) = sumReservePriceProposals(originalId);
         return sum / count;
     }

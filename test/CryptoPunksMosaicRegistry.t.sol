@@ -332,7 +332,36 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         assertEq(address(mosaicRegistry).balance, registryFund - expectedRefundSum);
     }
 
-    // TODO(@jyterencekim): Write unit tests for the main functions
+    function test_sumReservePriceProposals() public {
+        // given
+        uint192 originalId = 810920;
+        uint64 totalMonoCount = 100;
+        mosaicRegistry.setLatestMonoId(originalId, totalMonoCount + 1);
+
+        uint64 monosWithProposalCount = 30;
+        uint256 proposedReservePriceAverage = 77 ether;
+
+        // assume that [1,30] Monos have valid price proposals
+        for (uint64 monoId = 1; monoId <= monosWithProposalCount; monoId++) {
+            uint256 mosaicId = mosaicRegistry.toMosaicId(originalId, monoId);
+            Mono memory mono = Mono({
+                mosaicId: mosaicId,
+                presetId: 0,
+                governanceOptions: MonoGovernanceOptions({
+                    proposedReservePrice: proposedReservePriceAverage,
+                    bidResponse: MonoBidResponse.None,
+                    bidId: 0
+                })
+            });
+            mosaicRegistry.setMono(mosaicId, mono);
+        }
+
+        // then
+        (uint64 validCount, uint256 priceSum) = mosaicRegistry.sumReservePriceProposals(originalId);
+        assertEq(validCount, monosWithProposalCount);
+        assertEq(priceSum, monosWithProposalCount * proposedReservePriceAverage);
+    }
+
     function test_toMosaicId_fromMosaicId() public {
         // given
         uint192 expectedOriginalId = 581019;
