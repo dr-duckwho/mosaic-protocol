@@ -79,9 +79,13 @@ interface UsingCryptoPunksMosaicRegistryStructs {
         Refunded
     }
 
+    event BidProposed(uint256 indexed bidId, uint192 indexed originalId);
+
     event BidAccepted(uint256 indexed bidId, uint192 indexed originalId);
 
     event BidRejected(uint256 indexed bidId, uint192 indexed originalId);
 
     event BidWon(uint256 indexed bidId, uint192 indexed originalId);
+
+    event BidRefunded(uint256 indexed bidId, uint192 indexed originalId);
 }

@@ -234,8 +234,8 @@ contract CryptoPunksMosaicRegistry is
         });
         bidDeposits[newBidId] = msg.value;
         original.activeBidId = newBidId;
-        // TODO: Define and emit Bid event
 
+        emit BidProposed(newBidId, originalId);
         return newBidId;
     }
 
@@ -268,6 +268,7 @@ contract CryptoPunksMosaicRegistry is
         require(sent, "Failed to refund");
 
         bid.state = BidState.Refunded;
+        emit BidRefunded(bidId, bid.originalId);
     }
 
     //
