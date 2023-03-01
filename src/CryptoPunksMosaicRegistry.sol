@@ -425,7 +425,7 @@ contract CryptoPunksMosaicRegistry is
 
     function getPerMonoResaleFund(
         uint192 originalId
-    ) public view returns (uint256 perMonoResaleFund) {
+    ) public view virtual returns (uint256 perMonoResaleFund) {
         uint256 resalePrice = resalePrices[originalId];
         require(resalePrice > 0, "No resale price set");
         uint256 perMonoBps = BasisPoint.WHOLE_BPS /

@@ -8,6 +8,8 @@ contract MockCryptoPunksMosaicRegistry is MockProvider, CryptoPunksMosaicRegistr
 
     bool private mockingBidAcceptable;
     bool private isMockBidAcceptable;
+    bool private mockingGetPerMonoResaleFund;
+    uint256 private mockGetPerMonoResaleFund;
 
     constructor(address museumAddress) public CryptoPunksMosaicRegistry(museumAddress) {}
 
@@ -54,5 +56,17 @@ contract MockCryptoPunksMosaicRegistry is MockProvider, CryptoPunksMosaicRegistr
             return isMockBidAcceptable;
         }
         return super.isBidAcceptable(originalId);
+    }
+
+    function mockPerMonoResaleFund(bool enabled, uint256 value) public {
+        mockingGetPerMonoResaleFund = enabled;
+        mockGetPerMonoResaleFund = value;
+    }
+
+    function getPerMonoResaleFund(uint192 originalId) public override view returns (uint256) {
+        if (mockingGetPerMonoResaleFund) {
+            return mockGetPerMonoResaleFund;
+        }
+        return super.getPerMonoResaleFund(originalId);
     }
 }

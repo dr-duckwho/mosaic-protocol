@@ -296,6 +296,42 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         assert(status == OriginalStatus.Sold);
     }
 
+    function test_refundOnSold() public {
+        // given
+        uint192 originalId = 810920;
+        uint64 totalMonoCount = 100;
+        mosaicRegistry.setLatestMonoId(originalId, totalMonoCount + 1);
+
+        address alice = _randomAddress();
+        uint64 ownedMonoCount = 30;
+
+        // assume that Alice has [1,30] Monos
+        for (uint64 monoId = 1; monoId <= ownedMonoCount; monoId++) {
+            mosaicRegistry.mockMint(alice, mosaicRegistry.toMosaicId(originalId, monoId));
+        }
+
+        // given the fund status
+        uint256 registryFund = 100 ether;
+        vm.deal(address(mosaicRegistry), registryFund);
+        assertEq(alice.balance, 0);
+
+        // assuming 1 ETH refund per Mono
+        uint256 refundPerMono = 1 ether;
+        mosaicRegistry.mockPerMonoResaleFund(true, refundPerMono);
+
+        // when
+        vm.expectEmit(true, true, false, false);
+        emit MonoRefunded(originalId, alice);
+
+        vm.prank(alice);
+        mosaicRegistry.refundOnSold(originalId);
+
+        // then
+        uint256 expectedRefundSum = refundPerMono * ownedMonoCount;
+        assertEq(alice.balance, expectedRefundSum);
+        assertEq(address(mosaicRegistry).balance, registryFund - expectedRefundSum);
+    }
+
     // TODO(@jyterencekim): Write unit tests for the main functions
     function test_toMosaicId_fromMosaicId() public {
         // given
