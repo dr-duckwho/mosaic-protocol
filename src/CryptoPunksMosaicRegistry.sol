@@ -44,8 +44,8 @@ contract CryptoPunksMosaicRegistry is
 
     // @dev 0 represents the Original; each Mono is assigned an ID starting from 1.
     //  The value represents the next ID to assign for a new Mono.
-    //  originalId => latestMonoId
-    mapping(uint192 => uint64) public latestMonoIds;
+    //  originalId => nextMonoId
+    mapping(uint192 => uint64) public nextMonoIds;
 
     // @dev mosaicId (originalId + monoId) => Mono
     mapping(uint256 => Mono) public monos;
@@ -110,7 +110,7 @@ contract CryptoPunksMosaicRegistry is
             "The contract must own the punk"
         );
         originalId = ++latestOriginalId;
-        ++latestMonoIds[originalId];
+        ++nextMonoIds[originalId];
         originals[originalId] = Original({
             id: originalId,
             punkId: punkId,
@@ -137,10 +137,10 @@ contract CryptoPunksMosaicRegistry is
         returns (uint256 mosaicId)
     {
         require(
-            latestMonoIds[originalId] > 0,
+            nextMonoIds[originalId] > 0,
             "Original must be initialized first"
         );
-        uint64 monoId = latestMonoIds[originalId]++;
+        uint64 monoId = nextMonoIds[originalId]++;
         mosaicId = toMosaicId(originalId, monoId);
         monos[mosaicId] = Mono({
             mosaicId: mosaicId,
@@ -346,8 +346,8 @@ contract CryptoPunksMosaicRegistry is
     ) public onlyWhenActive returns (uint256 totalResaleFund) {
         // TODO: Double-check whether arithmetic division may cause under/over-refunding
         uint256 burnedMonoCount = 0;
-        uint64 latestMonoId = latestMonoIds[originalId];
-        for (uint64 monoId = 1; monoId < latestMonoId; monoId++) {
+        uint64 nextMonoId = nextMonoIds[originalId];
+        for (uint64 monoId = 1; monoId < nextMonoId; monoId++) {
             uint256 mosaicId = toMosaicId(originalId, monoId);
             if (_ownerOf(mosaicId) == msg.sender) {
                 _burn(mosaicId);
@@ -378,8 +378,8 @@ contract CryptoPunksMosaicRegistry is
     function sumReservePriceProposals(
         uint192 originalId
     ) public view returns (uint64 validProposalCount, uint256 priceSum) {
-        uint64 latestMonoId = latestMonoIds[originalId];
-        for (uint64 monoId = 1; monoId < latestMonoId; monoId++) {
+        uint64 nextMonoId = nextMonoIds[originalId];
+        for (uint64 monoId = 1; monoId < nextMonoId; monoId++) {
             Mono storage mono = monos[toMosaicId(originalId, monoId)];
             if (mono.governanceOptions.proposedReservePrice > 0) {
                 validProposalCount++;
@@ -395,9 +395,9 @@ contract CryptoPunksMosaicRegistry is
         if (!hasOngoingBid(originalId)) {
             return (0, 0);
         }
-        uint64 latestMonoId = latestMonoIds[originalId];
+        uint64 nextMonoId = nextMonoIds[originalId];
         uint256 activeBidId = originals[originalId].activeBidId;
-        for (uint64 monoId = 1; monoId < latestMonoId; monoId++) {
+        for (uint64 monoId = 1; monoId < nextMonoId; monoId++) {
             MonoGovernanceOptions storage options = monos[
                 toMosaicId(originalId, monoId)
             ].governanceOptions;
@@ -463,14 +463,14 @@ contract CryptoPunksMosaicRegistry is
     function getMonoLifeCycle(
         uint256 mosaicId
     ) public view returns (MonoLifeCycle) {
-        // TODO: Check valid mosaicId
-        Mono storage mono = monos[mosaicId];
         (uint192 originalId, ) = fromMosaicId(mosaicId);
+        require(originalId <= latestOriginalId, "Invalid originalId");
+
         Original storage original = originals[originalId];
         if (original.status == OriginalStatus.Sold) {
             return MonoLifeCycle.Dead;
         }
-        if (mono.presetId == 0) {
+        if (monos[mosaicId].presetId == 0) {
             return MonoLifeCycle.Raw;
         }
         return MonoLifeCycle.Active;

@@ -26,8 +26,8 @@ contract MockCryptoPunksMosaicRegistry is MockProvider, CryptoPunksMosaicRegistr
         originals[originalId] = original;
     }
 
-    function setLatestMonoId(uint192 originalId, uint64 latestMonoId) public {
-        latestMonoIds[originalId] = latestMonoId;
+    function setNextMonoId(uint192 originalId, uint64 nextMonoId) public {
+        nextMonoIds[originalId] = nextMonoId;
     }
 
     function setMono(uint256 mosaicId, Mono calldata mono) public {

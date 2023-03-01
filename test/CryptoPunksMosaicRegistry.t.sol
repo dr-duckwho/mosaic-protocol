@@ -43,7 +43,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
 
         // then
         assertEq(originalId, 1);
-        assertEq(mosaicRegistry.latestMonoIds(originalId), 1);
+        assertEq(mosaicRegistry.nextMonoIds(originalId), 1);
         CryptoPunksMosaicRegistry.Original memory original = mosaicRegistry.getOriginal(originalId);
         assertEq(original.id, originalId);
         assertEq(original.punkId, punkId);
@@ -70,7 +70,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
 
         // assume that the original is initialized
         uint192 originalId = 830404;
-        mosaicRegistry.setLatestMonoId(originalId, 1);
+        mosaicRegistry.setNextMonoId(originalId, 1);
 
         // when
         vm.prank(mintAuthority);
@@ -300,7 +300,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         // given
         uint192 originalId = 810920;
         uint64 totalMonoCount = 100;
-        mosaicRegistry.setLatestMonoId(originalId, totalMonoCount + 1);
+        mosaicRegistry.setNextMonoId(originalId, totalMonoCount + 1);
 
         address alice = _randomAddress();
         uint64 ownedMonoCount = 30;
@@ -336,7 +336,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         // given
         uint192 originalId = 810920;
         uint64 totalMonoCount = 100;
-        mosaicRegistry.setLatestMonoId(originalId, totalMonoCount + 1);
+        mosaicRegistry.setNextMonoId(originalId, totalMonoCount + 1);
 
         uint64 monosWithProposalCount = 30;
         uint256 proposedReservePriceAverage = 77 ether;
@@ -366,7 +366,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         // given
         uint192 originalId = 810920;
         uint64 totalMonoCount = 100;
-        mosaicRegistry.setLatestMonoId(originalId, totalMonoCount + 1);
+        mosaicRegistry.setNextMonoId(originalId, totalMonoCount + 1);
 
         address bidder = _randomAddress();
         uint256 bidId = mosaicRegistry.toBidId(originalId, bidder, block.timestamp);
@@ -428,7 +428,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         // given
         uint192 originalId = 810920;
         uint64 totalMonoCount = 100;
-        mosaicRegistry.setLatestMonoId(originalId, totalMonoCount + 1);
+        mosaicRegistry.setNextMonoId(originalId, totalMonoCount + 1);
 
         address bidder = _randomAddress();
         uint256 bidId = mosaicRegistry.toBidId(originalId, bidder, block.timestamp);
@@ -480,7 +480,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         // given
         uint192 originalId = 810920;
         uint64 totalMonoCount = 100;
-        mosaicRegistry.setLatestMonoId(originalId, totalMonoCount + 1);
+        mosaicRegistry.setNextMonoId(originalId, totalMonoCount + 1);
 
         address bidder = _randomAddress();
         uint256 bidId = mosaicRegistry.toBidId(originalId, bidder, block.timestamp);
