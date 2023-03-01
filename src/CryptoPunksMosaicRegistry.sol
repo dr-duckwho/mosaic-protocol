@@ -38,6 +38,7 @@ contract CryptoPunksMosaicRegistry is
     //
 
     // @dev used as a `originalId`, starting from 1.
+    // TODO: Consider changing to nextOriginalId to avoid more gas consumption for the first group
     uint192 public latestOriginalId;
 
     mapping(uint192 => Original) public originals;
