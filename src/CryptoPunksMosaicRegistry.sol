@@ -351,11 +351,13 @@ contract CryptoPunksMosaicRegistry is
                 burnedMonoCount++;
             }
         }
+        require(burnedMonoCount > 0, "No Monos owned to refund");
+
         totalResaleFund = burnedMonoCount * getPerMonoResaleFund(originalId);
         (bool sent, ) = msg.sender.call{value: totalResaleFund}("");
         require(sent, "Failed to refund");
 
-        emit OriginalRefunded(originalId);
+        emit MonoRefunded(originalId, msg.sender);
     }
 
     //
