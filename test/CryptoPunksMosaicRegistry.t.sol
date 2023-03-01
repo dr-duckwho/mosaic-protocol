@@ -362,6 +362,182 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         assertEq(priceSum, monosWithProposalCount * proposedReservePriceAverage);
     }
 
+    function test_sumBidResponses() public {
+        // given
+        uint192 originalId = 810920;
+        uint64 totalMonoCount = 100;
+        mosaicRegistry.setLatestMonoId(originalId, totalMonoCount + 1);
+
+        address bidder = _randomAddress();
+        uint256 bidId = mosaicRegistry.toBidId(originalId, bidder, block.timestamp);
+
+        uint64 monosWithYesCount = 30;
+        uint64 monosWithNoCount = 20;
+
+        mosaicRegistry.setBid(bidId, Bid({
+            id: bidId,
+            originalId: originalId,
+            bidder: payable(bidder),
+            createdAt: uint40(block.timestamp),
+            expiry: mosaicRegistry.BID_EXPIRY(),
+            price: 100 ether,
+            state: BidState.Proposed
+        }));
+        mosaicRegistry.setOriginal(originalId, Original({
+            id: originalId,
+            punkId: 1,
+            totalMonoSupply: 100,
+            claimedMonoCount: 100,
+            purchasePrice: 100 ether,
+            minReservePrice: 50 ether,
+            maxReservePrice: 500 ether,
+            status: OriginalStatus.Active,
+            activeBidId: bidId,
+            metadataBaseUri: ""
+        }));
+
+        for (uint64 monoId = 1; monoId <= totalMonoCount; monoId++) {
+            uint256 mosaicId = mosaicRegistry.toMosaicId(originalId, monoId);
+            // assuming yes for [1..yesCount], no for [yesCount + 1..yesCount + noCount]
+            // and none for the rest
+            MonoBidResponse response = MonoBidResponse.None;
+            if (monoId <= monosWithYesCount) {
+                response = MonoBidResponse.Yes;
+            } else if (monoId <= monosWithYesCount + monosWithNoCount) {
+                response = MonoBidResponse.No;
+            }
+            Mono memory mono = Mono({
+                mosaicId: mosaicId,
+                presetId: 0,
+                governanceOptions: MonoGovernanceOptions({
+                    proposedReservePrice: 60 ether,
+                    bidResponse: response,
+                    bidId: bidId
+                })
+            });
+            mosaicRegistry.setMono(mosaicId, mono);
+        }
+
+        // then
+        (uint64 yes, uint256 no) = mosaicRegistry.sumBidResponses(originalId);
+        assertEq(yes, monosWithYesCount);
+        assertEq(no, monosWithNoCount);
+    }
+
+    function test_sumBidResponses_noOngoingActiveBid() public {
+        // given
+        uint192 originalId = 810920;
+        uint64 totalMonoCount = 100;
+        mosaicRegistry.setLatestMonoId(originalId, totalMonoCount + 1);
+
+        address bidder = _randomAddress();
+        uint256 bidId = mosaicRegistry.toBidId(originalId, bidder, block.timestamp);
+
+        uint64 monosWithYesCount = 30;
+        uint64 monosWithNoCount = 20;
+        mosaicRegistry.setOriginal(originalId, Original({
+            id: originalId,
+            punkId: 1,
+            totalMonoSupply: 100,
+            claimedMonoCount: 100,
+            purchasePrice: 100 ether,
+            minReservePrice: 50 ether,
+            maxReservePrice: 500 ether,
+            status: OriginalStatus.Active,
+            activeBidId: 0,
+            metadataBaseUri: ""
+        }));
+
+        for (uint64 monoId = 1; monoId <= totalMonoCount; monoId++) {
+            uint256 mosaicId = mosaicRegistry.toMosaicId(originalId, monoId);
+            // assuming yes for [1..yesCount], no for [yesCount + 1..yesCount + noCount]
+            // and none for the rest
+            MonoBidResponse response = MonoBidResponse.None;
+            if (monoId <= monosWithYesCount) {
+                response = MonoBidResponse.Yes;
+            } else if (monoId <= monosWithYesCount + monosWithNoCount) {
+                response = MonoBidResponse.No;
+            }
+            Mono memory mono = Mono({
+            mosaicId: mosaicId,
+            presetId: 0,
+            governanceOptions: MonoGovernanceOptions({
+            proposedReservePrice: 60 ether,
+            bidResponse: response,
+            bidId: bidId
+            })
+            });
+            mosaicRegistry.setMono(mosaicId, mono);
+        }
+
+        // then
+        (uint64 yes, uint256 no) = mosaicRegistry.sumBidResponses(originalId);
+        assertEq(yes, 0);
+        assertEq(no, 0);
+    }
+
+    function test_sumBidResponses_halfValidResponses() public {
+        // given
+        uint192 originalId = 810920;
+        uint64 totalMonoCount = 100;
+        mosaicRegistry.setLatestMonoId(originalId, totalMonoCount + 1);
+
+        address bidder = _randomAddress();
+        uint256 bidId = mosaicRegistry.toBidId(originalId, bidder, block.timestamp);
+
+        uint64 monosWithYesCount = 30;
+        uint64 monosWithNoCount = 20;
+        mosaicRegistry.setBid(bidId, Bid({
+            id: bidId,
+            originalId: originalId,
+            bidder: payable(bidder),
+            createdAt: uint40(block.timestamp),
+            expiry: mosaicRegistry.BID_EXPIRY(),
+            price: 100 ether,
+            state: BidState.Proposed
+        }));
+        mosaicRegistry.setOriginal(originalId, Original({
+            id: originalId,
+            punkId: 1,
+            totalMonoSupply: 100,
+            claimedMonoCount: 100,
+            purchasePrice: 100 ether,
+            minReservePrice: 50 ether,
+            maxReservePrice: 500 ether,
+            status: OriginalStatus.Active,
+            activeBidId: bidId,
+            metadataBaseUri: ""
+        }));
+
+        for (uint64 monoId = 1; monoId <= totalMonoCount; monoId++) {
+            uint256 mosaicId = mosaicRegistry.toMosaicId(originalId, monoId);
+            // assuming yes for [1..yesCount], no for [yesCount + 1..yesCount + noCount]
+            // and none for the rest
+            MonoBidResponse response = MonoBidResponse.None;
+            if (monoId <= monosWithYesCount) {
+                response = MonoBidResponse.Yes;
+            } else if (monoId <= monosWithYesCount + monosWithNoCount) {
+                response = MonoBidResponse.No;
+            }
+            Mono memory mono = Mono({
+                mosaicId: mosaicId,
+                presetId: 0,
+                governanceOptions: MonoGovernanceOptions({
+                    proposedReservePrice: 60 ether,
+                    bidResponse: response,
+                    // assumning odd-numbered responses are stale
+                    bidId: bidId - (monoId % 2 == 0 ? 0 : 1)
+                })
+            });
+            mosaicRegistry.setMono(mosaicId, mono);
+        }
+
+        // then
+        (uint64 yes, uint256 no) = mosaicRegistry.sumBidResponses(originalId);
+        assertEq(yes, monosWithYesCount / 2);
+        assertEq(no, monosWithNoCount / 2);
+    }
+
     function test_toMosaicId_fromMosaicId() public {
         // given
         uint192 expectedOriginalId = 581019;
