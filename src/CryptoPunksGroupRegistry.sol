@@ -228,7 +228,7 @@ contract CryptoPunksGroupRegistry is
         address payable contributor = payable(msg.sender);
         Group storage group = groups[groupId];
         require(
-            getGroupLifeCycle(groupId) == GroupLifeCycle.Expired,
+            getGroupLifeCycle(groupId) == GroupLifeCycle.Lost,
             "The group must be expired"
         );
         uint256 ticketsHeld = getTickets(msg.sender, groupId);
@@ -282,7 +282,7 @@ contract CryptoPunksGroupRegistry is
             if (group.expiresAt >= block.timestamp) {
                 return GroupLifeCycle.Active;
             }
-            return GroupLifeCycle.Expired;
+            return GroupLifeCycle.Lost;
         }
         return GroupLifeCycle.Nonexistent;
     }

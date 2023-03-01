@@ -14,7 +14,7 @@ interface UsingCryptoPunksGroupRegistryStructs {
         // the group is open and funding is ongoing
         Active,
         // the group has not procured the target original within the expiry
-        Expired,
+        Lost,
         // the group has successfully purchased and acquired the target original
         Won
     }
