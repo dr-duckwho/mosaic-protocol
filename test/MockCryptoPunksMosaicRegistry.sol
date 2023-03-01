@@ -8,8 +8,13 @@ contract MockCryptoPunksMosaicRegistry is MockProvider, CryptoPunksMosaicRegistr
 
     bool private mockingBidAcceptable;
     bool private isMockBidAcceptable;
+
     bool private mockingGetPerMonoResaleFund;
     uint256 private mockGetPerMonoResaleFund;
+
+    bool private mockingSumBidResponses;
+    uint64 private mockBidResponseYes;
+    uint64 private mockBidResponseNo;
 
     constructor(address museumAddress) public CryptoPunksMosaicRegistry(museumAddress) {}
 
@@ -68,5 +73,18 @@ contract MockCryptoPunksMosaicRegistry is MockProvider, CryptoPunksMosaicRegistr
             return mockGetPerMonoResaleFund;
         }
         return super.getPerMonoResaleFund(originalId);
+    }
+
+    function mockSumBidResponses(bool enabled, uint64 yes, uint64 no) public {
+        mockingSumBidResponses = enabled;
+        mockBidResponseYes = yes;
+        mockBidResponseNo = no;
+    }
+
+    function sumBidResponses(uint192 originalId) public override view returns (uint64, uint64) {
+        if (mockingSumBidResponses) {
+            return (mockBidResponseYes, mockBidResponseNo);
+        }
+        return super.sumBidResponses(originalId);
     }
 }

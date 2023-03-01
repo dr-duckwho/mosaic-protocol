@@ -391,7 +391,7 @@ contract CryptoPunksMosaicRegistry is
 
     function sumBidResponses(
         uint192 originalId
-    ) public view returns (uint64 yes, uint64 no) {
+    ) public virtual view returns (uint64 yes, uint64 no) {
         if (!hasOngoingBid(originalId)) {
             return (0, 0);
         }

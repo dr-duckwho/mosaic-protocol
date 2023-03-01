@@ -538,6 +538,36 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         assertEq(no, monosWithNoCount / 2);
     }
 
+    function test_isBidAcceptable() public {
+        doTest_isBidAcceptable(true);
+        doTest_isBidAcceptable(false);
+    }
+
+    function doTest_isBidAcceptable(bool isAcceptable) private {
+        // given
+        uint192 originalId = 830404;
+        uint64 yes = isAcceptable ? 51 : 49;
+        uint64 no = 20;
+        mosaicRegistry.mockSumBidResponses(true, yes, no);
+
+        mosaicRegistry.setOriginal(originalId, Original({
+            id: originalId,
+            punkId: 1,
+            totalMonoSupply: 100,
+            claimedMonoCount: 100,
+            purchasePrice: 100 ether,
+            minReservePrice: 50 ether,
+            maxReservePrice: 500 ether,
+            status: OriginalStatus.Active,
+            activeBidId: 1234,
+            metadataBaseUri: ""
+        }));
+
+        // then
+        bool actual = mosaicRegistry.isBidAcceptable(originalId);
+        assertEq(actual, isAcceptable);
+    }
+
     function test_toMosaicId_fromMosaicId() public {
         // given
         uint192 expectedOriginalId = 581019;
