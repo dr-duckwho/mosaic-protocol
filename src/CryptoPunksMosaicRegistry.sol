@@ -177,6 +177,9 @@ contract CryptoPunksMosaicRegistry is
         uint256 mosaicId,
         uint256 price
     ) public onlyWhenActive onlyMosaicOwner(mosaicId) {
+        // TODO: Check the bid state requirement
+        //  and decide whether to allow reserve price proposals
+        //  when there is an ongoing Bid already
         (uint192 originalId, ) = fromMosaicId(mosaicId);
         Original storage original = originals[originalId];
         require(
