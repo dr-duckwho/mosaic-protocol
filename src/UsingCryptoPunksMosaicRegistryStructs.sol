@@ -27,8 +27,6 @@ interface UsingCryptoPunksMosaicRegistryStructs {
 
     event OriginalSold(uint192 indexed originalId, uint256 indexed bidId);
 
-    event OriginalRefunded(uint192 indexed originalId);
-
     struct Mono {
         uint256 mosaicId;
         uint8 presetId;
@@ -56,6 +54,8 @@ interface UsingCryptoPunksMosaicRegistryStructs {
         Yes,
         No
     }
+
+    event MonoRefunded(uint192 indexed originalId, address indexed monoOwner);
 
     // @dev There can be at most one ongoing bid per original
     struct Bid {
