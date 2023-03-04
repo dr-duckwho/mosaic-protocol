@@ -2,12 +2,10 @@
 pragma solidity ^0.8.17;
 
 import {Strings} from "@openzeppelin/utils/Strings.sol";
-import {ERC1155} from "@openzeppelin/token/ERC1155/ERC1155.sol";
-import {IERC721} from "@openzeppelin/token/ERC721/IERC721.sol";
-import {UUPSUpgradeable} from "@openzeppelin/proxy/utils/UUPSUpgradeable.sol";
-import {Initializable} from "@openzeppelin/proxy/utils/Initializable.sol";
-import {AccessControl} from "@openzeppelin/access/AccessControl.sol";
-import {ReentrancyGuard} from "@openzeppelin/security/ReentrancyGuard.sol";
+import {ReentrancyGuardUpgradeable} from "@openzeppelin-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import {ERC1155Upgradeable} from "@openzeppelin-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
+import {UUPSUpgradeable} from "@openzeppelin-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {AccessControlUpgradeable} from "@openzeppelin-upgradeable/access/AccessControlUpgradeable.sol";
 
 import "./lib/BasisPoint.sol";
 import "./external/ICryptoPunksMarket.sol";
@@ -15,16 +13,14 @@ import "./ICryptoPunksGroupRegistry.sol";
 import "./ICryptoPunksMosaicRegistry.sol";
 import "./CryptoPunksMuseum.sol";
 import "./CryptoPunksGroupStorage.sol";
-import "openzepplin-contracts/contracts/proxy/utils/Initializable.sol";
 
 // TODO: Migrate custom revert error messages to byte constants
 contract CryptoPunksGroupRegistry is
-    Initializable,
     ICryptoPunksGroupRegistry,
-    ERC1155,
+    ERC1155Upgradeable,
     UUPSUpgradeable,
-    AccessControl,
-    ReentrancyGuard
+    AccessControlUpgradeable,
+    ReentrancyGuardUpgradeable
 {
     /**
      * Arithmetic constants
@@ -41,9 +37,10 @@ contract CryptoPunksGroupRegistry is
      */
     bytes32 public constant CURATOR_ROLE = keccak256("CURATOR_ROLE");
 
-    CryptoPunksMuseum public immutable museum;
+    CryptoPunksMuseum public museum;
 
-    constructor(address museumAddress) ERC1155("CryptoPunks Mosaic Ticket") {
+    function initialize(address museumAddress) public initializer {
+        __ERC1155_init("CryptoPunksGroup Ticket");
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(CURATOR_ROLE, msg.sender);
         museum = CryptoPunksMuseum(museumAddress);
@@ -271,6 +268,10 @@ contract CryptoPunksGroupRegistry is
     // Group-related views
     //
 
+    function getLatestGroupId() public view returns (uint192 latestGroupId) {
+        return CryptoPunksGroupStorage.get().latestGroupId;
+    }
+
     function getGroup(
         uint192 groupId
     ) public view onlyValidGroup(groupId) returns (Group memory) {
@@ -366,10 +367,15 @@ contract CryptoPunksGroupRegistry is
     //
     function supportsInterface(
         bytes4 interfaceId
-    ) public view override(ERC1155, AccessControl) returns (bool) {
+    )
+        public
+        view
+        override(ERC1155Upgradeable, AccessControlUpgradeable)
+        returns (bool)
+    {
         return
-            ERC1155.supportsInterface(interfaceId) ||
-            AccessControl.supportsInterface(interfaceId);
+            ERC1155Upgradeable.supportsInterface(interfaceId) ||
+            AccessControlUpgradeable.supportsInterface(interfaceId);
     }
 
     function _authorizeUpgrade(
