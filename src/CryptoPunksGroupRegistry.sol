@@ -224,7 +224,7 @@ contract CryptoPunksGroupRegistry is
     // @dev only for lost/expired groups to invoke explicitly
     function refundExpired(
         uint192 groupId
-    ) public nonReentrant onlyValidGroup(groupId) onlyWhenActive {
+    ) external nonReentrant onlyValidGroup(groupId) onlyWhenActive {
         address payable contributor = payable(msg.sender);
         Group storage group = groups[groupId];
         require(
