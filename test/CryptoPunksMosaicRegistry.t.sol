@@ -5,6 +5,8 @@ import "forge-std/Test.sol";
 
 import {TestUtils} from "./TestUtils.sol";
 
+import {ERC1967Proxy} from "@openzeppelin/proxy/ERC1967/ERC1967Proxy.sol";
+
 import {CryptoPunksMosaicRegistry} from "../src/CryptoPunksMosaicRegistry.sol";
 import {MockCryptoPunksMarketProvider} from "./MockCryptoPunksMarketProvider.sol";
 import "./MockCryptoPunksMosaicRegistry.sol";
@@ -19,7 +21,10 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
     function setUp() public {
         mockCryptoPunksMarket = new MockCryptoPunksMarketProvider();
         museum = new CryptoPunksMuseum(address(mockCryptoPunksMarket));
-        mosaicRegistry = new MockCryptoPunksMosaicRegistry(address(museum));
+
+        MockCryptoPunksMosaicRegistry impl = new MockCryptoPunksMosaicRegistry();
+        mosaicRegistry = MockCryptoPunksMosaicRegistry(payable(new ERC1967Proxy(address(impl), "")));
+        mosaicRegistry.initialize(address(museum));
 
         mintAuthority = _randomAddress();
         museum.setGroupRegistry(mintAuthority);
@@ -43,7 +48,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
 
         // then
         assertEq(originalId, 1);
-        assertEq(mosaicRegistry.nextMonoIds(originalId), 1);
+        assertEq(mosaicRegistry.getNextMonoId(originalId), 1);
         CryptoPunksMosaicRegistry.Original memory original = mosaicRegistry.getOriginal(originalId);
         assertEq(original.id, originalId);
         assertEq(original.punkId, punkId);
@@ -80,9 +85,9 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         assertEq(mosaicRegistry.balanceOf(alice), 1);
         assertEq(mosaicRegistry.ownerOf(mosaicId), alice);
 
-        (uint256 actualMosaicId, uint8 actualPresetId, ) = mosaicRegistry.monos(mosaicId);
-        assertEq(actualMosaicId, mosaicId);
-        assertEq(actualPresetId, 0);
+        Mono memory mono = mosaicRegistry.getMono(mosaicId);
+        assertEq(mono.mosaicId, mosaicId);
+        assertEq(mono.presetId, 0);
         Original memory original = mosaicRegistry.getOriginal(originalId);
         assertEq(original.claimedMonoCount, 1);
     }
@@ -155,8 +160,8 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         // then
         assertEq(bidder.balance, bidFund);
         assertEq(address(mosaicRegistry).balance, registryFund - bidFund);
-        (,,,,,,BidState state) = mosaicRegistry.bids(bidId);
-        assert(state == BidState.Refunded);
+        Bid memory bid = mosaicRegistry.getBid(bidId);
+        assert(bid.state == BidState.Refunded);
     }
 
     function test_respondToBid() public {
@@ -290,10 +295,10 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         mosaicRegistry.finalizeAcceptedBid(bidId);
 
         // then
-        (,,,,,,BidState state) = mosaicRegistry.bids(bidId);
-        assert(state == BidState.Won);
-        (,,,,,,,,OriginalStatus status,) = mosaicRegistry.originals(originalId);
-        assert(status == OriginalStatus.Sold);
+        Bid memory bid = mosaicRegistry.getBid(bidId);
+        assert(bid.state == BidState.Won);
+        Original memory changedOriginal = mosaicRegistry.getOriginal(originalId);
+        assert(changedOriginal.status == OriginalStatus.Sold);
     }
 
     function test_refundOnSold() public {
