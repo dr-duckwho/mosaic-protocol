@@ -26,7 +26,8 @@ export async function afterDeploy() {
   // deploy contracts
   const cryptoPunks: CryptoPunksMarket = await CryptoPunks.deploy();
   const museum: CryptoPunksMuseum = await CryptoPunksMuseum.deploy(cryptoPunks.address);
-  const mosaicRegistry: CryptoPunksMosaicRegistry = await MosaicContract.deploy(museum.address);
+  const mosaicRegistry = await upgrades.deployProxy(MosaicContract, [museum.address]);
+  await mosaicRegistry.deployed();
   const groupRegistry = await upgrades.deployProxy(GroupContract, [museum.address]);
   await groupRegistry.deployed();
 

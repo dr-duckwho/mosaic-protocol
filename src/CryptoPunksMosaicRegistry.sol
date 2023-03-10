@@ -1,22 +1,24 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {ERC721} from "@openzeppelin/token/ERC721/ERC721.sol";
+import {ERC721Upgradeable} from "@openzeppelin-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import {SafeCast} from "@openzeppelin/utils/math/SafeCast.sol";
-import {AccessControl} from "@openzeppelin/access/AccessControl.sol";
+import {AccessControlUpgradeable} from "@openzeppelin-upgradeable/access/AccessControlUpgradeable.sol";
 import {Strings} from "@openzeppelin/utils/Strings.sol";
+import {UUPSUpgradeable} from "@openzeppelin-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 import "./lib/BasisPoint.sol";
 import "./external/ICryptoPunksMarket.sol";
 import "./ICryptoPunksMosaicRegistry.sol";
-import "./CryptoPunksGroupRegistry.sol";
 import "./CryptoPunksMuseum.sol";
+import "./CryptoPunksMosaicStorage.sol";
 
 // TODO: Reconsider the ID scheme so that the same origin contract's same groups map to the same ID (contract, group) => (internal id)
 contract CryptoPunksMosaicRegistry is
     ICryptoPunksMosaicRegistry,
-    ERC721,
-    AccessControl
+    ERC721Upgradeable,
+    UUPSUpgradeable,
+    AccessControlUpgradeable
 {
     using SafeCast for uint256;
 
@@ -29,55 +31,27 @@ contract CryptoPunksMosaicRegistry is
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
-    CryptoPunksMuseum public immutable museum;
+    CryptoPunksMuseum public museum;
 
-    string public invalidMetadataUri;
-
-    //
-    // Models
-    //
-
-    // @dev used as a `originalId`, starting from 1.
-    // TODO: Consider changing to nextOriginalId to avoid more gas consumption for the first group
-    uint192 public latestOriginalId;
-
-    mapping(uint192 => Original) public originals;
-
-    // @dev 0 represents the Original; each Mono is assigned an ID starting from 1.
-    //  The value represents the next ID to assign for a new Mono.
-    //  originalId => nextMonoId
-    mapping(uint192 => uint64) public nextMonoIds;
-
-    // @dev mosaicId (originalId + monoId) => Mono
-    mapping(uint256 => Mono) public monos;
-
-    //
-    // Reconstitution
-    //
-
-    // @dev bidId => Bid
-    mapping(uint256 => Bid) public bids;
-    mapping(uint256 => uint256) public bidDeposits;
-
-    // @dev originalId => value
-    mapping(uint192 => uint256) public resalePrices;
-
-    constructor(
-        address museumAddress
-    ) ERC721("CryptoPunks Mosaic", "PUNKSMOSAIC") {
+    function initialize(address museumAddress) public initializer {
+        __ERC721_init("CryptoPunks Mosaic", "PUNKSMOSAIC");
         museum = CryptoPunksMuseum(museumAddress);
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(DEFAULT_ADMIN_ROLE, museumAddress);
     }
 
     modifier onlyWhenActive() {
-        require(museum.isActive(), "Museum must be active");
+        require(
+            address(museum) != address(0) && museum.isActive(),
+            "Museum must be active"
+        );
         _;
     }
 
     modifier onlyActiveOriginal(uint192 originalId) {
         require(
-            originals[originalId].status == OriginalStatus.Active,
+            CryptoPunksMosaicStorage.get().originals[originalId].status ==
+                OriginalStatus.Active,
             "Not active"
         );
         _;
@@ -110,9 +84,9 @@ contract CryptoPunksMosaicRegistry is
                 address(this),
             "The contract must own the punk"
         );
-        originalId = ++latestOriginalId;
-        ++nextMonoIds[originalId];
-        originals[originalId] = Original({
+        originalId = ++CryptoPunksMosaicStorage.get().latestOriginalId;
+        ++CryptoPunksMosaicStorage.get().nextMonoIds[originalId];
+        CryptoPunksMosaicStorage.get().originals[originalId] = Original({
             id: originalId,
             punkId: punkId,
             totalMonoSupply: totalClaimableCount,
@@ -138,12 +112,14 @@ contract CryptoPunksMosaicRegistry is
         returns (uint256 mosaicId)
     {
         require(
-            nextMonoIds[originalId] > 0,
+            CryptoPunksMosaicStorage.get().nextMonoIds[originalId] > 0,
             "Original must be initialized first"
         );
-        uint64 monoId = nextMonoIds[originalId]++;
+        uint64 monoId = CryptoPunksMosaicStorage.get().nextMonoIds[
+            originalId
+        ]++;
         mosaicId = toMosaicId(originalId, monoId);
-        monos[mosaicId] = Mono({
+        CryptoPunksMosaicStorage.get().monos[mosaicId] = Mono({
             mosaicId: mosaicId,
             presetId: 0,
             governanceOptions: MonoGovernanceOptions({
@@ -152,7 +128,7 @@ contract CryptoPunksMosaicRegistry is
                 bidId: 0
             })
         });
-        originals[originalId].claimedMonoCount++;
+        CryptoPunksMosaicStorage.get().originals[originalId].claimedMonoCount++;
         _safeMint(contributor, mosaicId);
 
         return mosaicId;
@@ -166,7 +142,7 @@ contract CryptoPunksMosaicRegistry is
         uint256 mosaicId,
         uint8 presetId
     ) public onlyMosaicOwner(mosaicId) {
-        Mono storage mono = monos[mosaicId];
+        Mono storage mono = CryptoPunksMosaicStorage.get().monos[mosaicId];
         mono.presetId = presetId;
     }
 
@@ -182,13 +158,15 @@ contract CryptoPunksMosaicRegistry is
         //  and decide whether to allow reserve price proposals
         //  when there is an ongoing Bid already
         (uint192 originalId, ) = fromMosaicId(mosaicId);
-        Original storage original = originals[originalId];
+        Original storage original = CryptoPunksMosaicStorage.get().originals[
+            originalId
+        ];
         require(
             original.minReservePrice <= price &&
                 price <= original.maxReservePrice,
             "Must be within the range"
         );
-        Mono storage mono = monos[mosaicId];
+        Mono storage mono = CryptoPunksMosaicStorage.get().monos[mosaicId];
         mono.governanceOptions.proposedReservePrice = price;
     }
 
@@ -206,7 +184,9 @@ contract CryptoPunksMosaicRegistry is
         onlyActiveOriginal(originalId)
         returns (uint256 newBidId)
     {
-        Original storage original = originals[originalId];
+        Original storage original = CryptoPunksMosaicStorage.get().originals[
+            originalId
+        ];
         // TODO: Make bid respect min reserve prices decided by GovernanceOptions
         // TODO: Check whether the minimum requirement for initiating bids is met (turnout)
         require(
@@ -227,7 +207,7 @@ contract CryptoPunksMosaicRegistry is
             );
         }
         uint256 newBidId = toBidId(originalId, msg.sender, block.timestamp);
-        bids[newBidId] = Bid({
+        CryptoPunksMosaicStorage.get().bids[newBidId] = Bid({
             id: newBidId,
             originalId: originalId,
             bidder: payable(msg.sender),
@@ -236,7 +216,7 @@ contract CryptoPunksMosaicRegistry is
             price: price,
             state: BidState.Proposed
         });
-        bidDeposits[newBidId] = msg.value;
+        CryptoPunksMosaicStorage.get().bidDeposits[newBidId] = msg.value;
         original.activeBidId = newBidId;
 
         emit BidProposed(newBidId, originalId);
@@ -257,7 +237,7 @@ contract CryptoPunksMosaicRegistry is
     }
 
     function refundBidDeposit(uint256 bidId) external onlyWhenActive {
-        Bid storage bid = bids[bidId];
+        Bid storage bid = CryptoPunksMosaicStorage.get().bids[bidId];
         require(
             bid.state == BidState.Rejected,
             "Only rejected bids can be refunded"
@@ -267,7 +247,7 @@ contract CryptoPunksMosaicRegistry is
             "Only the bidder can retrieve its own fund"
         );
 
-        uint256 deposit = bidDeposits[bidId];
+        uint256 deposit = CryptoPunksMosaicStorage.get().bidDeposits[bidId];
         (bool sent, ) = msg.sender.call{value: deposit}("");
         require(sent, "Failed to refund");
 
@@ -285,9 +265,15 @@ contract CryptoPunksMosaicRegistry is
     ) public onlyWhenActive onlyMosaicOwner(mosaicId) {
         (uint192 originalId, ) = fromMosaicId(mosaicId);
         require(hasOngoingBid(originalId), "No bid ongoing");
-        MonoGovernanceOptions storage governanceOptions = monos[mosaicId]
-            .governanceOptions;
-        governanceOptions.bidId = originals[originalId].activeBidId;
+        MonoGovernanceOptions
+            storage governanceOptions = CryptoPunksMosaicStorage
+                .get()
+                .monos[mosaicId]
+                .governanceOptions;
+        governanceOptions.bidId = CryptoPunksMosaicStorage
+            .get()
+            .originals[originalId]
+            .activeBidId;
         governanceOptions.bidResponse = response;
     }
 
@@ -299,7 +285,7 @@ contract CryptoPunksMosaicRegistry is
         uint256 bidId
     ) public onlyWhenActive returns (BidState) {
         // TODO: Double-check the prerequisites, including Original check
-        Bid storage bid = bids[bidId];
+        Bid storage bid = CryptoPunksMosaicStorage.get().bids[bidId];
         require(
             bid.state == BidState.Proposed,
             "Only bids in proposal can be updated"
@@ -323,11 +309,13 @@ contract CryptoPunksMosaicRegistry is
     // TODO: Introduce a way for Mosaic owners to force Bid finalization to prevent limbo cases where
     //  the winning bidder makes no further transaction
     function finalizeAcceptedBid(uint256 bidId) public onlyWhenActive {
-        Bid storage bid = bids[bidId];
+        Bid storage bid = CryptoPunksMosaicStorage.get().bids[bidId];
         require(bid.state == BidState.Accepted, "Bid must be accepted");
 
-        Original storage original = originals[bid.originalId];
-        resalePrices[original.id] = bid.price;
+        Original storage original = CryptoPunksMosaicStorage.get().originals[
+            bid.originalId
+        ];
+        CryptoPunksMosaicStorage.get().resalePrices[original.id] = bid.price;
         original.status = OriginalStatus.Sold;
         emit OriginalSold(bid.originalId, bidId);
 
@@ -347,7 +335,9 @@ contract CryptoPunksMosaicRegistry is
     ) public onlyWhenActive returns (uint256 totalResaleFund) {
         // TODO: Double-check whether arithmetic division may cause under/over-refunding
         uint256 burnedMonoCount = 0;
-        uint64 nextMonoId = nextMonoIds[originalId];
+        uint64 nextMonoId = CryptoPunksMosaicStorage.get().nextMonoIds[
+            originalId
+        ];
         for (uint64 monoId = 1; monoId < nextMonoId; monoId++) {
             uint256 mosaicId = toMosaicId(originalId, monoId);
             if (_ownerOf(mosaicId) == msg.sender) {
@@ -379,9 +369,13 @@ contract CryptoPunksMosaicRegistry is
     function sumReservePriceProposals(
         uint192 originalId
     ) public view returns (uint64 validProposalCount, uint256 priceSum) {
-        uint64 nextMonoId = nextMonoIds[originalId];
+        uint64 nextMonoId = CryptoPunksMosaicStorage.get().nextMonoIds[
+            originalId
+        ];
         for (uint64 monoId = 1; monoId < nextMonoId; monoId++) {
-            Mono storage mono = monos[toMosaicId(originalId, monoId)];
+            Mono storage mono = CryptoPunksMosaicStorage.get().monos[
+                toMosaicId(originalId, monoId)
+            ];
             if (mono.governanceOptions.proposedReservePrice > 0) {
                 validProposalCount++;
                 priceSum += mono.governanceOptions.proposedReservePrice;
@@ -396,12 +390,18 @@ contract CryptoPunksMosaicRegistry is
         if (!hasOngoingBid(originalId)) {
             return (0, 0);
         }
-        uint64 nextMonoId = nextMonoIds[originalId];
-        uint256 activeBidId = originals[originalId].activeBidId;
+        uint64 nextMonoId = CryptoPunksMosaicStorage.get().nextMonoIds[
+            originalId
+        ];
+        uint256 activeBidId = CryptoPunksMosaicStorage
+            .get()
+            .originals[originalId]
+            .activeBidId;
         for (uint64 monoId = 1; monoId < nextMonoId; monoId++) {
-            MonoGovernanceOptions storage options = monos[
-                toMosaicId(originalId, monoId)
-            ].governanceOptions;
+            MonoGovernanceOptions storage options = CryptoPunksMosaicStorage
+                .get()
+                .monos[toMosaicId(originalId, monoId)]
+                .governanceOptions;
             if (options.bidId == activeBidId) {
                 if (options.bidResponse == MonoBidResponse.Yes) {
                     yes++;
@@ -418,7 +418,10 @@ contract CryptoPunksMosaicRegistry is
     ) public view virtual returns (bool) {
         // TODO(@jyterencekim): Revisit the bid acceptance condition with respect to the planned spec
         (uint64 yes, ) = sumBidResponses(originalId);
-        uint128 totalVotable = originals[originalId].totalMonoSupply;
+        uint128 totalVotable = CryptoPunksMosaicStorage
+            .get()
+            .originals[originalId]
+            .totalMonoSupply;
         return
             yes >=
             BasisPoint.calculateBasisPoint(
@@ -430,10 +433,15 @@ contract CryptoPunksMosaicRegistry is
     function getPerMonoResaleFund(
         uint192 originalId
     ) public view virtual returns (uint256 perMonoResaleFund) {
-        uint256 resalePrice = resalePrices[originalId];
+        uint256 resalePrice = CryptoPunksMosaicStorage.get().resalePrices[
+            originalId
+        ];
         require(resalePrice > 0, "No resale price set");
         uint256 perMonoBps = BasisPoint.WHOLE_BPS /
-            originals[originalId].totalMonoSupply;
+            CryptoPunksMosaicStorage
+                .get()
+                .originals[originalId]
+                .totalMonoSupply;
 
         return BasisPoint.calculateBasisPoint(resalePrice, perMonoBps);
     }
@@ -441,37 +449,53 @@ contract CryptoPunksMosaicRegistry is
     //
     // Model views
     //
+    function getLatestOriginalId()
+        external
+        view
+        returns (uint192 latestOriginalId)
+    {
+        return CryptoPunksMosaicStorage.get().latestOriginalId;
+    }
+
     function getMono(
         uint192 originalId,
         uint64 monoId
     ) external view returns (Mono memory) {
-        return monos[toMosaicId(originalId, monoId)];
+        return
+            CryptoPunksMosaicStorage.get().monos[
+                toMosaicId(originalId, monoId)
+            ];
     }
 
     function getOriginal(
         uint192 originalId
     ) external view returns (Original memory) {
-        return originals[originalId];
+        return CryptoPunksMosaicStorage.get().originals[originalId];
     }
 
     function getOriginalFromMosaicId(
         uint256 mosaicId
     ) external view returns (Original memory) {
         (uint192 originalId, ) = fromMosaicId(mosaicId);
-        return originals[originalId];
+        return CryptoPunksMosaicStorage.get().originals[originalId];
     }
 
     function getMonoLifeCycle(
         uint256 mosaicId
     ) public view returns (MonoLifeCycle) {
         (uint192 originalId, ) = fromMosaicId(mosaicId);
-        require(originalId <= latestOriginalId, "Invalid originalId");
+        require(
+            originalId <= CryptoPunksMosaicStorage.get().latestOriginalId,
+            "Invalid originalId"
+        );
 
-        Original storage original = originals[originalId];
+        Original storage original = CryptoPunksMosaicStorage.get().originals[
+            originalId
+        ];
         if (original.status == OriginalStatus.Sold) {
             return MonoLifeCycle.Dead;
         }
-        if (monos[mosaicId].presetId == 0) {
+        if (CryptoPunksMosaicStorage.get().monos[mosaicId].presetId == 0) {
             return MonoLifeCycle.Raw;
         }
         return MonoLifeCycle.Active;
@@ -479,8 +503,11 @@ contract CryptoPunksMosaicRegistry is
 
     // TODO(@jyterencekim): Revisit the conditions
     function hasOngoingBid(uint192 originalId) public view returns (bool) {
-        uint256 bidId = originals[originalId].activeBidId;
-        Bid storage bid = bids[bidId];
+        uint256 bidId = CryptoPunksMosaicStorage
+            .get()
+            .originals[originalId]
+            .activeBidId;
+        Bid storage bid = CryptoPunksMosaicStorage.get().bids[bidId];
         return
             bidId != 0 &&
             bid.bidder != NO_BIDDER &&
@@ -520,14 +547,16 @@ contract CryptoPunksMosaicRegistry is
     function setInvalidMetadataUri(
         string calldata _uri
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        invalidMetadataUri = _uri;
+        CryptoPunksMosaicStorage.get().invalidMetadataUri = _uri;
     }
 
     function setMetadataBaseUri(
         uint192 originalId,
         string calldata _uri
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        Original storage original = originals[originalId];
+        Original storage original = CryptoPunksMosaicStorage.get().originals[
+            originalId
+        ];
         original.metadataBaseUri = _uri;
     }
 
@@ -538,12 +567,17 @@ contract CryptoPunksMosaicRegistry is
         uint256 mosaicId
     ) public view override returns (string memory) {
         (uint192 originalId, ) = fromMosaicId(mosaicId);
-        Original storage original = originals[originalId];
+        Original storage original = CryptoPunksMosaicStorage.get().originals[
+            originalId
+        ];
         if (original.status == OriginalStatus.Sold) {
-            return invalidMetadataUri;
+            return CryptoPunksMosaicStorage.get().invalidMetadataUri;
         }
         string memory baseUrl = original.metadataBaseUri;
-        uint8 presetId = monos[mosaicId].presetId;
+        uint8 presetId = CryptoPunksMosaicStorage
+            .get()
+            .monos[mosaicId]
+            .presetId;
         return
             string.concat(
                 baseUrl,
@@ -557,9 +591,18 @@ contract CryptoPunksMosaicRegistry is
 
     function supportsInterface(
         bytes4 interfaceId
-    ) public view override(ERC721, AccessControl) returns (bool) {
+    )
+        public
+        view
+        override(ERC721Upgradeable, AccessControlUpgradeable)
+        returns (bool)
+    {
         return
-            ERC721.supportsInterface(interfaceId) ||
-            AccessControl.supportsInterface(interfaceId);
+            ERC721Upgradeable.supportsInterface(interfaceId) ||
+            AccessControlUpgradeable.supportsInterface(interfaceId);
     }
+
+    function _authorizeUpgrade(
+        address
+    ) internal override onlyRole(DEFAULT_ADMIN_ROLE) {}
 }

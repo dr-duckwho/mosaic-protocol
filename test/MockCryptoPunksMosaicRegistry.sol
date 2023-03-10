@@ -2,6 +2,7 @@
 pragma solidity ^0.8.17;
 
 import "../src/CryptoPunksMosaicRegistry.sol";
+import "../src/CryptoPunksMosaicStorage.sol";
 import "mockprovider/MockProvider.sol";
 
 contract MockCryptoPunksMosaicRegistry is MockProvider, CryptoPunksMosaicRegistry {
@@ -16,34 +17,46 @@ contract MockCryptoPunksMosaicRegistry is MockProvider, CryptoPunksMosaicRegistr
     uint64 private mockBidResponseYes;
     uint64 private mockBidResponseNo;
 
-    constructor(address museumAddress) public CryptoPunksMosaicRegistry(museumAddress) {}
+    constructor() public CryptoPunksMosaicRegistry() {}
 
     function setLatestOriginalId(uint192 value) public {
-        latestOriginalId = value;
+        CryptoPunksMosaicStorage.get().latestOriginalId = value;
     }
 
     function setOriginal(uint192 originalId, Original calldata original) public {
-        originals[originalId] = original;
+        CryptoPunksMosaicStorage.get().originals[originalId] = original;
     }
 
     function setNextMonoId(uint192 originalId, uint64 nextMonoId) public {
-        nextMonoIds[originalId] = nextMonoId;
+        CryptoPunksMosaicStorage.get().nextMonoIds[originalId] = nextMonoId;
     }
 
     function setMono(uint256 mosaicId, Mono calldata mono) public {
-        monos[mosaicId] = mono;
+        CryptoPunksMosaicStorage.get().monos[mosaicId] = mono;
     }
 
     function setBid(uint256 bidId, Bid calldata bid) public {
-        bids[bidId] = bid;
+        CryptoPunksMosaicStorage.get().bids[bidId] = bid;
     }
 
     function setBidDeposits(uint256 bidId, uint256 bidDeposit) public {
-        bidDeposits[bidId] = bidDeposit;
+        CryptoPunksMosaicStorage.get().bidDeposits[bidId] = bidDeposit;
     }
 
     function setResalePrice(uint192 originalId, uint256 resalePrice) public {
-        resalePrices[originalId] = resalePrice;
+        CryptoPunksMosaicStorage.get().resalePrices[originalId] = resalePrice;
+    }
+
+    function getNextMonoId(uint192 originalId) public returns (uint64) {
+        return CryptoPunksMosaicStorage.get().nextMonoIds[originalId];
+    }
+
+    function getMono(uint256 mosaicId) public returns (Mono memory) {
+        return CryptoPunksMosaicStorage.get().monos[mosaicId];
+    }
+
+    function getBid(uint256 bidId) public returns (Bid memory) {
+        return CryptoPunksMosaicStorage.get().bids[bidId];
     }
 
     function mockMint(address to, uint256 mosaicId) public {

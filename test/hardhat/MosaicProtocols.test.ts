@@ -133,7 +133,7 @@ describe("MosaicProtocol", function () {
       expect(await ticketBalance(carol, groupId)).to.equal(0);
       expect(await ticketBalance(david, groupId)).to.equal(0);
 
-      const originalId = await mosaicRegistry.latestOriginalId();
+      const originalId = await mosaicRegistry.getLatestOriginalId();
 
       // TODO: #3 This test supposes bob, carol and david claimed all mosaic NFTs in sequential order.
       //  Might need a enumerable balance view function...
