@@ -28,9 +28,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     }
   );
 
+  // TODO: Deploy proxies
   await deploy("CryptoPunksGroupRegistry", {
     from: deployer,
-    args: [CryptoPunksMuseumAddress],
+    args: [],
     log: true,
   });
 

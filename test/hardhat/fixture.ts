@@ -1,4 +1,4 @@
-import { ethers } from "hardhat";
+import { ethers, upgrades } from "hardhat";
 import {
   CryptoPunksGroupRegistry,
   CryptoPunksGroupRegistry__factory,
@@ -27,7 +27,8 @@ export async function afterDeploy() {
   const cryptoPunks: CryptoPunksMarket = await CryptoPunks.deploy();
   const museum: CryptoPunksMuseum = await CryptoPunksMuseum.deploy(cryptoPunks.address);
   const mosaicRegistry: CryptoPunksMosaicRegistry = await MosaicContract.deploy(museum.address);
-  const groupRegistry: CryptoPunksGroupRegistry = await GroupContract.deploy(museum.address);
+  const groupRegistry = await upgrades.deployProxy(GroupContract, [museum.address]);
+  await groupRegistry.deployed();
 
   // set up Museum and activate
   await museum.connect(owner).setMosaicRegistry(mosaicRegistry.address);

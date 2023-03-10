@@ -18,11 +18,7 @@ interface ICryptoPunksGroupRegistry is UsingCryptoPunksGroupRegistryStructs {
 
     function claim(
         uint192 groupId
-    )
-    external
-    returns (uint256[] memory mosaicIds);
+    ) external returns (uint256[] memory mosaicIds);
 
-    function refundExpired(
-        uint192 groupId
-    ) external;
+    function refundExpired(uint192 groupId) external;
 }

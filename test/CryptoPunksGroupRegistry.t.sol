@@ -6,6 +6,8 @@ import "forge-std/Test.sol";
 import {TestUtils} from "./TestUtils.sol";
 import {MockProvider} from "mockprovider/MockProvider.sol";
 
+import {ERC1967Proxy} from "@openzeppelin/proxy/ERC1967/ERC1967Proxy.sol";
+
 import {CryptoPunksGroupRegistry} from "../src/CryptoPunksGroupRegistry.sol";
 import {CryptoPunksMuseum} from "../src/CryptoPunksMuseum.sol";
 import {UsingCryptoPunksGroupRegistryStructs} from "../src/UsingCryptoPunksGroupRegistryStructs.sol";
@@ -30,9 +32,9 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
         originalOwner = _randomAddress();
         targetPunkId = 1;
 
-        groupRegistry = new CryptoPunksGroupRegistry(
-            address(museum)
-        );
+        CryptoPunksGroupRegistry impl = new CryptoPunksGroupRegistry();
+        groupRegistry = CryptoPunksGroupRegistry(payable(new ERC1967Proxy(address(impl), "")));
+        groupRegistry.initialize(address(museum));
 
         museum.setMosaicRegistry(address(mockMosaicRegistry));
         museum.setGroupRegistry(address(groupRegistry));

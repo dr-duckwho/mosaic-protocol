@@ -2,23 +2,25 @@
 pragma solidity ^0.8.17;
 
 import {Strings} from "@openzeppelin/utils/Strings.sol";
-import {ERC1155} from "@openzeppelin/token/ERC1155/ERC1155.sol";
-import {IERC721} from "@openzeppelin/token/ERC721/IERC721.sol";
-import {AccessControl} from "@openzeppelin/access/AccessControl.sol";
-import {ReentrancyGuard} from "@openzeppelin/security/ReentrancyGuard.sol";
+import {ReentrancyGuardUpgradeable} from "@openzeppelin-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import {ERC1155Upgradeable} from "@openzeppelin-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
+import {UUPSUpgradeable} from "@openzeppelin-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {AccessControlUpgradeable} from "@openzeppelin-upgradeable/access/AccessControlUpgradeable.sol";
 
 import "./lib/BasisPoint.sol";
 import "./external/ICryptoPunksMarket.sol";
 import "./ICryptoPunksGroupRegistry.sol";
 import "./ICryptoPunksMosaicRegistry.sol";
 import "./CryptoPunksMuseum.sol";
+import "./CryptoPunksGroupStorage.sol";
 
 // TODO: Migrate custom revert error messages to byte constants
 contract CryptoPunksGroupRegistry is
     ICryptoPunksGroupRegistry,
-    ERC1155,
-    AccessControl,
-    ReentrancyGuard
+    ERC1155Upgradeable,
+    UUPSUpgradeable,
+    AccessControlUpgradeable,
+    ReentrancyGuardUpgradeable
 {
     /**
      * Arithmetic constants
@@ -35,33 +37,28 @@ contract CryptoPunksGroupRegistry is
      */
     bytes32 public constant CURATOR_ROLE = keccak256("CURATOR_ROLE");
 
-    CryptoPunksMuseum public immutable museum;
+    CryptoPunksMuseum public museum;
 
-    /**
-     * @dev Starts from 1.
-     *  Must increment this first when creating a new group.
-     */
-    uint192 public latestGroupId;
-    mapping(uint192 => Group) private groups;
-
-    /**
-     * @dev groupId -> address -> shares (= the number of tickets bought)
-     */
-    mapping(uint192 => mapping(address => uint256)) private refundableTickets;
-
-    constructor(address museumAddress) ERC1155("CryptoPunks Mosaic Ticket") {
+    function initialize(address museumAddress) public initializer {
+        __ERC1155_init("CryptoPunksGroup Ticket");
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(CURATOR_ROLE, msg.sender);
         museum = CryptoPunksMuseum(museumAddress);
     }
 
     modifier onlyWhenActive() {
-        require(museum.isActive(), "Museum must be active");
+        require(
+            address(museum) != address(0) && museum.isActive(),
+            "Museum must be active"
+        );
         _;
     }
 
     modifier onlyValidGroup(uint192 groupId) {
-        require(groupId <= latestGroupId, "Invalid groupId");
+        require(
+            groupId <= CryptoPunksGroupStorage.get().latestGroupId,
+            "Invalid groupId"
+        );
         _;
     }
 
@@ -70,16 +67,18 @@ contract CryptoPunksGroupRegistry is
         uint256 targetMaxPrice
     ) external onlyRole(CURATOR_ROLE) onlyWhenActive returns (uint192 groupId) {
         require(
-            getGroupLifeCycle(latestGroupId) != GroupLifeCycle.Active,
+            getGroupLifeCycle(CryptoPunksGroupStorage.get().latestGroupId) !=
+                GroupLifeCycle.Active,
             "Ongoing group exists"
         );
 
-        ++latestGroupId;
+        ++CryptoPunksGroupStorage.get().latestGroupId;
         uint64 totalTicketSupply = TICKET_SUPPLY_PER_GROUP;
         uint256 unitTicketPrice = targetMaxPrice / totalTicketSupply;
+        uint192 groupId = CryptoPunksGroupStorage.get().latestGroupId;
 
-        Group storage newGroup = groups[latestGroupId];
-        newGroup.id = latestGroupId;
+        Group storage newGroup = CryptoPunksGroupStorage.get().groups[groupId];
+        newGroup.id = CryptoPunksGroupStorage.get().latestGroupId;
         newGroup.creator = msg.sender;
         newGroup.targetPunkId = targetPunkId;
         newGroup.targetMaxPrice = targetMaxPrice;
@@ -90,20 +89,20 @@ contract CryptoPunksGroupRegistry is
         newGroup.expiresAt = uint40(block.timestamp + 604800);
 
         emit GroupCreated(
-            latestGroupId,
+            groupId,
             msg.sender,
             targetMaxPrice,
             totalTicketSupply,
             unitTicketPrice
         );
-        return latestGroupId;
+        return groupId;
     }
 
     function contribute(
         uint192 groupId,
         uint64 ticketQuantity
     ) external payable onlyValidGroup(groupId) onlyWhenActive {
-        Group storage group = groups[groupId];
+        Group storage group = CryptoPunksGroupStorage.get().groups[groupId];
 
         uint256 ticketsLeft = group.totalTicketSupply - group.ticketsBought;
         require(
@@ -118,7 +117,9 @@ contract CryptoPunksGroupRegistry is
         address contributor = msg.sender;
         group.totalContribution += ethReceived;
         group.ticketsBought += ticketQuantity;
-        refundableTickets[groupId][contributor] += ticketQuantity;
+        CryptoPunksGroupStorage.get().refundableTickets[groupId][
+            contributor
+        ] += ticketQuantity;
 
         _mint(contributor, groupId, ticketQuantity, "");
 
@@ -144,7 +145,7 @@ contract CryptoPunksGroupRegistry is
         );
 
         // Stakeholder and group status prerequisites
-        Group storage group = groups[groupId];
+        Group storage group = CryptoPunksGroupStorage.get().groups[groupId];
         uint256 punkId = group.targetPunkId;
         (, , , uint256 offeredPrice, ) = museum
             .cryptoPunksMarket()
@@ -192,7 +193,7 @@ contract CryptoPunksGroupRegistry is
         onlyWhenActive
         returns (uint256[] memory mosaicIds)
     {
-        Group storage group = groups[groupId];
+        Group storage group = CryptoPunksGroupStorage.get().groups[groupId];
         require(
             group.status == GroupStatus.Claimable,
             "The group is not finalized"
@@ -226,7 +227,7 @@ contract CryptoPunksGroupRegistry is
         uint192 groupId
     ) external nonReentrant onlyValidGroup(groupId) onlyWhenActive {
         address payable contributor = payable(msg.sender);
-        Group storage group = groups[groupId];
+        Group storage group = CryptoPunksGroupStorage.get().groups[groupId];
         require(
             getGroupLifeCycle(groupId) == GroupLifeCycle.Lost,
             "The group must be expired"
@@ -257,7 +258,9 @@ contract CryptoPunksGroupRegistry is
     //
 
     function uri(uint256 groupId) public view override returns (string memory) {
-        Group storage group = groups[uint192(groupId)];
+        Group storage group = CryptoPunksGroupStorage.get().groups[
+            uint192(groupId)
+        ];
         return group.metadataUri;
     }
 
@@ -265,16 +268,20 @@ contract CryptoPunksGroupRegistry is
     // Group-related views
     //
 
+    function getLatestGroupId() public view returns (uint192 latestGroupId) {
+        return CryptoPunksGroupStorage.get().latestGroupId;
+    }
+
     function getGroup(
         uint192 groupId
     ) public view onlyValidGroup(groupId) returns (Group memory) {
-        return groups[groupId];
+        return CryptoPunksGroupStorage.get().groups[groupId];
     }
 
     function getGroupLifeCycle(
         uint192 groupId
     ) public view onlyValidGroup(groupId) returns (GroupLifeCycle) {
-        Group storage group = groups[groupId];
+        Group storage group = CryptoPunksGroupStorage.get().groups[groupId];
         if (group.status == GroupStatus.Claimable) {
             return GroupLifeCycle.Won;
         }
@@ -290,7 +297,7 @@ contract CryptoPunksGroupRegistry is
     function getGroupTotalContribution(
         uint192 groupId
     ) public view onlyValidGroup(groupId) returns (uint256 totalContribution) {
-        return groups[groupId].totalContribution;
+        return CryptoPunksGroupStorage.get().groups[groupId].totalContribution;
     }
 
     //
@@ -308,7 +315,8 @@ contract CryptoPunksGroupRegistry is
         address inquired,
         uint192 groupId
     ) public view returns (bool) {
-        return groups[groupId].creator == inquired;
+        return
+            CryptoPunksGroupStorage.get().groups[groupId].creator == inquired;
     }
 
     function hasContribution(
@@ -359,11 +367,20 @@ contract CryptoPunksGroupRegistry is
     //
     function supportsInterface(
         bytes4 interfaceId
-    ) public view override(ERC1155, AccessControl) returns (bool) {
+    )
+        public
+        view
+        override(ERC1155Upgradeable, AccessControlUpgradeable)
+        returns (bool)
+    {
         return
-            ERC1155.supportsInterface(interfaceId) ||
-            AccessControl.supportsInterface(interfaceId);
+            ERC1155Upgradeable.supportsInterface(interfaceId) ||
+            AccessControlUpgradeable.supportsInterface(interfaceId);
     }
+
+    function _authorizeUpgrade(
+        address
+    ) internal override onlyRole(DEFAULT_ADMIN_ROLE) {}
 
     // TODO: fallback
 }

@@ -27,7 +27,7 @@ export const newGroup =
     targetPrice: BigNumberish
   ) => {
     await groupContract.connect(creator).create(targetPunkIndex, targetPrice);
-    return await groupContract.latestGroupId();
+    return await groupContract.getLatestGroupId();
   };
 
 export const contributeBy = (
