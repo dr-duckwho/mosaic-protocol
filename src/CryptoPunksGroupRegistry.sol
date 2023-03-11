@@ -10,7 +10,6 @@ import {AccessControlUpgradeable} from "@openzeppelin-upgradeable/access/AccessC
 import "./lib/BasisPoint.sol";
 import "./external/ICryptoPunksMarket.sol";
 import "./ICryptoPunksGroupRegistry.sol";
-import "./ICryptoPunksMosaicRegistry.sol";
 import "./CryptoPunksMuseum.sol";
 import "./CryptoPunksGroupStorage.sol";
 
