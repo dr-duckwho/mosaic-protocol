@@ -17,7 +17,6 @@ async function main() {
 
   const museum = CryptoPunksMuseum__factory.connect(MuseumAddress, deployer);
 
-  // TODO: Use proxies
   const mosaicRegistry = CryptoPunksMosaicRegistry__factory.connect(
     MosaicRegistryAddress,
     deployer
