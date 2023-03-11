@@ -1,8 +1,9 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
-import { contracts } from "../deployments/testnet.json";
 
-const CryptoPunksMuseumAddress = contracts.CryptoPunksMuseum.address;
+/**
+ * Sample code for upgrading a contract
+ */
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const {
@@ -13,18 +14,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployer } = await getNamedAccounts();
 
   await deploy("CryptoPunksGroupRegistry", {
+    contract: "CryptoPunksGroupRegistryV2",
     from: deployer,
     proxy: {
       owner: deployer,
       proxyContract: "ERC1967Proxy",
       proxyArgs: ["{implementation}", "{data}"],
-      execute: {
-        methodName: "initialize",
-        args: [CryptoPunksMuseumAddress],
-      },
     },
     log: true,
   });
 };
+
 export default func;
 func.tags = ["CryptoPunksGroupRegistry"];

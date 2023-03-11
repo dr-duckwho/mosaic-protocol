@@ -28,12 +28,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     }
   );
 
-  // TODO: Deploy proxies
   await deploy("CryptoPunksGroupRegistry", {
     from: deployer,
     proxy: {
-      proxyContract: "OpenZeppelinTransparentProxy",
       owner: deployer,
+      proxyContract: "ERC1967Proxy",
+      proxyArgs: ["{implementation}", "{data}"],
       execute: {
         methodName: "initialize",
         args: [CryptoPunksMuseumAddress],
