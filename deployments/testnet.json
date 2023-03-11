@@ -2,8 +2,3154 @@
   "name": "goerli",
   "chainId": "5",
   "contracts": {
+    "CryptoPunksGroupRegistry": {
+      "address": "0x4D21F2D2981A63235dea265F80fD8fbC6D8f0f92",
+      "abi": [
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "previousAdmin",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "newAdmin",
+              "type": "address"
+            }
+          ],
+          "name": "AdminChanged",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "beacon",
+              "type": "address"
+            }
+          ],
+          "name": "BeaconUpgraded",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "implementation",
+              "type": "address"
+            }
+          ],
+          "name": "Upgraded",
+          "type": "event"
+        },
+        {
+          "stateMutability": "payable",
+          "type": "fallback"
+        },
+        {
+          "inputs": [],
+          "name": "admin",
+          "outputs": [
+            {
+              "internalType": "address",
+              "name": "admin_",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "newAdmin",
+              "type": "address"
+            }
+          ],
+          "name": "changeAdmin",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "implementation",
+          "outputs": [
+            {
+              "internalType": "address",
+              "name": "implementation_",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "newImplementation",
+              "type": "address"
+            }
+          ],
+          "name": "upgradeTo",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "newImplementation",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes",
+              "name": "data",
+              "type": "bytes"
+            }
+          ],
+          "name": "upgradeToAndCall",
+          "outputs": [],
+          "stateMutability": "payable",
+          "type": "function"
+        },
+        {
+          "stateMutability": "payable",
+          "type": "receive"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "operator",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "bool",
+              "name": "approved",
+              "type": "bool"
+            }
+          ],
+          "name": "ApprovalForAll",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "claimer",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "uint192",
+              "name": "groupId",
+              "type": "uint192"
+            },
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "mosaicId",
+              "type": "uint256"
+            }
+          ],
+          "name": "Claimed",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "contributor",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "uint192",
+              "name": "groupId",
+              "type": "uint192"
+            },
+            {
+              "indexed": true,
+              "internalType": "uint96",
+              "name": "ticketQuantity",
+              "type": "uint96"
+            }
+          ],
+          "name": "Contributed",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint192",
+              "name": "groupId",
+              "type": "uint192"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "creator",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "targetMaxPrice",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint64",
+              "name": "totalTicketSupply",
+              "type": "uint64"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "unitTicketPrice",
+              "type": "uint256"
+            }
+          ],
+          "name": "GroupCreated",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint192",
+              "name": "groupId",
+              "type": "uint192"
+            }
+          ],
+          "name": "GroupWon",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "version",
+              "type": "uint8"
+            }
+          ],
+          "name": "Initialized",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "previousAdminRole",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "newAdminRole",
+              "type": "bytes32"
+            }
+          ],
+          "name": "RoleAdminChanged",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "sender",
+              "type": "address"
+            }
+          ],
+          "name": "RoleGranted",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "sender",
+              "type": "address"
+            }
+          ],
+          "name": "RoleRevoked",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "operator",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "from",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256[]",
+              "name": "ids",
+              "type": "uint256[]"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256[]",
+              "name": "values",
+              "type": "uint256[]"
+            }
+          ],
+          "name": "TransferBatch",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "operator",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "from",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "name": "TransferSingle",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "value",
+              "type": "string"
+            },
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            }
+          ],
+          "name": "URI",
+          "type": "event"
+        },
+        {
+          "inputs": [],
+          "name": "CURATOR_ROLE",
+          "outputs": [
+            {
+              "internalType": "bytes32",
+              "name": "",
+              "type": "bytes32"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "DEFAULT_ADMIN_ROLE",
+          "outputs": [
+            {
+              "internalType": "bytes32",
+              "name": "",
+              "type": "bytes32"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "MAX_RESERVE_PRICE_BPS",
+          "outputs": [
+            {
+              "internalType": "uint64",
+              "name": "",
+              "type": "uint64"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "MIN_RESERVE_PRICE_BPS",
+          "outputs": [
+            {
+              "internalType": "uint64",
+              "name": "",
+              "type": "uint64"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "TICKET_SUPPLY_PER_GROUP",
+          "outputs": [
+            {
+              "internalType": "uint64",
+              "name": "",
+              "type": "uint64"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "ids",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "amounts",
+              "type": "uint256[]"
+            }
+          ],
+          "name": "airdrop",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            }
+          ],
+          "name": "balanceOf",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address[]",
+              "name": "accounts",
+              "type": "address[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "ids",
+              "type": "uint256[]"
+            }
+          ],
+          "name": "balanceOfBatch",
+          "outputs": [
+            {
+              "internalType": "uint256[]",
+              "name": "",
+              "type": "uint256[]"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint192",
+              "name": "groupId",
+              "type": "uint192"
+            }
+          ],
+          "name": "buy",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "purchasePrice",
+              "type": "uint256"
+            }
+          ],
+          "name": "calculateMaxReservePrice",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "maxReservePrice",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "pure",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "purchasePrice",
+              "type": "uint256"
+            }
+          ],
+          "name": "calculateMinReservePrice",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "minReservePrice",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "pure",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint192",
+              "name": "groupId",
+              "type": "uint192"
+            }
+          ],
+          "name": "claim",
+          "outputs": [
+            {
+              "internalType": "uint256[]",
+              "name": "mosaicIds",
+              "type": "uint256[]"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint192",
+              "name": "groupId",
+              "type": "uint192"
+            },
+            {
+              "internalType": "uint64",
+              "name": "ticketQuantity",
+              "type": "uint64"
+            }
+          ],
+          "name": "contribute",
+          "outputs": [],
+          "stateMutability": "payable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "targetPunkId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "targetMaxPrice",
+              "type": "uint256"
+            }
+          ],
+          "name": "create",
+          "outputs": [
+            {
+              "internalType": "uint192",
+              "name": "groupId",
+              "type": "uint192"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint192",
+              "name": "groupId",
+              "type": "uint192"
+            }
+          ],
+          "name": "getGroup",
+          "outputs": [
+            {
+              "components": [
+                {
+                  "internalType": "uint192",
+                  "name": "id",
+                  "type": "uint192"
+                },
+                {
+                  "internalType": "address",
+                  "name": "creator",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "targetPunkId",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "targetMaxPrice",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint64",
+                  "name": "totalTicketSupply",
+                  "type": "uint64"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "unitTicketPrice",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "totalContribution",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint64",
+                  "name": "ticketsBought",
+                  "type": "uint64"
+                },
+                {
+                  "internalType": "uint40",
+                  "name": "expiresAt",
+                  "type": "uint40"
+                },
+                {
+                  "internalType": "enum UsingCryptoPunksGroupRegistryStructs.GroupStatus",
+                  "name": "status",
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "purchasePrice",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint192",
+                  "name": "originalId",
+                  "type": "uint192"
+                },
+                {
+                  "internalType": "string",
+                  "name": "metadataUri",
+                  "type": "string"
+                }
+              ],
+              "internalType": "struct UsingCryptoPunksGroupRegistryStructs.Group",
+              "name": "",
+              "type": "tuple"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint192",
+              "name": "groupId",
+              "type": "uint192"
+            }
+          ],
+          "name": "getGroupLifeCycle",
+          "outputs": [
+            {
+              "internalType": "enum UsingCryptoPunksGroupRegistryStructs.GroupLifeCycle",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint192",
+              "name": "groupId",
+              "type": "uint192"
+            }
+          ],
+          "name": "getGroupTotalContribution",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "totalContribution",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "getLatestGroupId",
+          "outputs": [
+            {
+              "internalType": "uint192",
+              "name": "latestGroupId",
+              "type": "uint192"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            }
+          ],
+          "name": "getRoleAdmin",
+          "outputs": [
+            {
+              "internalType": "bytes32",
+              "name": "",
+              "type": "bytes32"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "inquired",
+              "type": "address"
+            },
+            {
+              "internalType": "uint192",
+              "name": "groupId",
+              "type": "uint192"
+            }
+          ],
+          "name": "getTickets",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "grantRole",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "inquired",
+              "type": "address"
+            },
+            {
+              "internalType": "uint192",
+              "name": "groupId",
+              "type": "uint192"
+            }
+          ],
+          "name": "hasContribution",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "hasRole",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "museumAddress",
+              "type": "address"
+            }
+          ],
+          "name": "initialize",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "operator",
+              "type": "address"
+            }
+          ],
+          "name": "isApprovedForAll",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "inquired",
+              "type": "address"
+            },
+            {
+              "internalType": "uint192",
+              "name": "groupId",
+              "type": "uint192"
+            }
+          ],
+          "name": "isCreator",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "museum",
+          "outputs": [
+            {
+              "internalType": "contract CryptoPunksMuseum",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "proxiableUUID",
+          "outputs": [
+            {
+              "internalType": "bytes32",
+              "name": "",
+              "type": "bytes32"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint192",
+              "name": "groupId",
+              "type": "uint192"
+            }
+          ],
+          "name": "refundExpired",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "renounceRole",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "revokeRole",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "from",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "ids",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "amounts",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "bytes",
+              "name": "data",
+              "type": "bytes"
+            }
+          ],
+          "name": "safeBatchTransferFrom",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "from",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes",
+              "name": "data",
+              "type": "bytes"
+            }
+          ],
+          "name": "safeTransferFrom",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "operator",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "approved",
+              "type": "bool"
+            }
+          ],
+          "name": "setApprovalForAll",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes4",
+              "name": "interfaceId",
+              "type": "bytes4"
+            }
+          ],
+          "name": "supportsInterface",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "groupId",
+              "type": "uint256"
+            }
+          ],
+          "name": "uri",
+          "outputs": [
+            {
+              "internalType": "string",
+              "name": "",
+              "type": "string"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "_logic",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "admin_",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes",
+              "name": "_data",
+              "type": "bytes"
+            }
+          ],
+          "stateMutability": "payable",
+          "type": "constructor"
+        }
+      ]
+    },
+    "CryptoPunksMosaicRegistry": {
+      "address": "0x77Cdf33C0e33535952f35c772384E4650899796e",
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "museumAddress",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "constructor"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "approved",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            }
+          ],
+          "name": "Approval",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "operator",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "bool",
+              "name": "approved",
+              "type": "bool"
+            }
+          ],
+          "name": "ApprovalForAll",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "bidId",
+              "type": "uint256"
+            },
+            {
+              "indexed": true,
+              "internalType": "uint192",
+              "name": "originalId",
+              "type": "uint192"
+            }
+          ],
+          "name": "BidAccepted",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "bidId",
+              "type": "uint256"
+            },
+            {
+              "indexed": true,
+              "internalType": "uint192",
+              "name": "originalId",
+              "type": "uint192"
+            }
+          ],
+          "name": "BidProposed",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "bidId",
+              "type": "uint256"
+            },
+            {
+              "indexed": true,
+              "internalType": "uint192",
+              "name": "originalId",
+              "type": "uint192"
+            }
+          ],
+          "name": "BidRefunded",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "bidId",
+              "type": "uint256"
+            },
+            {
+              "indexed": true,
+              "internalType": "uint192",
+              "name": "originalId",
+              "type": "uint192"
+            }
+          ],
+          "name": "BidRejected",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "bidId",
+              "type": "uint256"
+            },
+            {
+              "indexed": true,
+              "internalType": "uint192",
+              "name": "originalId",
+              "type": "uint192"
+            }
+          ],
+          "name": "BidWon",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint192",
+              "name": "originalId",
+              "type": "uint192"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "monoOwner",
+              "type": "address"
+            }
+          ],
+          "name": "MonoRefunded",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint192",
+              "name": "originalId",
+              "type": "uint192"
+            },
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "bidId",
+              "type": "uint256"
+            }
+          ],
+          "name": "OriginalSold",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "previousAdminRole",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "newAdminRole",
+              "type": "bytes32"
+            }
+          ],
+          "name": "RoleAdminChanged",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "sender",
+              "type": "address"
+            }
+          ],
+          "name": "RoleGranted",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "sender",
+              "type": "address"
+            }
+          ],
+          "name": "RoleRevoked",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "from",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            }
+          ],
+          "name": "Transfer",
+          "type": "event"
+        },
+        {
+          "inputs": [],
+          "name": "BID_ACCEPTANCE_THRESHOLD_BPS",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "BID_EXPIRY",
+          "outputs": [
+            {
+              "internalType": "uint40",
+              "name": "",
+              "type": "uint40"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "DEFAULT_ADMIN_ROLE",
+          "outputs": [
+            {
+              "internalType": "bytes32",
+              "name": "",
+              "type": "bytes32"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "MINTER_ROLE",
+          "outputs": [
+            {
+              "internalType": "bytes32",
+              "name": "",
+              "type": "bytes32"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            }
+          ],
+          "name": "approve",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            }
+          ],
+          "name": "balanceOf",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint192",
+              "name": "originalId",
+              "type": "uint192"
+            },
+            {
+              "internalType": "uint256",
+              "name": "price",
+              "type": "uint256"
+            }
+          ],
+          "name": "bid",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "newBidId",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "payable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "name": "bidDeposits",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "name": "bids",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address payable",
+              "name": "bidder",
+              "type": "address"
+            },
+            {
+              "internalType": "uint192",
+              "name": "originalId",
+              "type": "uint192"
+            },
+            {
+              "internalType": "uint256",
+              "name": "price",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint40",
+              "name": "createdAt",
+              "type": "uint40"
+            },
+            {
+              "internalType": "uint40",
+              "name": "expiry",
+              "type": "uint40"
+            },
+            {
+              "internalType": "enum UsingCryptoPunksMosaicRegistryStructs.BidState",
+              "name": "state",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "punkId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint64",
+              "name": "totalClaimableCount",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint256",
+              "name": "purchasePrice",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "minReservePrice",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "maxReservePrice",
+              "type": "uint256"
+            }
+          ],
+          "name": "create",
+          "outputs": [
+            {
+              "internalType": "uint192",
+              "name": "originalId",
+              "type": "uint192"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "bidId",
+              "type": "uint256"
+            }
+          ],
+          "name": "finalizeAcceptedBid",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "bidId",
+              "type": "uint256"
+            }
+          ],
+          "name": "finalizeProposedBid",
+          "outputs": [
+            {
+              "internalType": "enum UsingCryptoPunksMosaicRegistryStructs.BidState",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "mosaicId",
+              "type": "uint256"
+            }
+          ],
+          "name": "fromMosaicId",
+          "outputs": [
+            {
+              "internalType": "uint192",
+              "name": "originalId",
+              "type": "uint192"
+            },
+            {
+              "internalType": "uint64",
+              "name": "monoId",
+              "type": "uint64"
+            }
+          ],
+          "stateMutability": "pure",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            }
+          ],
+          "name": "getApproved",
+          "outputs": [
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint192",
+              "name": "originalId",
+              "type": "uint192"
+            }
+          ],
+          "name": "getAverageReservePriceProposals",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "average",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint192",
+              "name": "originalId",
+              "type": "uint192"
+            },
+            {
+              "internalType": "uint64",
+              "name": "monoId",
+              "type": "uint64"
+            }
+          ],
+          "name": "getMono",
+          "outputs": [
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "mosaicId",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint8",
+                  "name": "presetId",
+                  "type": "uint8"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "proposedReservePrice",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "enum UsingCryptoPunksMosaicRegistryStructs.MonoBidResponse",
+                      "name": "bidResponse",
+                      "type": "uint8"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "bidId",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct UsingCryptoPunksMosaicRegistryStructs.MonoGovernanceOptions",
+                  "name": "governanceOptions",
+                  "type": "tuple"
+                }
+              ],
+              "internalType": "struct UsingCryptoPunksMosaicRegistryStructs.Mono",
+              "name": "",
+              "type": "tuple"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "mosaicId",
+              "type": "uint256"
+            }
+          ],
+          "name": "getMonoLifeCycle",
+          "outputs": [
+            {
+              "internalType": "enum UsingCryptoPunksMosaicRegistryStructs.MonoLifeCycle",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint192",
+              "name": "originalId",
+              "type": "uint192"
+            }
+          ],
+          "name": "getOriginal",
+          "outputs": [
+            {
+              "components": [
+                {
+                  "internalType": "uint192",
+                  "name": "id",
+                  "type": "uint192"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "punkId",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint96",
+                  "name": "totalMonoSupply",
+                  "type": "uint96"
+                },
+                {
+                  "internalType": "uint96",
+                  "name": "claimedMonoCount",
+                  "type": "uint96"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "purchasePrice",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "minReservePrice",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "maxReservePrice",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "string",
+                  "name": "metadataBaseUri",
+                  "type": "string"
+                },
+                {
+                  "internalType": "enum UsingCryptoPunksMosaicRegistryStructs.OriginalStatus",
+                  "name": "status",
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "activeBidId",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct UsingCryptoPunksMosaicRegistryStructs.Original",
+              "name": "",
+              "type": "tuple"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "mosaicId",
+              "type": "uint256"
+            }
+          ],
+          "name": "getOriginalFromMosaicId",
+          "outputs": [
+            {
+              "components": [
+                {
+                  "internalType": "uint192",
+                  "name": "id",
+                  "type": "uint192"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "punkId",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint96",
+                  "name": "totalMonoSupply",
+                  "type": "uint96"
+                },
+                {
+                  "internalType": "uint96",
+                  "name": "claimedMonoCount",
+                  "type": "uint96"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "purchasePrice",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "minReservePrice",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "maxReservePrice",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "string",
+                  "name": "metadataBaseUri",
+                  "type": "string"
+                },
+                {
+                  "internalType": "enum UsingCryptoPunksMosaicRegistryStructs.OriginalStatus",
+                  "name": "status",
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "activeBidId",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct UsingCryptoPunksMosaicRegistryStructs.Original",
+              "name": "",
+              "type": "tuple"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint192",
+              "name": "originalId",
+              "type": "uint192"
+            }
+          ],
+          "name": "getPerMonoResaleFund",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "perMonoResaleFund",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            }
+          ],
+          "name": "getRoleAdmin",
+          "outputs": [
+            {
+              "internalType": "bytes32",
+              "name": "",
+              "type": "bytes32"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "addr",
+              "type": "address"
+            }
+          ],
+          "name": "grantMintAuthority",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "grantRole",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint192",
+              "name": "originalId",
+              "type": "uint192"
+            }
+          ],
+          "name": "hasOngoingBid",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "hasRole",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "invalidMetadataUri",
+          "outputs": [
+            {
+              "internalType": "string",
+              "name": "",
+              "type": "string"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "operator",
+              "type": "address"
+            }
+          ],
+          "name": "isApprovedForAll",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint192",
+              "name": "originalId",
+              "type": "uint192"
+            }
+          ],
+          "name": "isBidAcceptable",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "latestOriginalId",
+          "outputs": [
+            {
+              "internalType": "uint192",
+              "name": "",
+              "type": "uint192"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "contributor",
+              "type": "address"
+            },
+            {
+              "internalType": "uint192",
+              "name": "originalId",
+              "type": "uint192"
+            }
+          ],
+          "name": "mint",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "mosaicId",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "name": "monos",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "mosaicId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint8",
+              "name": "presetId",
+              "type": "uint8"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "proposedReservePrice",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "enum UsingCryptoPunksMosaicRegistryStructs.MonoBidResponse",
+                  "name": "bidResponse",
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "bidId",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct UsingCryptoPunksMosaicRegistryStructs.MonoGovernanceOptions",
+              "name": "governanceOptions",
+              "type": "tuple"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "museum",
+          "outputs": [
+            {
+              "internalType": "contract CryptoPunksMuseum",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "name",
+          "outputs": [
+            {
+              "internalType": "string",
+              "name": "",
+              "type": "string"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint192",
+              "name": "",
+              "type": "uint192"
+            }
+          ],
+          "name": "nextMonoIds",
+          "outputs": [
+            {
+              "internalType": "uint64",
+              "name": "",
+              "type": "uint64"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint192",
+              "name": "",
+              "type": "uint192"
+            }
+          ],
+          "name": "originals",
+          "outputs": [
+            {
+              "internalType": "uint192",
+              "name": "id",
+              "type": "uint192"
+            },
+            {
+              "internalType": "uint256",
+              "name": "punkId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint96",
+              "name": "totalMonoSupply",
+              "type": "uint96"
+            },
+            {
+              "internalType": "uint96",
+              "name": "claimedMonoCount",
+              "type": "uint96"
+            },
+            {
+              "internalType": "uint256",
+              "name": "purchasePrice",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "minReservePrice",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "maxReservePrice",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "metadataBaseUri",
+              "type": "string"
+            },
+            {
+              "internalType": "enum UsingCryptoPunksMosaicRegistryStructs.OriginalStatus",
+              "name": "status",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint256",
+              "name": "activeBidId",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            }
+          ],
+          "name": "ownerOf",
+          "outputs": [
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "mosaicId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "price",
+              "type": "uint256"
+            }
+          ],
+          "name": "proposeReservePrice",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "bidId",
+              "type": "uint256"
+            }
+          ],
+          "name": "refundBidDeposit",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint192",
+              "name": "originalId",
+              "type": "uint192"
+            }
+          ],
+          "name": "refundOnSold",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "totalResaleFund",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "renounceRole",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint192",
+              "name": "",
+              "type": "uint192"
+            }
+          ],
+          "name": "resalePrices",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "mosaicId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "enum UsingCryptoPunksMosaicRegistryStructs.MonoBidResponse",
+              "name": "response",
+              "type": "uint8"
+            }
+          ],
+          "name": "respondToBid",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "revokeRole",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "from",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            }
+          ],
+          "name": "safeTransferFrom",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "from",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes",
+              "name": "data",
+              "type": "bytes"
+            }
+          ],
+          "name": "safeTransferFrom",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "operator",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "approved",
+              "type": "bool"
+            }
+          ],
+          "name": "setApprovalForAll",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "string",
+              "name": "_uri",
+              "type": "string"
+            }
+          ],
+          "name": "setInvalidMetadataUri",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint192",
+              "name": "originalId",
+              "type": "uint192"
+            },
+            {
+              "internalType": "string",
+              "name": "_uri",
+              "type": "string"
+            }
+          ],
+          "name": "setMetadataBaseUri",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "mosaicId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint8",
+              "name": "presetId",
+              "type": "uint8"
+            }
+          ],
+          "name": "setPresetId",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint192",
+              "name": "originalId",
+              "type": "uint192"
+            }
+          ],
+          "name": "sumBidResponses",
+          "outputs": [
+            {
+              "internalType": "uint64",
+              "name": "yes",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "no",
+              "type": "uint64"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint192",
+              "name": "originalId",
+              "type": "uint192"
+            }
+          ],
+          "name": "sumReservePriceProposals",
+          "outputs": [
+            {
+              "internalType": "uint64",
+              "name": "validProposalCount",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint256",
+              "name": "priceSum",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes4",
+              "name": "interfaceId",
+              "type": "bytes4"
+            }
+          ],
+          "name": "supportsInterface",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "symbol",
+          "outputs": [
+            {
+              "internalType": "string",
+              "name": "",
+              "type": "string"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint192",
+              "name": "originalId",
+              "type": "uint192"
+            },
+            {
+              "internalType": "address",
+              "name": "bidder",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "blockTimestamp",
+              "type": "uint256"
+            }
+          ],
+          "name": "toBidId",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "pure",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint192",
+              "name": "originalId",
+              "type": "uint192"
+            },
+            {
+              "internalType": "uint64",
+              "name": "monoId",
+              "type": "uint64"
+            }
+          ],
+          "name": "toMosaicId",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "mosaicId",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "pure",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "mosaicId",
+              "type": "uint256"
+            }
+          ],
+          "name": "tokenURI",
+          "outputs": [
+            {
+              "internalType": "string",
+              "name": "",
+              "type": "string"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "from",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            }
+          ],
+          "name": "transferFrom",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        }
+      ]
+    },
+    "CryptoPunksMuseum": {
+      "address": "0xAb9815A2D5C0429857C3E4F6fEfb0f0D79CFADb6",
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "cryptoPunksMarketAddress",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "constructor"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "previousAdminRole",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "newAdminRole",
+              "type": "bytes32"
+            }
+          ],
+          "name": "RoleAdminChanged",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "sender",
+              "type": "address"
+            }
+          ],
+          "name": "RoleGranted",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "sender",
+              "type": "address"
+            }
+          ],
+          "name": "RoleRevoked",
+          "type": "event"
+        },
+        {
+          "inputs": [],
+          "name": "DEFAULT_ADMIN_ROLE",
+          "outputs": [
+            {
+              "internalType": "bytes32",
+              "name": "",
+              "type": "bytes32"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "activate",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "cryptoPunksMarket",
+          "outputs": [
+            {
+              "internalType": "contract ICryptoPunksMarket",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "deactivate",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            }
+          ],
+          "name": "getRoleAdmin",
+          "outputs": [
+            {
+              "internalType": "bytes32",
+              "name": "",
+              "type": "bytes32"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "grantRole",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "groupRegistry",
+          "outputs": [
+            {
+              "internalType": "contract ICryptoPunksGroupRegistry",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "hasRole",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "isActive",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "mosaicRegistry",
+          "outputs": [
+            {
+              "internalType": "contract ICryptoPunksMosaicRegistry",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "renounceRole",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "revokeRole",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "addr",
+              "type": "address"
+            }
+          ],
+          "name": "setGroupRegistry",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "addr",
+              "type": "address"
+            }
+          ],
+          "name": "setMosaicRegistry",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes4",
+              "name": "interfaceId",
+              "type": "bytes4"
+            }
+          ],
+          "name": "supportsInterface",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        }
+      ]
+    },
     "TestCryptoPunksMarket": {
-      "address": "0xFdfa360103659d7e5a1eBca93B7f0e4db18855Ff",
+      "address": "0xab4C336343FD271713812713544dE913B8398c9c",
       "abi": [
         {
           "inputs": [],
@@ -639,14 +3785,14 @@
         }
       ]
     },
-    "CryptoPunksMuseum": {
-      "address": "0xb74a26889865E48cFa95dA4024b8aD087319d959",
+    "DefaultProxyAdmin": {
+      "address": "0x95DA5163e01dFdE1595A7fA64b2D26975FA51555",
       "abi": [
         {
           "inputs": [
             {
               "internalType": "address",
-              "name": "cryptoPunksMarketAddress",
+              "name": "initialOwner",
               "type": "address"
             }
           ],
@@ -658,102 +3804,69 @@
           "inputs": [
             {
               "indexed": true,
-              "internalType": "bytes32",
-              "name": "role",
-              "type": "bytes32"
+              "internalType": "address",
+              "name": "previousOwner",
+              "type": "address"
             },
             {
               "indexed": true,
-              "internalType": "bytes32",
-              "name": "previousAdminRole",
-              "type": "bytes32"
-            },
-            {
-              "indexed": true,
-              "internalType": "bytes32",
-              "name": "newAdminRole",
-              "type": "bytes32"
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
             }
           ],
-          "name": "RoleAdminChanged",
+          "name": "OwnershipTransferred",
           "type": "event"
         },
         {
-          "anonymous": false,
           "inputs": [
             {
-              "indexed": true,
-              "internalType": "bytes32",
-              "name": "role",
-              "type": "bytes32"
-            },
-            {
-              "indexed": true,
-              "internalType": "address",
-              "name": "account",
+              "internalType": "contract TransparentUpgradeableProxy",
+              "name": "proxy",
               "type": "address"
             },
             {
-              "indexed": true,
               "internalType": "address",
-              "name": "sender",
+              "name": "newAdmin",
               "type": "address"
             }
           ],
-          "name": "RoleGranted",
-          "type": "event"
+          "name": "changeProxyAdmin",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
         },
         {
-          "anonymous": false,
           "inputs": [
             {
-              "indexed": true,
-              "internalType": "bytes32",
-              "name": "role",
-              "type": "bytes32"
-            },
-            {
-              "indexed": true,
-              "internalType": "address",
-              "name": "account",
-              "type": "address"
-            },
-            {
-              "indexed": true,
-              "internalType": "address",
-              "name": "sender",
+              "internalType": "contract TransparentUpgradeableProxy",
+              "name": "proxy",
               "type": "address"
             }
           ],
-          "name": "RoleRevoked",
-          "type": "event"
-        },
-        {
-          "inputs": [],
-          "name": "DEFAULT_ADMIN_ROLE",
+          "name": "getProxyAdmin",
           "outputs": [
             {
-              "internalType": "bytes32",
+              "internalType": "address",
               "name": "",
-              "type": "bytes32"
+              "type": "address"
             }
           ],
           "stateMutability": "view",
           "type": "function"
         },
         {
-          "inputs": [],
-          "name": "activate",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function"
-        },
-        {
-          "inputs": [],
-          "name": "cryptoPunksMarket",
+          "inputs": [
+            {
+              "internalType": "contract TransparentUpgradeableProxy",
+              "name": "proxy",
+              "type": "address"
+            }
+          ],
+          "name": "getProxyImplementation",
           "outputs": [
             {
-              "internalType": "contract ICryptoPunksMarket",
+              "internalType": "address",
               "name": "",
               "type": "address"
             }
@@ -763,80 +3876,12 @@
         },
         {
           "inputs": [],
-          "name": "deactivate",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "bytes32",
-              "name": "role",
-              "type": "bytes32"
-            }
-          ],
-          "name": "getRoleAdmin",
+          "name": "owner",
           "outputs": [
-            {
-              "internalType": "bytes32",
-              "name": "",
-              "type": "bytes32"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "bytes32",
-              "name": "role",
-              "type": "bytes32"
-            },
             {
               "internalType": "address",
-              "name": "account",
-              "type": "address"
-            }
-          ],
-          "name": "grantRole",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function"
-        },
-        {
-          "inputs": [],
-          "name": "groupRegistry",
-          "outputs": [
-            {
-              "internalType": "contract ICryptoPunksGroupRegistry",
               "name": "",
               "type": "address"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "bytes32",
-              "name": "role",
-              "type": "bytes32"
-            },
-            {
-              "internalType": "address",
-              "name": "account",
-              "type": "address"
-            }
-          ],
-          "name": "hasRole",
-          "outputs": [
-            {
-              "internalType": "bool",
-              "name": "",
-              "type": "bool"
             }
           ],
           "stateMutability": "view",
@@ -844,44 +3889,38 @@
         },
         {
           "inputs": [],
-          "name": "isActive",
-          "outputs": [
-            {
-              "internalType": "bool",
-              "name": "",
-              "type": "bool"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [],
-          "name": "mosaicRegistry",
-          "outputs": [
-            {
-              "internalType": "contract ICryptoPunksMosaicRegistry",
-              "name": "",
-              "type": "address"
-            }
-          ],
-          "stateMutability": "view",
+          "name": "renounceOwnership",
+          "outputs": [],
+          "stateMutability": "nonpayable",
           "type": "function"
         },
         {
           "inputs": [
             {
-              "internalType": "bytes32",
-              "name": "role",
-              "type": "bytes32"
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "transferOwnership",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "contract TransparentUpgradeableProxy",
+              "name": "proxy",
+              "type": "address"
             },
             {
               "internalType": "address",
-              "name": "account",
+              "name": "implementation",
               "type": "address"
             }
           ],
-          "name": "renounceRole",
+          "name": "upgrade",
           "outputs": [],
           "stateMutability": "nonpayable",
           "type": "function"
@@ -889,81 +3928,49 @@
         {
           "inputs": [
             {
-              "internalType": "bytes32",
-              "name": "role",
-              "type": "bytes32"
+              "internalType": "contract TransparentUpgradeableProxy",
+              "name": "proxy",
+              "type": "address"
             },
             {
               "internalType": "address",
-              "name": "account",
+              "name": "implementation",
               "type": "address"
+            },
+            {
+              "internalType": "bytes",
+              "name": "data",
+              "type": "bytes"
             }
           ],
-          "name": "revokeRole",
+          "name": "upgradeAndCall",
           "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "address",
-              "name": "addr",
-              "type": "address"
-            }
-          ],
-          "name": "setGroupRegistry",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "address",
-              "name": "addr",
-              "type": "address"
-            }
-          ],
-          "name": "setMosaicRegistry",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "bytes4",
-              "name": "interfaceId",
-              "type": "bytes4"
-            }
-          ],
-          "name": "supportsInterface",
-          "outputs": [
-            {
-              "internalType": "bool",
-              "name": "",
-              "type": "bool"
-            }
-          ],
-          "stateMutability": "view",
+          "stateMutability": "payable",
           "type": "function"
         }
       ]
     },
-    "CryptoPunksGroupRegistry": {
-      "address": "0x86cedcb6Fc9De54ada6Aece4b17B1C2f14C610e8",
+    "CryptoPunksGroupRegistry_Implementation": {
+      "address": "0xFBeA11Ef65f53f6eD31FB9025BEEA83f57C5C622",
       "abi": [
         {
+          "anonymous": false,
           "inputs": [
             {
+              "indexed": false,
               "internalType": "address",
-              "name": "museumAddress",
+              "name": "previousAdmin",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "newAdmin",
               "type": "address"
             }
           ],
-          "stateMutability": "nonpayable",
-          "type": "constructor"
+          "name": "AdminChanged",
+          "type": "event"
         },
         {
           "anonymous": false,
@@ -988,6 +3995,19 @@
             }
           ],
           "name": "ApprovalForAll",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "beacon",
+              "type": "address"
+            }
+          ],
+          "name": "BeaconUpgraded",
           "type": "event"
         },
         {
@@ -1088,6 +4108,19 @@
             }
           ],
           "name": "GroupWon",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "version",
+              "type": "uint8"
+            }
+          ],
+          "name": "Initialized",
           "type": "event"
         },
         {
@@ -1256,6 +4289,19 @@
             }
           ],
           "name": "URI",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "implementation",
+              "type": "address"
+            }
+          ],
+          "name": "Upgraded",
           "type": "event"
         },
         {
@@ -1631,6 +4677,19 @@
           "type": "function"
         },
         {
+          "inputs": [],
+          "name": "getLatestGroupId",
+          "outputs": [
+            {
+              "internalType": "uint192",
+              "name": "latestGroupId",
+              "type": "uint192"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
           "inputs": [
             {
               "internalType": "bytes32",
@@ -1743,6 +4802,19 @@
           "inputs": [
             {
               "internalType": "address",
+              "name": "museumAddress",
+              "type": "address"
+            }
+          ],
+          "name": "initialize",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
               "name": "account",
               "type": "address"
             },
@@ -1789,12 +4861,12 @@
         },
         {
           "inputs": [],
-          "name": "latestGroupId",
+          "name": "museum",
           "outputs": [
             {
-              "internalType": "uint192",
+              "internalType": "contract CryptoPunksMuseum",
               "name": "",
-              "type": "uint192"
+              "type": "address"
             }
           ],
           "stateMutability": "view",
@@ -1802,12 +4874,12 @@
         },
         {
           "inputs": [],
-          "name": "museum",
+          "name": "proxiableUUID",
           "outputs": [
             {
-              "internalType": "contract CryptoPunksMuseum",
+              "internalType": "bytes32",
               "name": "",
-              "type": "address"
+              "type": "bytes32"
             }
           ],
           "stateMutability": "view",
@@ -1968,6 +5040,37 @@
         {
           "inputs": [
             {
+              "internalType": "address",
+              "name": "newImplementation",
+              "type": "address"
+            }
+          ],
+          "name": "upgradeTo",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "newImplementation",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes",
+              "name": "data",
+              "type": "bytes"
+            }
+          ],
+          "name": "upgradeToAndCall",
+          "outputs": [],
+          "stateMutability": "payable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
               "internalType": "uint256",
               "name": "groupId",
               "type": "uint256"
@@ -1986,143 +5089,47 @@
         }
       ]
     },
-    "CryptoPunksMosaicRegistry": {
-      "address": "0x8Db0eee7Fd94eBa8ABeb30c978292c531DbAcCA5",
+    "CryptoPunksGroupRegistry_Proxy": {
+      "address": "0x4D21F2D2981A63235dea265F80fD8fbC6D8f0f92",
       "abi": [
         {
           "inputs": [
             {
               "internalType": "address",
-              "name": "museumAddress",
+              "name": "_logic",
               "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "admin_",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes",
+              "name": "_data",
+              "type": "bytes"
             }
           ],
-          "stateMutability": "nonpayable",
+          "stateMutability": "payable",
           "type": "constructor"
         },
         {
           "anonymous": false,
           "inputs": [
             {
-              "indexed": true,
+              "indexed": false,
               "internalType": "address",
-              "name": "owner",
-              "type": "address"
-            },
-            {
-              "indexed": true,
-              "internalType": "address",
-              "name": "approved",
-              "type": "address"
-            },
-            {
-              "indexed": true,
-              "internalType": "uint256",
-              "name": "tokenId",
-              "type": "uint256"
-            }
-          ],
-          "name": "Approval",
-          "type": "event"
-        },
-        {
-          "anonymous": false,
-          "inputs": [
-            {
-              "indexed": true,
-              "internalType": "address",
-              "name": "owner",
-              "type": "address"
-            },
-            {
-              "indexed": true,
-              "internalType": "address",
-              "name": "operator",
+              "name": "previousAdmin",
               "type": "address"
             },
             {
               "indexed": false,
-              "internalType": "bool",
-              "name": "approved",
-              "type": "bool"
-            }
-          ],
-          "name": "ApprovalForAll",
-          "type": "event"
-        },
-        {
-          "anonymous": false,
-          "inputs": [
-            {
-              "indexed": true,
-              "internalType": "bytes32",
-              "name": "role",
-              "type": "bytes32"
-            },
-            {
-              "indexed": true,
-              "internalType": "bytes32",
-              "name": "previousAdminRole",
-              "type": "bytes32"
-            },
-            {
-              "indexed": true,
-              "internalType": "bytes32",
-              "name": "newAdminRole",
-              "type": "bytes32"
-            }
-          ],
-          "name": "RoleAdminChanged",
-          "type": "event"
-        },
-        {
-          "anonymous": false,
-          "inputs": [
-            {
-              "indexed": true,
-              "internalType": "bytes32",
-              "name": "role",
-              "type": "bytes32"
-            },
-            {
-              "indexed": true,
               "internalType": "address",
-              "name": "account",
-              "type": "address"
-            },
-            {
-              "indexed": true,
-              "internalType": "address",
-              "name": "sender",
+              "name": "newAdmin",
               "type": "address"
             }
           ],
-          "name": "RoleGranted",
-          "type": "event"
-        },
-        {
-          "anonymous": false,
-          "inputs": [
-            {
-              "indexed": true,
-              "internalType": "bytes32",
-              "name": "role",
-              "type": "bytes32"
-            },
-            {
-              "indexed": true,
-              "internalType": "address",
-              "name": "account",
-              "type": "address"
-            },
-            {
-              "indexed": true,
-              "internalType": "address",
-              "name": "sender",
-              "type": "address"
-            }
-          ],
-          "name": "RoleRevoked",
+          "name": "AdminChanged",
           "type": "event"
         },
         {
@@ -2131,240 +5138,38 @@
             {
               "indexed": true,
               "internalType": "address",
-              "name": "from",
+              "name": "beacon",
               "type": "address"
-            },
-            {
-              "indexed": true,
-              "internalType": "address",
-              "name": "to",
-              "type": "address"
-            },
-            {
-              "indexed": true,
-              "internalType": "uint256",
-              "name": "tokenId",
-              "type": "uint256"
             }
           ],
-          "name": "Transfer",
+          "name": "BeaconUpgraded",
           "type": "event"
         },
         {
-          "inputs": [],
-          "name": "BID_ACCEPTANCE_THRESHOLD_BPS",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [],
-          "name": "BID_EXPIRY",
-          "outputs": [
-            {
-              "internalType": "uint40",
-              "name": "",
-              "type": "uint40"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [],
-          "name": "DEFAULT_ADMIN_ROLE",
-          "outputs": [
-            {
-              "internalType": "bytes32",
-              "name": "",
-              "type": "bytes32"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [],
-          "name": "MINTER_ROLE",
-          "outputs": [
-            {
-              "internalType": "bytes32",
-              "name": "",
-              "type": "bytes32"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
+          "anonymous": false,
           "inputs": [
             {
+              "indexed": true,
               "internalType": "address",
-              "name": "to",
-              "type": "address"
-            },
-            {
-              "internalType": "uint256",
-              "name": "tokenId",
-              "type": "uint256"
-            }
-          ],
-          "name": "approve",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "address",
-              "name": "owner",
+              "name": "implementation",
               "type": "address"
             }
           ],
-          "name": "balanceOf",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
+          "name": "Upgraded",
+          "type": "event"
         },
         {
-          "inputs": [
-            {
-              "internalType": "uint192",
-              "name": "originalId",
-              "type": "uint192"
-            },
-            {
-              "internalType": "uint256",
-              "name": "price",
-              "type": "uint256"
-            }
-          ],
-          "name": "bid",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "newBidId",
-              "type": "uint256"
-            }
-          ],
           "stateMutability": "payable",
-          "type": "function"
+          "type": "fallback"
         },
         {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "",
-              "type": "uint256"
-            }
-          ],
-          "name": "bidDeposits",
+          "inputs": [],
+          "name": "admin",
           "outputs": [
             {
-              "internalType": "uint256",
-              "name": "",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "",
-              "type": "uint256"
-            }
-          ],
-          "name": "bids",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "id",
-              "type": "uint256"
-            },
-            {
-              "internalType": "address payable",
-              "name": "bidder",
+              "internalType": "address",
+              "name": "admin_",
               "type": "address"
-            },
-            {
-              "internalType": "uint192",
-              "name": "originalId",
-              "type": "uint192"
-            },
-            {
-              "internalType": "uint256",
-              "name": "price",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint40",
-              "name": "createdAt",
-              "type": "uint40"
-            },
-            {
-              "internalType": "uint40",
-              "name": "expiry",
-              "type": "uint40"
-            },
-            {
-              "internalType": "enum UsingCryptoPunksMosaicRegistryStructs.BidState",
-              "name": "state",
-              "type": "uint8"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "punkId",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint64",
-              "name": "totalClaimableCount",
-              "type": "uint64"
-            },
-            {
-              "internalType": "uint256",
-              "name": "purchasePrice",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "minReservePrice",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "maxReservePrice",
-              "type": "uint256"
-            }
-          ],
-          "name": "create",
-          "outputs": [
-            {
-              "internalType": "uint192",
-              "name": "originalId",
-              "type": "uint192"
             }
           ],
           "stateMutability": "nonpayable",
@@ -2373,516 +5178,24 @@
         {
           "inputs": [
             {
-              "internalType": "uint256",
-              "name": "bidId",
-              "type": "uint256"
+              "internalType": "address",
+              "name": "newAdmin",
+              "type": "address"
             }
           ],
-          "name": "finalizeAcceptedBid",
+          "name": "changeAdmin",
           "outputs": [],
           "stateMutability": "nonpayable",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "bidId",
-              "type": "uint256"
-            }
-          ],
-          "name": "finalizeProposedBid",
-          "outputs": [
-            {
-              "internalType": "enum UsingCryptoPunksMosaicRegistryStructs.BidState",
-              "name": "",
-              "type": "uint8"
-            }
-          ],
-          "stateMutability": "nonpayable",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "mosaicId",
-              "type": "uint256"
-            }
-          ],
-          "name": "fromMosaicId",
-          "outputs": [
-            {
-              "internalType": "uint192",
-              "name": "originalId",
-              "type": "uint192"
-            },
-            {
-              "internalType": "uint64",
-              "name": "monoId",
-              "type": "uint64"
-            }
-          ],
-          "stateMutability": "pure",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "tokenId",
-              "type": "uint256"
-            }
-          ],
-          "name": "getApproved",
-          "outputs": [
-            {
-              "internalType": "address",
-              "name": "",
-              "type": "address"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint192",
-              "name": "originalId",
-              "type": "uint192"
-            },
-            {
-              "internalType": "uint64",
-              "name": "monoId",
-              "type": "uint64"
-            }
-          ],
-          "name": "getMono",
-          "outputs": [
-            {
-              "components": [
-                {
-                  "internalType": "uint256",
-                  "name": "mosaicId",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint8",
-                  "name": "presetId",
-                  "type": "uint8"
-                },
-                {
-                  "components": [
-                    {
-                      "internalType": "uint256",
-                      "name": "proposedReservePrice",
-                      "type": "uint256"
-                    },
-                    {
-                      "internalType": "enum UsingCryptoPunksMosaicRegistryStructs.MonoBidResponse",
-                      "name": "bidResponse",
-                      "type": "uint8"
-                    },
-                    {
-                      "internalType": "uint256",
-                      "name": "bidId",
-                      "type": "uint256"
-                    }
-                  ],
-                  "internalType": "struct UsingCryptoPunksMosaicRegistryStructs.MonoGovernanceOptions",
-                  "name": "governanceOptions",
-                  "type": "tuple"
-                }
-              ],
-              "internalType": "struct UsingCryptoPunksMosaicRegistryStructs.Mono",
-              "name": "",
-              "type": "tuple"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "mosaicId",
-              "type": "uint256"
-            }
-          ],
-          "name": "getMonoLifeCycle",
-          "outputs": [
-            {
-              "internalType": "enum UsingCryptoPunksMosaicRegistryStructs.MonoLifeCycle",
-              "name": "",
-              "type": "uint8"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint192",
-              "name": "originalId",
-              "type": "uint192"
-            }
-          ],
-          "name": "getOriginal",
-          "outputs": [
-            {
-              "components": [
-                {
-                  "internalType": "uint192",
-                  "name": "id",
-                  "type": "uint192"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "punkId",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint128",
-                  "name": "totalMonoSupply",
-                  "type": "uint128"
-                },
-                {
-                  "internalType": "uint128",
-                  "name": "claimedMonoCount",
-                  "type": "uint128"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "purchasePrice",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "minReservePrice",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "maxReservePrice",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "string",
-                  "name": "metadataBaseUri",
-                  "type": "string"
-                },
-                {
-                  "internalType": "enum UsingCryptoPunksMosaicRegistryStructs.OriginalStatus",
-                  "name": "status",
-                  "type": "uint8"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "activeBidId",
-                  "type": "uint256"
-                }
-              ],
-              "internalType": "struct UsingCryptoPunksMosaicRegistryStructs.Original",
-              "name": "",
-              "type": "tuple"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "mosaicId",
-              "type": "uint256"
-            }
-          ],
-          "name": "getOriginalFromMosaicId",
-          "outputs": [
-            {
-              "components": [
-                {
-                  "internalType": "uint192",
-                  "name": "id",
-                  "type": "uint192"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "punkId",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint128",
-                  "name": "totalMonoSupply",
-                  "type": "uint128"
-                },
-                {
-                  "internalType": "uint128",
-                  "name": "claimedMonoCount",
-                  "type": "uint128"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "purchasePrice",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "minReservePrice",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "maxReservePrice",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "string",
-                  "name": "metadataBaseUri",
-                  "type": "string"
-                },
-                {
-                  "internalType": "enum UsingCryptoPunksMosaicRegistryStructs.OriginalStatus",
-                  "name": "status",
-                  "type": "uint8"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "activeBidId",
-                  "type": "uint256"
-                }
-              ],
-              "internalType": "struct UsingCryptoPunksMosaicRegistryStructs.Original",
-              "name": "",
-              "type": "tuple"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint192",
-              "name": "originalId",
-              "type": "uint192"
-            }
-          ],
-          "name": "getPerMonoResaleFund",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "perMonoResaleFund",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "bytes32",
-              "name": "role",
-              "type": "bytes32"
-            }
-          ],
-          "name": "getRoleAdmin",
-          "outputs": [
-            {
-              "internalType": "bytes32",
-              "name": "",
-              "type": "bytes32"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "address",
-              "name": "addr",
-              "type": "address"
-            }
-          ],
-          "name": "grantMintAuthority",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "bytes32",
-              "name": "role",
-              "type": "bytes32"
-            },
-            {
-              "internalType": "address",
-              "name": "account",
-              "type": "address"
-            }
-          ],
-          "name": "grantRole",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint192",
-              "name": "originalId",
-              "type": "uint192"
-            }
-          ],
-          "name": "hasOngoingBid",
-          "outputs": [
-            {
-              "internalType": "bool",
-              "name": "",
-              "type": "bool"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "bytes32",
-              "name": "role",
-              "type": "bytes32"
-            },
-            {
-              "internalType": "address",
-              "name": "account",
-              "type": "address"
-            }
-          ],
-          "name": "hasRole",
-          "outputs": [
-            {
-              "internalType": "bool",
-              "name": "",
-              "type": "bool"
-            }
-          ],
-          "stateMutability": "view",
           "type": "function"
         },
         {
           "inputs": [],
-          "name": "invalidMetadataUri",
+          "name": "implementation",
           "outputs": [
-            {
-              "internalType": "string",
-              "name": "",
-              "type": "string"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [
             {
               "internalType": "address",
-              "name": "owner",
+              "name": "implementation_",
               "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "operator",
-              "type": "address"
-            }
-          ],
-          "name": "isApprovedForAll",
-          "outputs": [
-            {
-              "internalType": "bool",
-              "name": "",
-              "type": "bool"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint192",
-              "name": "originalId",
-              "type": "uint192"
-            }
-          ],
-          "name": "isBidAcceptable",
-          "outputs": [
-            {
-              "internalType": "bool",
-              "name": "",
-              "type": "bool"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint192",
-              "name": "",
-              "type": "uint192"
-            }
-          ],
-          "name": "latestMonoIds",
-          "outputs": [
-            {
-              "internalType": "uint64",
-              "name": "",
-              "type": "uint64"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [],
-          "name": "latestOriginalId",
-          "outputs": [
-            {
-              "internalType": "uint192",
-              "name": "",
-              "type": "uint192"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "address",
-              "name": "contributor",
-              "type": "address"
-            },
-            {
-              "internalType": "uint192",
-              "name": "originalId",
-              "type": "uint192"
-            }
-          ],
-          "name": "mint",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "mosaicId",
-              "type": "uint256"
             }
           ],
           "stateMutability": "nonpayable",
@@ -2891,277 +5204,12 @@
         {
           "inputs": [
             {
-              "internalType": "uint256",
-              "name": "",
-              "type": "uint256"
-            }
-          ],
-          "name": "monos",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "mosaicId",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint8",
-              "name": "presetId",
-              "type": "uint8"
-            },
-            {
-              "components": [
-                {
-                  "internalType": "uint256",
-                  "name": "proposedReservePrice",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "enum UsingCryptoPunksMosaicRegistryStructs.MonoBidResponse",
-                  "name": "bidResponse",
-                  "type": "uint8"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "bidId",
-                  "type": "uint256"
-                }
-              ],
-              "internalType": "struct UsingCryptoPunksMosaicRegistryStructs.MonoGovernanceOptions",
-              "name": "governanceOptions",
-              "type": "tuple"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [],
-          "name": "museum",
-          "outputs": [
-            {
-              "internalType": "contract CryptoPunksMuseum",
-              "name": "",
-              "type": "address"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [],
-          "name": "name",
-          "outputs": [
-            {
-              "internalType": "string",
-              "name": "",
-              "type": "string"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint192",
-              "name": "",
-              "type": "uint192"
-            }
-          ],
-          "name": "originals",
-          "outputs": [
-            {
-              "internalType": "uint192",
-              "name": "id",
-              "type": "uint192"
-            },
-            {
-              "internalType": "uint256",
-              "name": "punkId",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint128",
-              "name": "totalMonoSupply",
-              "type": "uint128"
-            },
-            {
-              "internalType": "uint128",
-              "name": "claimedMonoCount",
-              "type": "uint128"
-            },
-            {
-              "internalType": "uint256",
-              "name": "purchasePrice",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "minReservePrice",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "maxReservePrice",
-              "type": "uint256"
-            },
-            {
-              "internalType": "string",
-              "name": "metadataBaseUri",
-              "type": "string"
-            },
-            {
-              "internalType": "enum UsingCryptoPunksMosaicRegistryStructs.OriginalStatus",
-              "name": "status",
-              "type": "uint8"
-            },
-            {
-              "internalType": "uint256",
-              "name": "activeBidId",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "tokenId",
-              "type": "uint256"
-            }
-          ],
-          "name": "ownerOf",
-          "outputs": [
-            {
               "internalType": "address",
-              "name": "",
+              "name": "newImplementation",
               "type": "address"
             }
           ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "mosaicId",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "price",
-              "type": "uint256"
-            }
-          ],
-          "name": "proposeReservePrice",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "bidId",
-              "type": "uint256"
-            }
-          ],
-          "name": "refundBidDeposit",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint192",
-              "name": "originalId",
-              "type": "uint192"
-            }
-          ],
-          "name": "refundOnSold",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "totalResaleFund",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "nonpayable",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "bytes32",
-              "name": "role",
-              "type": "bytes32"
-            },
-            {
-              "internalType": "address",
-              "name": "account",
-              "type": "address"
-            }
-          ],
-          "name": "renounceRole",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint192",
-              "name": "",
-              "type": "uint192"
-            }
-          ],
-          "name": "resalePrices",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "mosaicId",
-              "type": "uint256"
-            },
-            {
-              "internalType": "enum UsingCryptoPunksMosaicRegistryStructs.MonoBidResponse",
-              "name": "response",
-              "type": "uint8"
-            }
-          ],
-          "name": "respondToBid",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "bytes32",
-              "name": "role",
-              "type": "bytes32"
-            },
-            {
-              "internalType": "address",
-              "name": "account",
-              "type": "address"
-            }
-          ],
-          "name": "revokeRole",
+          "name": "upgradeTo",
           "outputs": [],
           "stateMutability": "nonpayable",
           "type": "function"
@@ -3170,41 +5218,8 @@
           "inputs": [
             {
               "internalType": "address",
-              "name": "from",
+              "name": "newImplementation",
               "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "to",
-              "type": "address"
-            },
-            {
-              "internalType": "uint256",
-              "name": "tokenId",
-              "type": "uint256"
-            }
-          ],
-          "name": "safeTransferFrom",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "address",
-              "name": "from",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "to",
-              "type": "address"
-            },
-            {
-              "internalType": "uint256",
-              "name": "tokenId",
-              "type": "uint256"
             },
             {
               "internalType": "bytes",
@@ -3212,223 +5227,14 @@
               "type": "bytes"
             }
           ],
-          "name": "safeTransferFrom",
+          "name": "upgradeToAndCall",
           "outputs": [],
-          "stateMutability": "nonpayable",
+          "stateMutability": "payable",
           "type": "function"
         },
         {
-          "inputs": [
-            {
-              "internalType": "address",
-              "name": "operator",
-              "type": "address"
-            },
-            {
-              "internalType": "bool",
-              "name": "approved",
-              "type": "bool"
-            }
-          ],
-          "name": "setApprovalForAll",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "string",
-              "name": "_uri",
-              "type": "string"
-            }
-          ],
-          "name": "setInvalidMetadataUri",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint192",
-              "name": "originalId",
-              "type": "uint192"
-            },
-            {
-              "internalType": "string",
-              "name": "_uri",
-              "type": "string"
-            }
-          ],
-          "name": "setMetadataBaseUri",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "mosaicId",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint8",
-              "name": "presetId",
-              "type": "uint8"
-            }
-          ],
-          "name": "setPresetId",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint192",
-              "name": "originalId",
-              "type": "uint192"
-            }
-          ],
-          "name": "sumBidResponses",
-          "outputs": [
-            {
-              "internalType": "uint64",
-              "name": "yes",
-              "type": "uint64"
-            },
-            {
-              "internalType": "uint64",
-              "name": "no",
-              "type": "uint64"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint192",
-              "name": "originalId",
-              "type": "uint192"
-            }
-          ],
-          "name": "sumReservePriceProposals",
-          "outputs": [
-            {
-              "internalType": "uint64",
-              "name": "validProposalCount",
-              "type": "uint64"
-            },
-            {
-              "internalType": "uint256",
-              "name": "priceSum",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "bytes4",
-              "name": "interfaceId",
-              "type": "bytes4"
-            }
-          ],
-          "name": "supportsInterface",
-          "outputs": [
-            {
-              "internalType": "bool",
-              "name": "",
-              "type": "bool"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [],
-          "name": "symbol",
-          "outputs": [
-            {
-              "internalType": "string",
-              "name": "",
-              "type": "string"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint192",
-              "name": "originalId",
-              "type": "uint192"
-            },
-            {
-              "internalType": "uint64",
-              "name": "monoId",
-              "type": "uint64"
-            }
-          ],
-          "name": "toMosaicId",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "mosaicId",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "pure",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "mosaicId",
-              "type": "uint256"
-            }
-          ],
-          "name": "tokenURI",
-          "outputs": [
-            {
-              "internalType": "string",
-              "name": "",
-              "type": "string"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "address",
-              "name": "from",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "to",
-              "type": "address"
-            },
-            {
-              "internalType": "uint256",
-              "name": "tokenId",
-              "type": "uint256"
-            }
-          ],
-          "name": "transferFrom",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function"
+          "stateMutability": "payable",
+          "type": "receive"
         }
       ]
     }
