@@ -103,8 +103,8 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         Original memory original = Original({
             id: originalId,
             punkId: 1,
-            totalMonoSupply: 100,
-            claimedMonoCount: 0,
+            totalMonoSupply: 100000000,
+            claimedMonoCount: 1000000,
             purchasePrice: 100 ether,
             minReservePrice: price / 2,
             maxReservePrice: price * 5,
@@ -128,6 +128,52 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         // then
         mono = mosaicRegistry.getMono(originalId, monoId);
         assertEq(mono.governanceOptions.proposedReservePrice, price);
+    }
+
+    function test_proposeReservePriceBatch() public {
+        // given
+        address alice = _randomAddress();
+        uint192 originalId = 530923;
+        uint64 firstMonoId = 10;
+        uint64 secondMonoId = 13;
+        uint256 firstMosaicId = mosaicRegistry.toMosaicId(originalId, firstMonoId);
+        uint256 secondMosaicId = mosaicRegistry.toMosaicId(originalId, secondMonoId);
+        uint256 price = 100 ether;
+
+        Original memory original = Original({
+            id: originalId,
+            punkId: 1,
+            totalMonoSupply: 100,
+            claimedMonoCount: 100,
+            purchasePrice: 100 ether,
+            minReservePrice: price / 2,
+            maxReservePrice: price * 5,
+            status: OriginalStatus.Active,
+            activeBidId: 0,
+            metadataBaseUri: ""
+        });
+        mosaicRegistry.setOriginal(originalId, original);
+        mosaicRegistry.setNextMonoId(originalId, 101);
+
+        // set up the ownership
+        mosaicRegistry.mockMint(alice, firstMosaicId);
+        mosaicRegistry.mockMint(alice, secondMosaicId);
+
+        // initial condition
+        Mono memory firstMono = mosaicRegistry.getMono(originalId, firstMonoId);
+        assertEq(firstMono.governanceOptions.proposedReservePrice, 0);
+        Mono memory secondMono = mosaicRegistry.getMono(originalId, secondMonoId);
+        assertEq(secondMono.governanceOptions.proposedReservePrice, 0);
+
+        // when
+        vm.prank(alice);
+        mosaicRegistry.proposeReservePriceBatch(originalId, price);
+
+        // then
+        firstMono = mosaicRegistry.getMono(originalId, firstMonoId);
+        secondMono = mosaicRegistry.getMono(originalId, secondMonoId);
+        assertEq(firstMono.governanceOptions.proposedReservePrice, price);
+        assertEq(secondMono.governanceOptions.proposedReservePrice, price);
     }
 
     function test_refundBidDeposit() public {
