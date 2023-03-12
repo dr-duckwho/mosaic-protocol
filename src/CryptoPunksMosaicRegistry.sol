@@ -170,11 +170,16 @@ contract CryptoPunksMosaicRegistry is
         mono.governanceOptions.proposedReservePrice = price;
     }
 
-    function proposeReservePriceBatch(uint192 originalId, uint256 price) public onlyWhenActive {
-        Original storage original = CryptoPunksMosaicStorage.get().originals[originalId];
+    function proposeReservePriceBatch(
+        uint192 originalId,
+        uint256 price
+    ) public onlyWhenActive {
+        Original storage original = CryptoPunksMosaicStorage.get().originals[
+            originalId
+        ];
         require(
             original.minReservePrice <= price &&
-            price <= original.maxReservePrice,
+                price <= original.maxReservePrice,
             "Must be within the range"
         );
         uint64 nextMonoId = CryptoPunksMosaicStorage.get().nextMonoIds[
@@ -183,7 +188,9 @@ contract CryptoPunksMosaicRegistry is
         for (uint64 monoId = 1; monoId < nextMonoId; monoId++) {
             uint256 mosaicId = toMosaicId(originalId, monoId);
             if (_ownerOf(mosaicId) == msg.sender) {
-                Mono storage mono = CryptoPunksMosaicStorage.get().monos[mosaicId];
+                Mono storage mono = CryptoPunksMosaicStorage.get().monos[
+                    mosaicId
+                ];
                 mono.governanceOptions.proposedReservePrice = price;
             }
         }
