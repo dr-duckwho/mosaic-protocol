@@ -104,4 +104,35 @@ interface UsingCryptoPunksMosaicRegistryStructs {
     event BidWon(uint256 indexed bidId, uint192 indexed originalId);
 
     event BidRefunded(uint256 indexed bidId, uint192 indexed originalId);
+
+    //
+    // Meta statuses regarding Original/Mono/Bid/etc.
+    //
+
+    enum DistributionStatus {
+        // Mono distribution is active for a given Original
+        Active,
+        // All Monos are minted for a given Original
+        Complete
+    }
+
+    enum ReconstitutionStatus {
+        // No reconstitution attempt is currently in progress
+        None,
+        // Some active Bid is ongoing with a governance vote session
+        Active,
+        // Bid past its expiry is accepted but is not processed completely
+        Pending,
+        // Bid is accepted
+        Complete
+    }
+
+    enum FinalizationStatus {
+        // No process ongoing; not applicable
+        None,
+        // Bid is finalized and the fund must be reclaimed pro rata
+        Active,
+        // All remaining funds are reclaimed
+        Complete
+    }
 }

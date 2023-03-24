@@ -540,6 +540,44 @@ contract CryptoPunksMosaicRegistry is
             bid.createdAt + bid.expiry >= block.timestamp;
     }
 
+    function getDistributionStatus(
+        uint192 originalId
+    ) public view returns (DistributionStatus) {
+        Original storage original = CryptoPunksMosaicStorage.get().originals[
+            originalId
+        ];
+        if (original.totalMonoSupply == original.claimedMonoCount) {
+            return DistributionStatus.Complete;
+        }
+        return DistributionStatus.Active;
+    }
+
+    function getReconstitutionStatus(
+        uint192 originalId
+    ) public view returns (ReconstitutionStatus) {
+        // TODO: Clarify the conditions/statuses
+        Original storage original = CryptoPunksMosaicStorage.get().originals[
+            originalId
+        ];
+        if (original.state == OriginalState.Sold) {
+            return ReconstitutionStatus.Complete;
+        }
+        if (hasOngoingBid(originalId)) {
+            return ReconstitutionStatus.Active;
+        }
+        Bid storage bid = CryptoPunksMosaicStorage.get().bids[
+            original.activeBidId
+        ];
+        if (
+            original.activeBidId == 0 ||
+            bid.id == 0 ||
+            bid.state == BidState.Rejected
+        ) {
+            return ReconstitutionStatus.None;
+        }
+        return ReconstitutionStatus.Pending;
+    }
+
     //
     // Internal Helpers
     //
