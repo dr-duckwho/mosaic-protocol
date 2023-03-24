@@ -2,6 +2,11 @@
 pragma solidity ^0.8.17;
 
 interface UsingCryptoPunksMosaicRegistryStructs {
+
+    //
+    // Original
+    //
+
     struct Original {
         uint192 id;
         // @dev punkIndex
@@ -26,6 +31,10 @@ interface UsingCryptoPunksMosaicRegistryStructs {
     }
 
     event OriginalSold(uint192 indexed originalId, uint256 indexed bidId);
+
+    //
+    // Mono
+    //
 
     struct Mono {
         uint256 mosaicId;
@@ -56,6 +65,10 @@ interface UsingCryptoPunksMosaicRegistryStructs {
     }
 
     event MonoRefunded(uint192 indexed originalId, address indexed monoOwner);
+
+    //
+    // Bid
+    //
 
     // @dev There can be at most one ongoing bid per original
     struct Bid {
