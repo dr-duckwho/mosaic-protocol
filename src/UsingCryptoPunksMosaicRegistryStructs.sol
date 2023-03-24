@@ -2,7 +2,6 @@
 pragma solidity ^0.8.17;
 
 interface UsingCryptoPunksMosaicRegistryStructs {
-
     //
     // Original
     //
@@ -21,11 +20,11 @@ interface UsingCryptoPunksMosaicRegistryStructs {
         uint256 minReservePrice;
         uint256 maxReservePrice;
         string metadataBaseUri;
-        OriginalStatus status;
+        OriginalState state;
         uint256 activeBidId;
     }
 
-    enum OriginalStatus {
+    enum OriginalState {
         Active,
         Sold
     }

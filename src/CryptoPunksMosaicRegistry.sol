@@ -50,8 +50,8 @@ contract CryptoPunksMosaicRegistry is
 
     modifier onlyActiveOriginal(uint192 originalId) {
         require(
-            CryptoPunksMosaicStorage.get().originals[originalId].status ==
-                OriginalStatus.Active,
+            CryptoPunksMosaicStorage.get().originals[originalId].state ==
+                OriginalState.Active,
             "Not active"
         );
         _;
@@ -94,7 +94,7 @@ contract CryptoPunksMosaicRegistry is
             purchasePrice: purchasePrice,
             minReservePrice: minReservePrice,
             maxReservePrice: maxReservePrice,
-            status: OriginalStatus.Active,
+            state: OriginalState.Active,
             activeBidId: 0,
             metadataBaseUri: ""
         });
@@ -342,7 +342,7 @@ contract CryptoPunksMosaicRegistry is
             bid.originalId
         ];
         CryptoPunksMosaicStorage.get().resalePrices[original.id] = bid.price;
-        original.status = OriginalStatus.Sold;
+        original.state = OriginalState.Sold;
         emit OriginalSold(bid.originalId, bidId);
 
         museum.cryptoPunksMarket().transferPunk(bid.bidder, original.punkId);
@@ -518,7 +518,7 @@ contract CryptoPunksMosaicRegistry is
         Original storage original = CryptoPunksMosaicStorage.get().originals[
             originalId
         ];
-        if (original.status == OriginalStatus.Sold) {
+        if (original.state == OriginalState.Sold) {
             return MonoLifeCycle.Dead;
         }
         if (CryptoPunksMosaicStorage.get().monos[mosaicId].presetId == 0) {
@@ -596,7 +596,7 @@ contract CryptoPunksMosaicRegistry is
         Original storage original = CryptoPunksMosaicStorage.get().originals[
             originalId
         ];
-        if (original.status == OriginalStatus.Sold) {
+        if (original.state == OriginalState.Sold) {
             return CryptoPunksMosaicStorage.get().invalidMetadataUri;
         }
         string memory baseUrl = original.metadataBaseUri;

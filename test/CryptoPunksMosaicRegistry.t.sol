@@ -57,7 +57,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         assertEq(original.purchasePrice, purchasePrice);
         assertEq(original.minReservePrice, minReservePrice);
         assertEq(original.maxReservePrice, maxReservePrice);
-        assert(original.status == UsingCryptoPunksMosaicRegistryStructs.OriginalStatus.Active);
+        assert(original.state == UsingCryptoPunksMosaicRegistryStructs.OriginalState.Active);
         assertEq(original.activeBidId, 0);
     }
 
@@ -108,7 +108,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
             purchasePrice: 100 ether,
             minReservePrice: price / 2,
             maxReservePrice: price * 5,
-            status: OriginalStatus.Active,
+            state: OriginalState.Active,
             activeBidId: 0,
             metadataBaseUri: ""
         });
@@ -148,7 +148,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
             purchasePrice: 100 ether,
             minReservePrice: price / 2,
             maxReservePrice: price * 5,
-            status: OriginalStatus.Active,
+            state: OriginalState.Active,
             activeBidId: 0,
             metadataBaseUri: ""
         });
@@ -235,7 +235,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
             purchasePrice: 100 ether,
             minReservePrice: 50 ether,
             maxReservePrice: 500 ether,
-            status: OriginalStatus.Active,
+            state: OriginalState.Active,
             activeBidId: bidId,
             metadataBaseUri: ""
         });
@@ -321,7 +321,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
             purchasePrice: 100 ether,
             minReservePrice: 50 ether,
             maxReservePrice: 500 ether,
-            status: OriginalStatus.Active,
+            state: OriginalState.Active,
             activeBidId: bidId,
             metadataBaseUri: ""
         });
@@ -344,7 +344,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         Bid memory bid = mosaicRegistry.getBid(bidId);
         assert(bid.state == BidState.Won);
         Original memory changedOriginal = mosaicRegistry.getOriginal(originalId);
-        assert(changedOriginal.status == OriginalStatus.Sold);
+        assert(changedOriginal.state == OriginalState.Sold);
     }
 
     function test_refundOnSold() public {
@@ -442,7 +442,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
             purchasePrice: 100 ether,
             minReservePrice: 50 ether,
             maxReservePrice: 500 ether,
-            status: OriginalStatus.Active,
+            state: OriginalState.Active,
             activeBidId: bidId,
             metadataBaseUri: ""
         }));
@@ -494,7 +494,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
             purchasePrice: 100 ether,
             minReservePrice: 50 ether,
             maxReservePrice: 500 ether,
-            status: OriginalStatus.Active,
+            state: OriginalState.Active,
             activeBidId: 0,
             metadataBaseUri: ""
         }));
@@ -555,7 +555,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
             purchasePrice: 100 ether,
             minReservePrice: 50 ether,
             maxReservePrice: 500 ether,
-            status: OriginalStatus.Active,
+            state: OriginalState.Active,
             activeBidId: bidId,
             metadataBaseUri: ""
         }));
@@ -609,7 +609,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
             purchasePrice: 100 ether,
             minReservePrice: 50 ether,
             maxReservePrice: 500 ether,
-            status: OriginalStatus.Active,
+            state: OriginalState.Active,
             activeBidId: 1234,
             metadataBaseUri: ""
         }));
@@ -634,7 +634,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
             purchasePrice: 100 ether,
             minReservePrice: 50 ether,
             maxReservePrice: 500 ether,
-            status: OriginalStatus.Active,
+            state: OriginalState.Active,
             activeBidId: 1234,
             metadataBaseUri: ""
         }));
