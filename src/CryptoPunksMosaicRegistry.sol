@@ -4,6 +4,7 @@ pragma solidity ^0.8.17;
 import {ERC721Upgradeable} from "@openzeppelin-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import {SafeCast} from "@openzeppelin/utils/math/SafeCast.sol";
 import {AccessControlUpgradeable} from "@openzeppelin-upgradeable/access/AccessControlUpgradeable.sol";
+import {ReentrancyGuardUpgradeable} from "@openzeppelin-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import {Strings} from "@openzeppelin/utils/Strings.sol";
 import {UUPSUpgradeable} from "@openzeppelin-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
@@ -262,7 +263,7 @@ contract CryptoPunksMosaicRegistry is
             );
     }
 
-    function refundBidDeposit(uint256 bidId) external onlyWhenActive {
+    function refundBidDeposit(uint256 bidId) external nonReentrant onlyWhenActive {
         Bid storage bid = CryptoPunksMosaicStorage.get().bids[bidId];
         require(
             bid.state == BidState.Rejected,
@@ -358,7 +359,7 @@ contract CryptoPunksMosaicRegistry is
     // @dev Burn all owned Monos and send refunds
     function refundOnSold(
         uint192 originalId
-    ) public onlyWhenActive returns (uint256 totalResaleFund) {
+    ) public nonReentrant onlyWhenActive returns (uint256 totalResaleFund) {
         // TODO: Double-check whether arithmetic division may cause under/over-refunding
         uint256 burnedMonoCount = 0;
         uint64 nextMonoId = CryptoPunksMosaicStorage.get().nextMonoIds[
