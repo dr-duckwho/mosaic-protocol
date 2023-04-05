@@ -16,10 +16,11 @@ import "./CryptoPunksMosaicStorage.sol";
 
 // TODO: Reconsider the ID scheme so that the same origin contract's same groups map to the same ID (contract, group) => (internal id)
 contract CryptoPunksMosaicRegistry is
-    ICryptoPunksMosaicRegistry,
-    ERC721Upgradeable,
-    UUPSUpgradeable,
-    AccessControlUpgradeable
+ICryptoPunksMosaicRegistry,
+ERC721Upgradeable,
+UUPSUpgradeable,
+AccessControlUpgradeable,
+ReentrancyGuardUpgradeable
 {
     using SafeCast for uint256;
 
