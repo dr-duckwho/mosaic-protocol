@@ -323,7 +323,7 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
 
         // then
         assertEq(minReservePrice, 70 ether);
-        assertEq(maxReservePrice, 500 ether);
+        assertEq(maxReservePrice, 5000 ether);
     }
 
     //

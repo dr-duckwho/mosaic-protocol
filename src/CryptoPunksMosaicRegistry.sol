@@ -16,20 +16,26 @@ import "./CryptoPunksMosaicStorage.sol";
 
 // TODO: Reconsider the ID scheme so that the same origin contract's same groups map to the same ID (contract, group) => (internal id)
 contract CryptoPunksMosaicRegistry is
-ICryptoPunksMosaicRegistry,
-ERC721Upgradeable,
-UUPSUpgradeable,
-AccessControlUpgradeable,
-ReentrancyGuardUpgradeable
+    ICryptoPunksMosaicRegistry,
+    ERC721Upgradeable,
+    UUPSUpgradeable,
+    AccessControlUpgradeable,
+    ReentrancyGuardUpgradeable
 {
     using SafeCast for uint256;
 
     uint256 private constant MONO_ID_BITS = 64;
     uint256 private constant MONO_ID_BITMASK = (1 << (MONO_ID_BITS + 1)) - 1; // lower 64 bits
 
+    /**
+     * @dev reserve price weighted sums are valid only if more holders than this threshold have set their
+     *  reserve price proposals
+     */
+    uint256 public constant RESERVE_PRICE_PROCLAMATION_THRESHOLD_BPS = 3000; // 30%
+
     address private constant NO_BIDDER = address(0x0);
     uint40 public constant BID_EXPIRY = 604800;
-    uint256 public constant BID_ACCEPTANCE_THRESHOLD_BPS = 5100;
+    uint256 public constant BID_ACCEPTANCE_THRESHOLD_BPS = 3000; // 30%
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
@@ -264,7 +270,9 @@ ReentrancyGuardUpgradeable
             );
     }
 
-    function refundBidDeposit(uint256 bidId) external nonReentrant onlyWhenActive {
+    function refundBidDeposit(
+        uint256 bidId
+    ) external nonReentrant onlyWhenActive {
         Bid storage bid = CryptoPunksMosaicStorage.get().bids[bidId];
         require(
             bid.state == BidState.Rejected,
@@ -390,13 +398,33 @@ ReentrancyGuardUpgradeable
         uint192 originalId
     ) public view returns (uint256 average) {
         // TODO: Consider governance turnout requirements and write a unit test
-        (uint64 count, uint256 sum) = sumReservePriceProposals(originalId);
-        return sum / count;
+        (
+            uint256 sum,
+            uint64 valids,
+            uint64 invalids
+        ) = sumReservePriceProposals(originalId);
+        require(
+            valids >=
+                BasisPoint.calculateBasisPoint(
+                    (valids + invalids),
+                    RESERVE_PRICE_PROCLAMATION_THRESHOLD_BPS
+                ),
+            "Not enough reserve price proposals set"
+        );
+        return sum / valids;
     }
 
     function sumReservePriceProposals(
         uint192 originalId
-    ) public view returns (uint64 validProposalCount, uint256 priceSum) {
+    )
+        public
+        view
+        returns (
+            uint256 priceSum,
+            uint64 validProposalCount,
+            uint64 invalidProposalCount
+        )
+    {
         uint64 nextMonoId = CryptoPunksMosaicStorage.get().nextMonoIds[
             originalId
         ];
@@ -407,9 +435,11 @@ ReentrancyGuardUpgradeable
             if (mono.governanceOptions.proposedReservePrice > 0) {
                 validProposalCount++;
                 priceSum += mono.governanceOptions.proposedReservePrice;
+            } else {
+                invalidProposalCount++;
             }
         }
-        return (validProposalCount, priceSum);
+        return (priceSum, validProposalCount, invalidProposalCount);
     }
 
     function sumBidResponses(

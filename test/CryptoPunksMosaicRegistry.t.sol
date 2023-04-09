@@ -408,9 +408,68 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         }
 
         // then
-        (uint64 validCount, uint256 priceSum) = mosaicRegistry.sumReservePriceProposals(originalId);
+        (uint256 priceSum, uint64 validCount, uint64 invalidCount) = mosaicRegistry.sumReservePriceProposals(originalId);
         assertEq(validCount, monosWithProposalCount);
+        assertEq(invalidCount, totalMonoCount - monosWithProposalCount);
         assertEq(priceSum, monosWithProposalCount * proposedReservePriceAverage);
+    }
+
+    function test_getAverageReservePriceProposals() public {
+        // given
+        uint192 originalId = 810920;
+        uint64 totalMonoCount = 100;
+        mosaicRegistry.setNextMonoId(originalId, totalMonoCount + 1);
+
+        uint64 monosWithProposalCount = 30;
+        uint256 proposedReservePriceAverage = 77 ether;
+
+        // assume that [1,30] Monos have valid price proposals
+        for (uint64 monoId = 1; monoId <= monosWithProposalCount; monoId++) {
+            uint256 mosaicId = mosaicRegistry.toMosaicId(originalId, monoId);
+            Mono memory mono = Mono({
+                mosaicId: mosaicId,
+                presetId: 0,
+                governanceOptions: MonoGovernanceOptions({
+                proposedReservePrice: proposedReservePriceAverage,
+                bidResponse: MonoBidResponse.None,
+                bidId: 0
+                })
+            });
+            mosaicRegistry.setMono(mosaicId, mono);
+        }
+
+        // then
+        uint256 actual = mosaicRegistry.getAverageReservePriceProposals(originalId);
+        assertEq(actual, proposedReservePriceAverage);
+    }
+
+    function test_getAverageReservePriceProposals_notEnough() public {
+        // given
+        uint192 originalId = 810920;
+        uint64 totalMonoCount = 100;
+        mosaicRegistry.setNextMonoId(originalId, totalMonoCount + 1);
+
+        uint64 monosWithProposalCount = 10;
+        uint256 proposedReservePriceAverage = 77 ether;
+
+        // assume that [1,10] Monos have valid price proposals
+        for (uint64 monoId = 1; monoId <= monosWithProposalCount; monoId++) {
+            uint256 mosaicId = mosaicRegistry.toMosaicId(originalId, monoId);
+            Mono memory mono = Mono({
+                mosaicId: mosaicId,
+                presetId: 0,
+                governanceOptions: MonoGovernanceOptions({
+                proposedReservePrice: proposedReservePriceAverage,
+                bidResponse: MonoBidResponse.None,
+                bidId: 0
+                })
+            });
+            mosaicRegistry.setMono(mosaicId, mono);
+        }
+
+        // then
+        vm.expectRevert("Not enough reserve price proposals set");
+        mosaicRegistry.getAverageReservePriceProposals(originalId);
     }
 
     function test_sumBidResponses() public {
@@ -597,7 +656,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
     function doTest_isBidAcceptable(bool isAcceptable) private {
         // given
         uint192 originalId = 830404;
-        uint64 yes = isAcceptable ? 51 : 49;
+        uint64 yes = isAcceptable ? 31 : 29;
         uint64 no = 20;
         mosaicRegistry.mockSumBidResponses(true, yes, no);
 

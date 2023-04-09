@@ -25,7 +25,7 @@ contract CryptoPunksGroupRegistry is
      * Arithmetic constants
      */
     uint64 public constant MIN_RESERVE_PRICE_BPS = 7000; // 70%
-    uint64 public constant MAX_RESERVE_PRICE_BPS = 50000; // 500%
+    uint64 public constant MAX_RESERVE_PRICE_BPS = 500000; // 5000% (50x)
 
     /**
      * Business logic constants
