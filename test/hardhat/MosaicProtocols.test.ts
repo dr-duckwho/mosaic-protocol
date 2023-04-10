@@ -110,7 +110,6 @@ describe("MosaicProtocol", function () {
 
       await groupRegistry.connect(owner).buy(groupId);
 
-      // TODO: #0 View function for owned Ticket / Mosaic NFT ids
       const ticketBalance = ticketBalanceBy(groupRegistry);
       expect(await ticketBalance(bob, groupId)).to.equal(CONTRIBUTION.bob);
       expect(await ticketBalance(carol, groupId)).to.equal(CONTRIBUTION.carol);

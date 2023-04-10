@@ -221,8 +221,6 @@ contract CryptoPunksMosaicRegistry is
         Original storage original = CryptoPunksMosaicStorage.get().originals[
             originalId
         ];
-        // TODO: Make bid respect min reserve prices decided by GovernanceOptions
-        // TODO: Check whether the minimum requirement for initiating bids is met (turnout)
         require(
             price >= original.minReservePrice &&
                 price >= getAverageReservePriceProposals(originalId) &&
@@ -320,7 +318,6 @@ contract CryptoPunksMosaicRegistry is
     function finalizeProposedBid(
         uint256 bidId
     ) public onlyWhenActive returns (BidState) {
-        // TODO: Double-check the prerequisites, including Original check
         Bid storage bid = CryptoPunksMosaicStorage.get().bids[bidId];
         require(
             bid.state == BidState.Proposed,
@@ -397,7 +394,6 @@ contract CryptoPunksMosaicRegistry is
     function getAverageReservePriceProposals(
         uint192 originalId
     ) public view returns (uint256 average) {
-        // TODO: Consider governance turnout requirements and write a unit test
         (
             uint256 sum,
             uint64 valids,
@@ -474,7 +470,6 @@ contract CryptoPunksMosaicRegistry is
     function isBidAcceptable(
         uint192 originalId
     ) public view virtual returns (bool) {
-        // TODO(@jyterencekim): Revisit the bid acceptance condition with respect to the planned spec
         (uint64 yes, ) = sumBidResponses(originalId);
         uint128 totalVotable = CryptoPunksMosaicStorage
             .get()
@@ -559,7 +554,6 @@ contract CryptoPunksMosaicRegistry is
         return MonoLifeCycle.Active;
     }
 
-    // TODO(@jyterencekim): Revisit the conditions
     function hasOngoingBid(uint192 originalId) public view returns (bool) {
         uint256 bidId = CryptoPunksMosaicStorage
             .get()
@@ -587,7 +581,6 @@ contract CryptoPunksMosaicRegistry is
     function getReconstitutionStatus(
         uint192 originalId
     ) public view returns (ReconstitutionStatus) {
-        // TODO: Clarify the conditions/statuses
         Original storage original = CryptoPunksMosaicStorage.get().originals[
             originalId
         ];
