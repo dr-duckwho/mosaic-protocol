@@ -35,8 +35,12 @@ describe("MosaicProtocol", function () {
     it("Integration Test", async () => {
       const PUNK_ID = 1;
       const TICKET_SUPPLY = 100;
-      const OFFERED_PRICE = parseEther("60");
-      const TARGET_PRICE = parseEther("100");
+      // the fundraising target
+      const TARGET_PRICE_ETH = 100; 
+      const TARGET_PRICE = parseEther(`${TARGET_PRICE_ETH}`);
+      // the actual price the punk is sold at
+      const OFFERED_PRICE_ETH = 60; 
+      const OFFERED_PRICE = parseEther(`${OFFERED_PRICE_ETH}`);
       // should sum up to TICKET_SUPPLY
       const CONTRIBUTION = { bob: 33, carol: 51, david: 16 };
       const ORIGINAL_MONO_ID = 0;
@@ -69,7 +73,7 @@ describe("MosaicProtocol", function () {
       );
 
       /**
-       * Contribute & Buy
+       * Contribute
        */
 
       const price = TARGET_PRICE.div(TICKET_SUPPLY);
@@ -91,9 +95,9 @@ describe("MosaicProtocol", function () {
         ]
       );
 
-      await expect(groupRegistry.connect(owner).buy(groupId)).to.be.revertedWith(
-        "Not sold out"
-      );
+      await expect(
+        groupRegistry.connect(owner).buy(groupId)
+      ).to.be.revertedWith("Not sold out");
 
       await expect(
         contribute(david, price, CONTRIBUTION.david)
@@ -108,6 +112,10 @@ describe("MosaicProtocol", function () {
         "Fewer tickets remaining than requested"
       );
 
+      /**
+       * Buy & win
+       */
+
       await groupRegistry.connect(owner).buy(groupId);
 
       const ticketBalance = ticketBalanceBy(groupRegistry);
@@ -116,17 +124,29 @@ describe("MosaicProtocol", function () {
       expect(await ticketBalance(david, groupId)).to.equal(CONTRIBUTION.david);
 
       /**
-       * Claim
+       * Claim & refund
        */
 
-      // TODO: #1 Claim all mosaic NFT at once
-      //  Why not just give a single ERC721 regardless of contribution?
-      // TODO: #2 Handle NFT Metadata
-      await Promise.all([
-        claimMosaics(groupRegistry)(bob, groupId),
-        claimMosaics(groupRegistry)(carol, groupId),
-        claimMosaics(groupRegistry)(david, groupId),
-      ]);
+      // TODO: dedup
+      const surplus = TARGET_PRICE_ETH - OFFERED_PRICE_ETH;
+      await expect(
+        claimMosaics(groupRegistry)(bob, groupId)
+      ).to.changeEtherBalances(
+        [groupRegistry.address, await bob.getAddress()],
+        [parseEther(`${-(surplus * CONTRIBUTION.bob) / 100}`), parseEther(`${(surplus * CONTRIBUTION.bob) / 100}`)]
+      );
+      await expect(
+        claimMosaics(groupRegistry)(carol, groupId)
+      ).to.changeEtherBalances(
+        [groupRegistry.address, await carol.getAddress()],
+        [parseEther(`${-(surplus * CONTRIBUTION.carol) / 100}`), parseEther(`${(surplus * CONTRIBUTION.carol) / 100}`)]
+      );
+      await expect(
+        claimMosaics(groupRegistry)(david, groupId)
+      ).to.changeEtherBalances(
+        [groupRegistry.address, await david.getAddress()],
+        [parseEther(`${-(surplus * CONTRIBUTION.david) / 100}`), parseEther(`${(surplus * CONTRIBUTION.david) / 100}`)]
+      );
 
       expect(await ticketBalance(bob, groupId)).to.equal(0);
       expect(await ticketBalance(carol, groupId)).to.equal(0);
@@ -134,9 +154,6 @@ describe("MosaicProtocol", function () {
 
       const originalId = await mosaicRegistry.getLatestOriginalId();
 
-      // TODO: #3 This test supposes bob, carol and david claimed all mosaic NFTs in sequential order.
-      //  Might need a enumerable balance view function...
-      //  but gas cost will end up to high for other tx
       const mosaicOwnerOf = mosaicOwnerOfBy(mosaicRegistry, originalId);
 
       const [bobStart, bobEnd] = [ORIGINAL_MONO_ID + 1, CONTRIBUTION.bob];
@@ -148,18 +165,22 @@ describe("MosaicProtocol", function () {
         bobEnd + 1,
         CONTRIBUTION.bob + CONTRIBUTION.carol,
       ];
-      expect(await mosaicOwnerOf(carolStart)).to.equal(await carol.getAddress());
+      expect(await mosaicOwnerOf(carolStart)).to.equal(
+        await carol.getAddress()
+      );
       expect(await mosaicOwnerOf(carolEnd)).to.equal(await carol.getAddress());
 
       const [davidStart, davidEnd] = [
         carolEnd + 1,
         CONTRIBUTION.bob + CONTRIBUTION.carol + CONTRIBUTION.david,
       ];
-      expect(await mosaicOwnerOf(davidStart)).to.equal(await david.getAddress());
+      expect(await mosaicOwnerOf(davidStart)).to.equal(
+        await david.getAddress()
+      );
       expect(await mosaicOwnerOf(davidEnd)).to.equal(await david.getAddress());
+
       /**
-       * Refund
-       * TODO: Check the after-refund-mint balances
+       * TODO: Test a scenario where a group has not won and its members get refunded
        */
     });
 
