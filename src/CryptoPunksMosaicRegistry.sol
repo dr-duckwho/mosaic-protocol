@@ -161,7 +161,7 @@ contract CryptoPunksMosaicRegistry is
     function proposeReservePrice(
         uint256 mosaicId,
         uint256 price
-    ) public onlyWhenActive onlyMosaicOwner(mosaicId) {
+    ) external override onlyWhenActive onlyMosaicOwner(mosaicId) {
         // TODO: Check the bid state requirement
         //  and decide whether to allow reserve price proposals
         //  when there is an ongoing Bid already
@@ -181,7 +181,7 @@ contract CryptoPunksMosaicRegistry is
     function proposeReservePriceBatch(
         uint192 originalId,
         uint256 price
-    ) public onlyWhenActive {
+    ) external override onlyWhenActive {
         Original storage original = CryptoPunksMosaicStorage.get().originals[
             originalId
         ];
@@ -232,7 +232,7 @@ contract CryptoPunksMosaicRegistry is
         uint256 oldBidId = original.activeBidId;
         if (oldBidId != 0) {
             // A preceding bid exists, so its state must be updated first
-            BidState oldBidState = finalizeProposedBid(oldBidId);
+            BidState oldBidState = this.finalizeProposedBid(oldBidId);
             require(
                 oldBidState == BidState.Rejected,
                 "The previous bid must be rejected"
@@ -270,7 +270,7 @@ contract CryptoPunksMosaicRegistry is
 
     function refundBidDeposit(
         uint256 bidId
-    ) external nonReentrant onlyWhenActive {
+    ) external override nonReentrant onlyWhenActive {
         Bid storage bid = CryptoPunksMosaicStorage.get().bids[bidId];
         require(
             bid.state == BidState.Rejected,
@@ -296,7 +296,7 @@ contract CryptoPunksMosaicRegistry is
     function respondToBid(
         uint256 mosaicId,
         MonoBidResponse response
-    ) public onlyWhenActive onlyMosaicOwner(mosaicId) {
+    ) public override onlyWhenActive onlyMosaicOwner(mosaicId) {
         (uint192 originalId, ) = fromMosaicId(mosaicId);
         require(hasOngoingBid(originalId), "No bid ongoing");
         MonoGovernanceOptions
@@ -317,7 +317,7 @@ contract CryptoPunksMosaicRegistry is
 
     function finalizeProposedBid(
         uint256 bidId
-    ) public onlyWhenActive returns (BidState) {
+    ) external override onlyWhenActive returns (BidState) {
         Bid storage bid = CryptoPunksMosaicStorage.get().bids[bidId];
         require(
             bid.state == BidState.Proposed,
@@ -341,7 +341,9 @@ contract CryptoPunksMosaicRegistry is
 
     // TODO: Introduce a way for Mosaic owners to force Bid finalization to prevent limbo cases where
     //  the winning bidder makes no further transaction
-    function finalizeAcceptedBid(uint256 bidId) public onlyWhenActive {
+    function finalizeAcceptedBid(
+        uint256 bidId
+    ) external override onlyWhenActive {
         Bid storage bid = CryptoPunksMosaicStorage.get().bids[bidId];
         require(bid.state == BidState.Accepted, "Bid must be accepted");
 
@@ -365,7 +367,13 @@ contract CryptoPunksMosaicRegistry is
     // @dev Burn all owned Monos and send refunds
     function refundOnSold(
         uint192 originalId
-    ) public nonReentrant onlyWhenActive returns (uint256 totalResaleFund) {
+    )
+        external
+        override
+        nonReentrant
+        onlyWhenActive
+        returns (uint256 totalResaleFund)
+    {
         // TODO: Double-check whether arithmetic division may cause under/over-refunding
         uint256 burnedMonoCount = 0;
         uint64 nextMonoId = CryptoPunksMosaicStorage.get().nextMonoIds[

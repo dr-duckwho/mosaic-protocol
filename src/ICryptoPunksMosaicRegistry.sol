@@ -23,5 +23,24 @@ interface ICryptoPunksMosaicRegistry is UsingCryptoPunksMosaicRegistryStructs {
         uint256 price
     ) external payable returns (uint256 newBidId);
 
+    function proposeReservePrice(uint256 mosaicId, uint256 price) external;
+
+    function proposeReservePriceBatch(
+        uint192 originalId,
+        uint256 price
+    ) external;
+
+    function refundBidDeposit(uint256 bidId) external;
+
+    function respondToBid(uint256 mosaicId, MonoBidResponse response) external;
+
+    function finalizeProposedBid(uint256 bidId) external returns (BidState);
+
+    function finalizeAcceptedBid(uint256 bidId) external;
+
+    function refundOnSold(
+        uint192 originalId
+    ) external returns (uint256 totalResaleFund);
+
     function grantMintAuthority(address addr) external;
 }
