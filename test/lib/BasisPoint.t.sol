@@ -3,11 +3,9 @@ pragma solidity ^0.8.17;
 
 import "forge-std/Test.sol";
 
-import {TestUtils} from "../TestUtils.sol";
-
 import "../../src/lib/BasisPoint.sol";
 
-contract BasisPointTest is Test, TestUtils {
+contract BasisPointTest is Test {
     function test_calculateBasisPoint() public {
         // given
         uint256 amount = 10000;
