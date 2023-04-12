@@ -1,8 +1,9 @@
 import {
   CryptoPunksGroupRegistry,
   CryptoPunksMarket,
+  UsingCryptoPunksGroupRegistryStructs__factory,
 } from "../../typechain-types";
-import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { parseEther } from "ethers/lib/utils";
 import { expect } from "chai";
 import {
@@ -32,15 +33,15 @@ describe("MosaicProtocol", function () {
   });
 
   describe("CryptoPunksGroupRegistry", function () {
-    it("Integration Test", async () => {
-      const PUNK_ID = 1;
-      const TICKET_SUPPLY = 100;
-      // the fundraising target
-      const TARGET_PRICE_ETH = 100; 
-      const TARGET_PRICE = parseEther(`${TARGET_PRICE_ETH}`);
-      // the actual price the punk is sold at
-      const OFFERED_PRICE_ETH = 60; 
-      const OFFERED_PRICE = parseEther(`${OFFERED_PRICE_ETH}`);
+    const PUNK_ID = 1;
+    const TICKET_SUPPLY = 100;
+    // the fundraising target
+    const TARGET_PRICE_ETH = 100;
+    const TARGET_PRICE = parseEther(`${TARGET_PRICE_ETH}`);
+    // the actual price the punk is sold at
+    const OFFERED_PRICE_ETH = 60;
+    const OFFERED_PRICE = parseEther(`${OFFERED_PRICE_ETH}`);
+    it("works for a winning group", async () => {
       // should sum up to TICKET_SUPPLY
       const CONTRIBUTION = { bob: 33, carol: 51, david: 16 };
       const ORIGINAL_MONO_ID = 0;
@@ -62,7 +63,6 @@ describe("MosaicProtocol", function () {
        * Create
        */
 
-      // TODO: #6 Access role constraint with create group
       const groupId = await newGroup(groupRegistry)(
         owner,
         PUNK_ID,
@@ -116,12 +116,16 @@ describe("MosaicProtocol", function () {
        * Buy & win
        */
 
+      expect(await groupRegistry.getGroupLifeCycle(groupId)).to.equal(1); // Active
+
       await groupRegistry.connect(owner).buy(groupId);
 
       const ticketBalance = ticketBalanceBy(groupRegistry);
       expect(await ticketBalance(bob, groupId)).to.equal(CONTRIBUTION.bob);
       expect(await ticketBalance(carol, groupId)).to.equal(CONTRIBUTION.carol);
       expect(await ticketBalance(david, groupId)).to.equal(CONTRIBUTION.david);
+
+      expect(await groupRegistry.getGroupLifeCycle(groupId)).to.equal(3); // Won
 
       /**
        * Claim & refund
@@ -133,19 +137,28 @@ describe("MosaicProtocol", function () {
         claimMosaics(groupRegistry)(bob, groupId)
       ).to.changeEtherBalances(
         [groupRegistry.address, await bob.getAddress()],
-        [parseEther(`${-(surplus * CONTRIBUTION.bob) / 100}`), parseEther(`${(surplus * CONTRIBUTION.bob) / 100}`)]
+        [
+          parseEther(`${-(surplus * CONTRIBUTION.bob) / 100}`),
+          parseEther(`${(surplus * CONTRIBUTION.bob) / 100}`),
+        ]
       );
       await expect(
         claimMosaics(groupRegistry)(carol, groupId)
       ).to.changeEtherBalances(
         [groupRegistry.address, await carol.getAddress()],
-        [parseEther(`${-(surplus * CONTRIBUTION.carol) / 100}`), parseEther(`${(surplus * CONTRIBUTION.carol) / 100}`)]
+        [
+          parseEther(`${-(surplus * CONTRIBUTION.carol) / 100}`),
+          parseEther(`${(surplus * CONTRIBUTION.carol) / 100}`),
+        ]
       );
       await expect(
         claimMosaics(groupRegistry)(david, groupId)
       ).to.changeEtherBalances(
         [groupRegistry.address, await david.getAddress()],
-        [parseEther(`${-(surplus * CONTRIBUTION.david) / 100}`), parseEther(`${(surplus * CONTRIBUTION.david) / 100}`)]
+        [
+          parseEther(`${-(surplus * CONTRIBUTION.david) / 100}`),
+          parseEther(`${(surplus * CONTRIBUTION.david) / 100}`),
+        ]
       );
 
       expect(await ticketBalance(bob, groupId)).to.equal(0);
@@ -178,10 +191,95 @@ describe("MosaicProtocol", function () {
         await david.getAddress()
       );
       expect(await mosaicOwnerOf(davidEnd)).to.equal(await david.getAddress());
+    });
+
+    it("works for an expired group", async () => {
+      const CONTRIBUTION = { bob: 33 };
+
+      const {
+        cryptoPunks,
+        groupRegistry,
+        mosaicRegistry,
+        owner,
+        alice: punkOwner,
+        bob,
+        carol,
+      } = await loadFixture(afterDeploy);
+
+      await offerPunkForSale(cryptoPunks)(punkOwner, PUNK_ID, OFFERED_PRICE);
 
       /**
-       * TODO: Test a scenario where a group has not won and its members get refunded
+       * Create
        */
+
+      const groupId = await newGroup(groupRegistry)(
+        owner,
+        PUNK_ID,
+        TARGET_PRICE
+      );
+      await expect(groupRegistry.getGroup(groupId.add(1))).to.be.revertedWith(
+        "Invalid groupId"
+      );
+
+      /**
+       * Contribute
+       */
+
+      const price = TARGET_PRICE.div(TICKET_SUPPLY);
+      const contribute = contributeBy(groupRegistry, groupId);
+
+      await expect(
+        contribute(bob, price, CONTRIBUTION.bob)
+      ).to.changeEtherBalances(
+        [groupRegistry.address, await bob.getAddress()],
+        [parseEther(`${CONTRIBUTION.bob}`), parseEther(`${-CONTRIBUTION.bob}`)]
+      );
+
+      const ticketBalance = ticketBalanceBy(groupRegistry);
+      expect(await ticketBalance(bob, groupId)).to.equal(CONTRIBUTION.bob);
+
+      /**
+       * Buy - fail
+       */
+
+      await expect(
+        groupRegistry.connect(owner).buy(groupId)
+      ).to.be.revertedWith("Not sold out");
+
+      /**
+       * Expiry
+       */
+
+      // TODO: Make it available as a global constant
+      const expiry = 604800;
+
+      await time.increase(expiry - 100);
+      expect(await groupRegistry.getGroupLifeCycle(groupId)).to.equal(1); // Active
+      await time.increase(100);
+      expect(await groupRegistry.getGroupLifeCycle(groupId)).to.equal(2); // LOST
+
+      /**
+       * Refund
+       */
+
+      // Bob gets all his contribution back
+      await expect(
+        groupRegistry.connect(bob).refundExpired(groupId)
+      ).to.changeEtherBalances(
+        [groupRegistry.address, await bob.getAddress()],
+        [parseEther(`-${CONTRIBUTION.bob}`), parseEther(`${CONTRIBUTION.bob}`)]
+      );
+      expect(await ticketBalance(bob, groupId)).to.equal(0);
+
+      // Nonparticipants don't
+      await expect(
+        groupRegistry.connect(carol).refundExpired(groupId)
+      ).to.revertedWith("Only ticket holders can get refunds");
+
+      // No double refund for Bob
+      await expect(
+        groupRegistry.connect(bob).refundExpired(groupId)
+      ).to.revertedWith("Only ticket holders can get refunds");
     });
 
     /**
