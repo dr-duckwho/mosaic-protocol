@@ -17,7 +17,7 @@ import {
 } from "./helpers";
 import { afterDeploy } from "./fixture";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { Contract } from "ethers";
+import { BigNumberish, Contract } from "ethers";
 
 /**
  * Common basis for GroupRegistry and MosaicRegistry
@@ -31,19 +31,20 @@ const TARGET_PRICE = parseEther(`${TARGET_PRICE_ETH}`);
 const OFFERED_PRICE_ETH = 60;
 const OFFERED_PRICE = parseEther(`${OFFERED_PRICE_ETH}`);
 
+// TODO: Group Mosaic owners' information
 interface Context {
   cryptoPunks: CryptoPunksMarket;
   groupRegistry: Contract;
   mosaicRegistry: Contract;
   admin: SignerWithAddress;
   punkOwner: SignerWithAddress;
-  originalId: BigInteger;
+  originalId: BigNumberish;
   bob: SignerWithAddress;
-  bobMonoIdRange: List<BigInteger>;
+  bobMonoIdRange: List<BigNumber>;
   carol: SignerWithAddress;
-  carolMonoIdRange: List<BigInteger>;
+  carolMonoIdRange: List<BigNumber>;
   david: SignerWithAddress;
-  davidMonoIdRange: List<BigInteger>;
+  davidMonoIdRange: List<BigNumber>;
 }
 
 const groupWins = async (): Context => {
@@ -326,8 +327,35 @@ describe("MosaicProtocol", function () {
       // TODO: fill it out
     });
 
-    it("allows holders to propose reserve prices", async () => {
-      // TODO: fill it out
+    it("allows holders to propose reserve prices only within a set range", async () => {
+      const { mosaicRegistry, originalId, bob, bobMonoIdRange } = context;
+
+      let [, , , , , minReservePrice, maxReservePrice, ,] =
+        await mosaicRegistry.getOriginal(originalId);
+
+      const proposal: BigNumber = OFFERED_PRICE;
+      const proposalTooLow: BigNumber = minReservePrice.sub(1);
+      const proposalTooHigh: BigNumber = maxReservePrice.add(1);
+
+      await mosaicRegistry
+        .connect(bob)
+        .proposeReservePriceBatch(originalId, proposal);
+      for (let id = bobMonoIdRange[0]; id <= bobMonoIdRange[1]; id++) {
+        let [, , governanceOptions] = await mosaicRegistry.getMono(
+          originalId,
+          id
+        );
+        let [proposedReservePrice] = governanceOptions;
+        expect(proposedReservePrice).to.equal(proposal);
+      }
+
+      for (const unacceptableProposal of [proposalTooLow, proposalTooHigh]) {
+        await expect(
+          mosaicRegistry
+            .connect(bob)
+            .proposeReservePriceBatch(originalId, unacceptableProposal)
+        ).to.revertedWith("Must be within the range");
+      }
     });
 
     it("allows bids only within reserve prices", async () => {
