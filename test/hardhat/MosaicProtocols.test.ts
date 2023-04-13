@@ -17,7 +17,8 @@ import {
 } from "./helpers";
 import { afterDeploy } from "./fixture";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { BigNumberish, Contract } from "ethers";
+import { BigNumber, BigNumberish, Contract } from "ethers";
+import { ethers } from "hardhat";
 
 /**
  * Common basis for GroupRegistry and MosaicRegistry
@@ -332,10 +333,7 @@ describe("MosaicProtocol", function () {
       for (let id = bobMonoIdRange[0]; id <= bobMonoIdRange[1]; id++) {
         const mosaicId = await mosaicRegistry.toMosaicId(originalId, id);
         await mosaicRegistry.connect(bob).setPresetId(mosaicId, PRESET_ID);
-        const [, presetId, _] = await mosaicRegistry.getMono(
-          originalId,
-          id
-        );
+        const [, presetId, _] = await mosaicRegistry.getMono(originalId, id);
         expect(presetId).to.equal(PRESET_ID);
       }
     });
@@ -343,7 +341,7 @@ describe("MosaicProtocol", function () {
     it("allows holders to propose reserve prices only within a set range", async () => {
       const { mosaicRegistry, originalId, bob, bobMonoIdRange } = context;
 
-      let [, , , , , minReservePrice, maxReservePrice, ,] =
+      const [, , , , , minReservePrice, maxReservePrice, ,] =
         await mosaicRegistry.getOriginal(originalId);
 
       const proposal: BigNumber = OFFERED_PRICE;
@@ -371,8 +369,57 @@ describe("MosaicProtocol", function () {
       }
     });
 
-    it("allows bids only within reserve prices", async () => {
-      // TODO: Fill it out
+    it("forbids bids when not enough holders have proposed reserve prices", async () => {
+      const { mosaicRegistry, originalId } = context;
+      const [, , , , , minReservePrice, maxReservePrice, ,] =
+        await mosaicRegistry.getOriginal(originalId);
+
+      const [, , , , bidder] = await ethers.getSigners();
+      await expect(
+        mosaicRegistry
+          .connect(bidder)
+          .bid(originalId, minReservePrice, { value: maxReservePrice })
+      ).to.revertedWith("Not enough reserve price proposals set");
+    });
+
+    it("allows bids only within average reserve price sum ranges proposed by holders", async () => {
+      const { mosaicRegistry, originalId, bob } = context;
+      const [, , , , , , maxReservePrice, ,] = await mosaicRegistry.getOriginal(
+        originalId
+      );
+
+      // In this scenario context, Bob's share of 33% exceeds the min turnout threshold requirement
+      const bobReservePrice = maxReservePrice.sub(ONE_WEI);
+      await mosaicRegistry
+        .connect(bob)
+        .proposeReservePriceBatch(originalId, bobReservePrice);
+
+      const averageReservePriceProposal: BigNumber =
+        await mosaicRegistry.getAverageReservePriceProposals(originalId);
+      expect(averageReservePriceProposal).to.equal(bobReservePrice);
+
+      // Bid
+      const [, , , , bidder] = await ethers.getSigners();
+      // fail: below the avg proposal
+      const subParBidPrice = averageReservePriceProposal.sub(ONE_WEI);
+      await expect(
+        mosaicRegistry
+          .connect(bidder)
+          .bid(originalId, subParBidPrice, { value: subParBidPrice })
+      ).to.revertedWith("Bid price must be within the reserve price range");
+
+      // success
+      const bidPrice = averageReservePriceProposal;
+      await expect(
+        mosaicRegistry
+          .connect(bidder)
+          .bid(originalId, bidPrice, { value: bidPrice })
+      )
+        .to.changeEtherBalances(
+          [mosaicRegistry.address, await bidder.getAddress()],
+          [bidPrice, bidPrice.mul(-1)]
+        )
+        .to.emit(mosaicRegistry, "BidProposed");
     });
 
     it("allows new bids given no active bids", async () => {
