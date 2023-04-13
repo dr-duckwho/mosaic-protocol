@@ -261,6 +261,36 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         assert(bid.state == BidState.Refunded);
     }
 
+    function test_refundBidDeposit_onlyBidder() public {
+        // given
+        address bidder = _randomAddress();
+        address another = _randomAddress();
+        uint192 originalId = 810920;
+        uint256 timestamp = 830404;
+        uint256 bidId = mosaicRegistry.toBidId(originalId, bidder, timestamp);
+        uint256 bidFund = 100 ether;
+        uint256 registryFund = 150 ether;
+
+        // a rejected fund
+        mosaicRegistry.setBid(bidId, Bid({
+        id: bidId,
+        originalId: originalId,
+        bidder: payable(bidder),
+        createdAt: uint40(timestamp),
+        expiry: mosaicRegistry.BID_EXPIRY(),
+        price: bidFund,
+        state: BidState.Rejected
+        }));
+        vm.deal(address(mosaicRegistry), registryFund);
+        mosaicRegistry.setBidDeposits(bidId, bidFund);
+        assertEq(bidder.balance, 0);
+
+        // when & then
+        vm.prank(another);
+        vm.expectRevert("Only the bidder can retrieve its own fund");
+        mosaicRegistry.refundBidDeposit(bidId);
+    }
+
     function test_respondToBid() public {
         // given
         address alice = _randomAddress();

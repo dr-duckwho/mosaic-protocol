@@ -219,6 +219,8 @@ contract CryptoPunksMosaicRegistry is
         onlyActiveOriginal(originalId)
         returns (uint256 newBidId)
     {
+        require(msg.value == price, "Must send the exact value as proposed");
+
         Original storage original = CryptoPunksMosaicStorage.get().originals[
             originalId
         ];
@@ -228,7 +230,6 @@ contract CryptoPunksMosaicRegistry is
                 price <= original.maxReservePrice,
             "Bid price must be within the reserve price range"
         );
-        require(msg.value == price, "Must send the exact value as proposed");
 
         uint256 oldBidId = original.activeBidId;
         if (oldBidId != 0) {
@@ -563,11 +564,14 @@ contract CryptoPunksMosaicRegistry is
         return MonoLifeCycle.Active;
     }
 
+    function getOngoingBidId(
+        uint192 originalId
+    ) public view returns (uint256 bidId) {
+        return CryptoPunksMosaicStorage.get().originals[originalId].activeBidId;
+    }
+
     function hasOngoingBid(uint192 originalId) public view returns (bool) {
-        uint256 bidId = CryptoPunksMosaicStorage
-            .get()
-            .originals[originalId]
-            .activeBidId;
+        uint256 bidId = getOngoingBidId(originalId);
         Bid storage bid = CryptoPunksMosaicStorage.get().bids[bidId];
         return
             bidId != 0 &&

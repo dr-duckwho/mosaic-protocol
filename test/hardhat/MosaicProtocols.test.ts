@@ -371,22 +371,27 @@ describe("MosaicProtocol", function () {
 
     it("forbids bids when not enough holders have proposed reserve prices", async () => {
       const { mosaicRegistry, originalId } = context;
-      const [, , , , , minReservePrice, maxReservePrice, ,] =
-        await mosaicRegistry.getOriginal(originalId);
+      const [, , , , , , maxReservePrice, ,] = await mosaicRegistry.getOriginal(
+        originalId
+      );
 
       const [, , , , bidder] = await ethers.getSigners();
       await expect(
         mosaicRegistry
           .connect(bidder)
-          .bid(originalId, minReservePrice, { value: maxReservePrice })
+          .bid(originalId, maxReservePrice, { value: maxReservePrice })
       ).to.revertedWith("Not enough reserve price proposals set");
     });
 
-    it("allows bids only within average reserve price sum ranges proposed by holders", async () => {
+    it("allows bids only when requirements are met", async () => {
       const { mosaicRegistry, originalId, bob } = context;
       const [, , , , , , maxReservePrice, ,] = await mosaicRegistry.getOriginal(
         originalId
       );
+
+      /**
+       * allows bids only within average reserve price sum ranges proposed by holders
+       */
 
       // In this scenario context, Bob's share of 33% exceeds the min turnout threshold requirement
       const bobReservePrice = maxReservePrice.sub(ONE_WEI);
@@ -399,7 +404,7 @@ describe("MosaicProtocol", function () {
       expect(averageReservePriceProposal).to.equal(bobReservePrice);
 
       // Bid
-      const [, , , , bidder] = await ethers.getSigners();
+      const [, , , , bidder, nextBidder] = await ethers.getSigners();
       // fail: below the avg proposal
       const subParBidPrice = averageReservePriceProposal.sub(ONE_WEI);
       await expect(
@@ -420,6 +425,41 @@ describe("MosaicProtocol", function () {
           [bidPrice, bidPrice.mul(-1)]
         )
         .to.emit(mosaicRegistry, "BidProposed");
+      const bidId: BigNumber = await mosaicRegistry.getOngoingBidId(originalId);
+
+      /**
+       * allows only one active bid per original
+       */
+
+      // the previous bid has not expired yet
+      await expect(
+        mosaicRegistry
+          .connect(nextBidder)
+          .bid(originalId, bidPrice, { value: bidPrice })
+      ).to.revertedWith("Bid vote is ongoing");
+
+      // TODO: Make it available as a global constant
+      const expiry = 604800;
+      await time.increase(expiry);
+
+      await expect(
+        mosaicRegistry
+          .connect(nextBidder)
+          .bid(originalId, bidPrice, { value: bidPrice })
+      )
+        .to.changeEtherBalances(
+          [mosaicRegistry.address, await nextBidder.getAddress()],
+          [bidPrice, bidPrice.mul(-1)]
+        )
+        .to.emit(mosaicRegistry, "BidProposed");
+
+      // the previous bidder can get refunded
+      await expect(mosaicRegistry.connect(bidder).refundBidDeposit(bidId))
+        .to.changeEtherBalances(
+          [mosaicRegistry.address, await bidder.getAddress()],
+          [bidPrice.mul(-1), bidPrice]
+        )
+        .to.emit(mosaicRegistry, "BidRefunded");
     });
 
     it("allows new bids given no active bids", async () => {
