@@ -1,9 +1,4 @@
-import {
-  CryptoPunksGroupRegistry,
-  CryptoPunksMarket,
-  CryptoPunksMosaicRegistry,
-  UsingCryptoPunksGroupRegistryStructs__factory,
-} from "../../typechain-types";
+import { CryptoPunksMarket } from "../../typechain-types";
 import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { parseEther } from "ethers/lib/utils";
 import { expect } from "chai";
