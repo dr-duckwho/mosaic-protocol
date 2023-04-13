@@ -365,12 +365,24 @@ describe("MosaicProtocol", function () {
     });
 
     it("forbids bids when not enough holders have proposed reserve prices", async () => {
-      const { mosaicRegistry, originalId } = context;
+      const { mosaicRegistry, originalId, david } = context;
       const [, , , , , , maxReservePrice, ,] = await mosaicRegistry.getOriginal(
         originalId
       );
 
       const [, , , , bidder] = await ethers.getSigners();
+      await expect(
+        mosaicRegistry
+          .connect(bidder)
+          .bid(originalId, maxReservePrice, { value: maxReservePrice })
+      ).to.revertedWith("Not enough reserve price proposals set");
+
+      // David has only 16% shares, not enough to meet the min turnout condition
+      const davidReservePrice = maxReservePrice.sub(ONE_WEI);
+      await mosaicRegistry
+        .connect(david)
+        .proposeReservePriceBatch(originalId, davidReservePrice);
+
       await expect(
         mosaicRegistry
           .connect(bidder)
