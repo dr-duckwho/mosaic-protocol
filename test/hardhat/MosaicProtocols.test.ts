@@ -457,10 +457,6 @@ describe("MosaicProtocol", function () {
         .to.emit(mosaicRegistry, "BidRefunded");
     });
 
-    it("allows new bids given no active bids", async () => {
-      // TODO: Fill it out
-    });
-
     it("allows holders to vote on ongoing bids", async () => {
       // TODO: Fill it out
     });
