@@ -30,6 +30,8 @@ const TARGET_PRICE = parseEther(`${TARGET_PRICE_ETH}`);
 // the actual price the punk is sold at
 const OFFERED_PRICE_ETH = 60;
 const OFFERED_PRICE = parseEther(`${OFFERED_PRICE_ETH}`);
+// a minimum difference that passes or fails a given threshold
+const ONE_WEI = 1;
 
 // TODO: Group Mosaic owners' information
 interface Context {
@@ -324,7 +326,18 @@ describe("MosaicProtocol", function () {
     });
 
     it("allows holders to update presets", async () => {
-      // TODO: fill it out
+      // TODO: fill it out more about validation and URI
+      const { mosaicRegistry, originalId, bob, bobMonoIdRange } = context;
+      const PRESET_ID = 3;
+      for (let id = bobMonoIdRange[0]; id <= bobMonoIdRange[1]; id++) {
+        const mosaicId = await mosaicRegistry.toMosaicId(originalId, id);
+        await mosaicRegistry.connect(bob).setPresetId(mosaicId, PRESET_ID);
+        const [, presetId, _] = await mosaicRegistry.getMono(
+          originalId,
+          id
+        );
+        expect(presetId).to.equal(PRESET_ID);
+      }
     });
 
     it("allows holders to propose reserve prices only within a set range", async () => {
@@ -334,8 +347,8 @@ describe("MosaicProtocol", function () {
         await mosaicRegistry.getOriginal(originalId);
 
       const proposal: BigNumber = OFFERED_PRICE;
-      const proposalTooLow: BigNumber = minReservePrice.sub(1);
-      const proposalTooHigh: BigNumber = maxReservePrice.add(1);
+      const proposalTooLow: BigNumber = minReservePrice.sub(ONE_WEI);
+      const proposalTooHigh: BigNumber = maxReservePrice.add(ONE_WEI);
 
       await mosaicRegistry
         .connect(bob)

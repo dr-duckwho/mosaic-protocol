@@ -150,6 +150,7 @@ contract CryptoPunksMosaicRegistry is
         uint256 mosaicId,
         uint8 presetId
     ) public onlyMosaicOwner(mosaicId) {
+        // TODO: Validate presetId
         Mono storage mono = CryptoPunksMosaicStorage.get().monos[mosaicId];
         mono.presetId = presetId;
     }
