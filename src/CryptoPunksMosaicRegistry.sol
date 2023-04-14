@@ -459,6 +459,7 @@ contract CryptoPunksMosaicRegistry is
         return (priceSum, validProposalCount, invalidProposalCount);
     }
 
+    // TODO: Consider taking bidId instead of originalId
     function sumBidResponses(
         uint192 originalId
     ) public view virtual returns (uint64 yes, uint64 no) {
@@ -488,6 +489,7 @@ contract CryptoPunksMosaicRegistry is
         return (yes, no);
     }
 
+    // TODO: Consider taking bidId instead of originalId
     function isBidAcceptable(
         uint192 originalId
     ) public view virtual returns (bool) {
