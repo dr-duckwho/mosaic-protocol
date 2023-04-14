@@ -32,7 +32,10 @@ interface ICryptoPunksMosaicRegistry is UsingCryptoPunksMosaicRegistryStructs {
 
     function refundBidDeposit(uint256 bidId) external;
 
-    function respondToBid(uint256 mosaicId, MonoBidResponse response) external;
+    function respondToBidBatch(
+        uint192 originalId,
+        MonoBidResponse response
+    ) external returns (uint256 bidId, uint64 changedMonoCount);
 
     function finalizeProposedBid(uint256 bidId) external returns (BidState);
 

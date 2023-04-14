@@ -29,6 +29,10 @@ const OFFERED_PRICE = parseEther(`${OFFERED_PRICE_ETH}`);
 // a minimum difference that passes or fails a given threshold
 const ONE_WEI = 1;
 
+const BOB_CONTRIBUTION = 33;
+const CAROL_CONTRIBUTION = 51;
+const DAVID_CONTRIBUTION = 16;
+
 // TODO: Group Mosaic owners' information
 interface Context {
   cryptoPunks: CryptoPunksMarket;
@@ -47,7 +51,7 @@ interface Context {
 
 const groupWins = async (): Context => {
   // should sum up to TICKET_SUPPLY
-  const CONTRIBUTION = { bob: 33, carol: 51, david: 16 };
+  const CONTRIBUTION = { bob: BOB_CONTRIBUTION, carol: CAROL_CONTRIBUTION, david: DAVID_CONTRIBUTION };
   const ORIGINAL_MONO_ID = 0;
 
   const {
@@ -224,7 +228,7 @@ describe("MosaicProtocol", function () {
     });
 
     it("works for an expired group scenario", async () => {
-      const CONTRIBUTION = { bob: 33 };
+      const CONTRIBUTION = { bob: BOB_CONTRIBUTION };
 
       const {
         cryptoPunks,
@@ -390,7 +394,9 @@ describe("MosaicProtocol", function () {
       ).to.revertedWith("Not enough reserve price proposals set");
     });
 
-    it("allows bids only when requirements are met", async () => {
+    // Bid
+
+    const createBid = async () => {
       const { mosaicRegistry, originalId, bob } = context;
       const [, , , , , , maxReservePrice, ,] = await mosaicRegistry.getOriginal(
         originalId
@@ -467,10 +473,46 @@ describe("MosaicProtocol", function () {
           [bidPrice.mul(-1), bidPrice]
         )
         .to.emit(mosaicRegistry, "BidRefunded");
+
+      return { bidder: nextBidder, bidId };
+    };
+
+    it("allows bids only when requirements are met", async () => {
+      await createBid();
     });
 
     it("allows holders to vote on ongoing bids", async () => {
-      // TODO: Fill it out
+      const { bidId } = await createBid();
+      const { mosaicRegistry, originalId, bob, carol, david } = context;
+
+      // Round 1 - initial condition
+      expect(await mosaicRegistry.isBidAcceptable(originalId)).to.equal(false);
+
+      // Round 2 - 84% yes, 16% no
+      let voters = new Map([
+        [bob, 1], // Yes 33%
+        [carol, 1], // Yes 51%
+        [david, 2] // No 16%
+      ]);
+
+      for (let [voter, vote] of voters) {
+        await mosaicRegistry.connect(voter).respondToBidBatch(originalId, vote);
+      }
+
+      expect(await mosaicRegistry.isBidAcceptable(originalId)).to.equal(true);
+
+      // Round 3 - 16% yes, 84% no
+      voters = new Map([
+        [bob, 2], // No 33%
+        [carol, 2], // No 51%
+        [david, 1] // Yes 16%
+      ]);
+
+      for (let [voter, vote] of voters) {
+        await mosaicRegistry.connect(voter).respondToBidBatch(originalId, vote);
+      }
+      
+      expect(await mosaicRegistry.isBidAcceptable(originalId)).to.equal(false);
     });
 
     /**

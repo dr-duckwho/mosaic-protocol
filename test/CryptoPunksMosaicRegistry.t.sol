@@ -291,13 +291,14 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         mosaicRegistry.refundBidDeposit(bidId);
     }
 
-    function test_respondToBid() public {
+    function test_respondToBidBatch() public {
         // given
         address alice = _randomAddress();
+        address bob = _randomAddress();
+
         uint192 originalId = 530923;
-        uint64 monoId = 581019;
-        uint256 mosaicId = mosaicRegistry.toMosaicId(originalId, monoId);
         uint256 bidId = mosaicRegistry.toBidId(originalId, alice, block.timestamp);
+        uint64 monoId = 1;
 
         mosaicRegistry.setBid(bidId, Bid({
             id: bidId,
@@ -322,18 +323,41 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         });
         mosaicRegistry.setOriginal(originalId, original);
 
-        // set up the ownership
+        // set up the ownership for Alice
+        mosaicRegistry.setNextMonoId(originalId, monoId);
+        uint256 mosaicId = mosaicRegistry.toMosaicId(originalId, monoId);
         mosaicRegistry.mockMint(alice, mosaicId);
 
         // when
         vm.prank(alice);
-        mosaicRegistry.respondToBid(mosaicId, MonoBidResponse.No);
+        (uint256 actualBidId, uint64 changedMonoCount) = mosaicRegistry.respondToBidBatch(originalId, MonoBidResponse.Yes);
 
         // then
-        Mono memory mono = mosaicRegistry.getMono(originalId, monoId);
+        assertEq(changedMonoCount, 1);
+        assertEq(actualBidId, bidId);
+        Mono memory mono = mosaicRegistry.getMono(mosaicId);
         MonoGovernanceOptions memory governanceOptions = mono.governanceOptions;
-        assertEq(governanceOptions.bidId, bidId);
-        assert(governanceOptions.bidResponse == MonoBidResponse.No);
+        assertEq(governanceOptions.bidId, actualBidId);
+        assert(governanceOptions.bidResponse == MonoBidResponse.Yes);
+
+        // set up the ownership for Bob
+        for (uint64 bobMonoId = 2; bobMonoId < 52; bobMonoId ++) {
+            mosaicId = mosaicRegistry.toMosaicId(originalId, bobMonoId);
+            mosaicRegistry.mockMint(bob, mosaicId);
+        }
+        // when
+        vm.prank(bob);
+        (actualBidId, changedMonoCount) = mosaicRegistry.respondToBidBatch(originalId, MonoBidResponse.No);
+
+        // then
+        assertEq(changedMonoCount, 50);
+        assertEq(actualBidId, bidId);
+        for (uint64 bobMonoId = 2; bobMonoId < 52; bobMonoId ++) {
+            mono = mosaicRegistry.getMono(mosaicId);
+            governanceOptions = mono.governanceOptions;
+            assertEq(governanceOptions.bidId, actualBidId);
+            assert(governanceOptions.bidResponse == MonoBidResponse.No);
+        }
     }
 
     function test_finalizeProposedBid() public {

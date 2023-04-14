@@ -59,8 +59,14 @@ contract MockCryptoPunksMosaicRegistry is MockProvider, CryptoPunksMosaicRegistr
         return CryptoPunksMosaicStorage.get().bids[bidId];
     }
 
+    function incrementNextMonoId(uint192 originalId) public {
+        setNextMonoId(originalId, getNextMonoId(originalId) + 1);
+    }
+
     function mockMint(address to, uint256 mosaicId) public {
         _mint(to, mosaicId);
+        (uint192 originalId, ) = fromMosaicId(mosaicId);
+        incrementNextMonoId(originalId);
     }
 
     function mockBidAcceptable(bool enabled, bool value) public {

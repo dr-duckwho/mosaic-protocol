@@ -295,22 +295,33 @@ contract CryptoPunksMosaicRegistry is
     // Reconstitution: Mosaic owners
     //
 
-    function respondToBid(
-        uint256 mosaicId,
+    function respondToBidBatch(
+        uint192 originalId,
         MonoBidResponse response
-    ) public override onlyWhenActive onlyMosaicOwner(mosaicId) {
-        (uint192 originalId, ) = fromMosaicId(mosaicId);
+    ) external onlyWhenActive returns (uint256 bidId, uint64 changedMonoCount) {
         require(hasOngoingBid(originalId), "No bid ongoing");
-        MonoGovernanceOptions
-            storage governanceOptions = CryptoPunksMosaicStorage
-                .get()
-                .monos[mosaicId]
-                .governanceOptions;
-        governanceOptions.bidId = CryptoPunksMosaicStorage
+
+        uint64 nextMonoId = CryptoPunksMosaicStorage.get().nextMonoIds[
+            originalId
+        ];
+        uint256 activeBidId = CryptoPunksMosaicStorage
             .get()
             .originals[originalId]
             .activeBidId;
-        governanceOptions.bidResponse = response;
+        for (uint64 monoId = 1; monoId < nextMonoId; monoId++) {
+            uint256 mosaicId = toMosaicId(originalId, monoId);
+            if (_ownerOf(mosaicId) == msg.sender) {
+                changedMonoCount++;
+                MonoGovernanceOptions
+                    storage governanceOptions = CryptoPunksMosaicStorage
+                        .get()
+                        .monos[mosaicId]
+                        .governanceOptions;
+                governanceOptions.bidId = activeBidId;
+                governanceOptions.bidResponse = response;
+            }
+        }
+        return (activeBidId, changedMonoCount);
     }
 
     //
