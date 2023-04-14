@@ -476,11 +476,11 @@ describe("MosaicProtocol", function () {
     /**
      * TODO: #5 Settlement
      */
-    it("allows finalizing an accepted bid and transferring the original", async () => {
+    it("transfers the original to a winning bidder and burns all the holders' monos", async () => {
       // TODO: Fill it out
     });
 
-    it("allows finalizing a rejected or expired bid and refunding the deposit", async () => {
+    it("refunds the deposit to a bidder whose bid is rejected or expired", async () => {
       // TODO: Fill it out
     });
 
