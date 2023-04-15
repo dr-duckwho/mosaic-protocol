@@ -36,7 +36,7 @@
   },
   "scripts": {
     "compile": "hardhat compile",
-    "postcompile": "mkdir -p client/contract/deployments && cp -r deployments/ client/contract/deployments/ && (cd client && npx wagmi generate)",
+    "postcompile": "mkdir -p client/contract/deployments && cp -r deployments/ client/src/contracts/deployments/ && (cd client && npx wagmi generate)",
     "deploy:testnet": "hardhat deploy --network goerli --export ./deployments/testnet.json --tags",
     "run:testnet": "hardhat run --network goerli",
     "verify:testnet": "hardhat --network goerli etherscan-verify --solc-input",

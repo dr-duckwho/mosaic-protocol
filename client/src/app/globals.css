@@ -1,6 +1,6 @@
-/*@tailwind base;*/
-/*@tailwind components;*/
-/*@tailwind utilities;*/
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 html,
 body {
@@ -8,6 +8,8 @@ body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
   Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  background-color: #230022;
+  color: #E5D1F9;
 }
 
 a {
@@ -17,4 +19,9 @@ a {
 
 * {
   box-sizing: border-box;
+}
+
+/* hide rainbow kit arrow */
+.iekbcc0 > svg {
+  display: none;
 }

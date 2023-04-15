@@ -1,8 +1,7 @@
 import "./globals.css";
 import "@rainbow-me/rainbowkit/styles.css";
-
-import ConnectButton from "@/components/wrapped/ConnectButton";
-import WagmiWrapper from "@/components/wrapped/WagmiWrapper";
+import WagmiWrapper from "@/components/contracts/wrapped/WagmiWrapper";
+import { Navigation } from "@/components/layout/Navigation";
 
 export default function RootLayout({
   children,
@@ -13,8 +12,8 @@ export default function RootLayout({
     <html lang="ko">
       <body>
         <WagmiWrapper>
-          <ConnectButton />
-          {children}
+          <Navigation />
+          <main className="overflow-hidden mb-20">{children}</main>
         </WagmiWrapper>
       </body>
     </html>
