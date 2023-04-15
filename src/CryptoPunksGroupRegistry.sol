@@ -22,19 +22,16 @@ contract CryptoPunksGroupRegistry is
     ReentrancyGuardUpgradeable
 {
     /**
-     * Arithmetic constants
-     */
-    uint64 public constant MIN_RESERVE_PRICE_BPS = 7000; // 70%
-    uint64 public constant MAX_RESERVE_PRICE_BPS = 500000; // 5000% (50x)
-
-    /**
-     * Business logic constants
-     */
-    uint64 public constant TICKET_SUPPLY_PER_GROUP = 100;
-    /**
      * @dev can create and curate the active group
      */
     bytes32 public constant CURATOR_ROLE = keccak256("CURATOR_ROLE");
+
+    /**
+     * Default values for AdminGovernanceOptions
+     */
+    uint64 public constant MIN_RESERVE_PRICE_BPS = 7000; // 70%
+    uint64 public constant MAX_RESERVE_PRICE_BPS = 500000; // 5000% (50x)
+    uint64 public constant TICKET_SUPPLY_PER_GROUP = 100;
 
     CryptoPunksMuseum public museum;
 
@@ -43,6 +40,13 @@ contract CryptoPunksGroupRegistry is
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(CURATOR_ROLE, msg.sender);
         museum = CryptoPunksMuseum(museumAddress);
+
+        setAdminGovernanceOptions(
+            true,
+            MIN_RESERVE_PRICE_BPS,
+            MAX_RESERVE_PRICE_BPS,
+            TICKET_SUPPLY_PER_GROUP
+        );
     }
 
     modifier onlyWhenActive() {
@@ -72,7 +76,9 @@ contract CryptoPunksGroupRegistry is
         );
 
         ++CryptoPunksGroupStorage.get().latestGroupId;
-        uint64 totalTicketSupply = TICKET_SUPPLY_PER_GROUP;
+        uint64 totalTicketSupply = CryptoPunksGroupStorage
+            .getAdminGovernanceOptions()
+            .ticketSupplyPerGroup;
         uint256 unitTicketPrice = targetMaxPrice / totalTicketSupply;
         uint192 groupId = CryptoPunksGroupStorage.get().latestGroupId;
 
@@ -149,7 +155,13 @@ contract CryptoPunksGroupRegistry is
         (, , , uint256 offeredPrice, ) = museum
             .cryptoPunksMarket()
             .punksOfferedForSale(punkId);
-        require(group.ticketsBought == TICKET_SUPPLY_PER_GROUP, "Not sold out");
+        require(
+            group.ticketsBought ==
+                CryptoPunksGroupStorage
+                    .getAdminGovernanceOptions()
+                    .ticketSupplyPerGroup,
+            "Not sold out"
+        );
         require(
             group.totalContribution >= offeredPrice,
             "Offered price is greater than the current contribution"
@@ -331,21 +343,25 @@ contract CryptoPunksGroupRegistry is
 
     function calculateMinReservePrice(
         uint256 purchasePrice
-    ) public pure returns (uint256 minReservePrice) {
+    ) public view returns (uint256 minReservePrice) {
         return
             BasisPoint.calculateBasisPoint(
                 purchasePrice,
-                MIN_RESERVE_PRICE_BPS
+                CryptoPunksGroupStorage
+                    .getAdminGovernanceOptions()
+                    .minReservePriceBps
             );
     }
 
     function calculateMaxReservePrice(
         uint256 purchasePrice
-    ) public pure returns (uint256 maxReservePrice) {
+    ) public view returns (uint256 maxReservePrice) {
         return
             BasisPoint.calculateBasisPoint(
                 purchasePrice,
-                MAX_RESERVE_PRICE_BPS
+                CryptoPunksGroupStorage
+                    .getAdminGovernanceOptions()
+                    .maxReservePriceBps
             );
     }
 
@@ -375,6 +391,25 @@ contract CryptoPunksGroupRegistry is
         return
             ERC1155Upgradeable.supportsInterface(interfaceId) ||
             AccessControlUpgradeable.supportsInterface(interfaceId);
+    }
+
+    //
+    // Admin
+    //
+
+    function setAdminGovernanceOptions(
+        bool isSet,
+        uint64 minReservePriceBps,
+        uint64 maxReservePriceBps,
+        uint64 ticketSupplyPerGroup
+    ) public onlyRole(DEFAULT_ADMIN_ROLE) {
+        CryptoPunksGroupStorage.AdminGovernanceOptions
+            storage options = CryptoPunksGroupStorage
+                .getAdminGovernanceOptions();
+        options.isSet = isSet;
+        options.minReservePriceBps = minReservePriceBps;
+        options.maxReservePriceBps = maxReservePriceBps;
+        options.ticketSupplyPerGroup = ticketSupplyPerGroup;
     }
 
     function _authorizeUpgrade(
