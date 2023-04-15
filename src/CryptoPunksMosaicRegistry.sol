@@ -724,6 +724,7 @@ contract CryptoPunksMosaicRegistry is
     // Admin
     //
 
+    // TODO: write unit tests
     function setAdminGovernanceOptions(
         bool isSet,
         uint256 reservePriceProposalTurnoutThresholdBps,
@@ -738,6 +739,22 @@ contract CryptoPunksMosaicRegistry is
             .reservePriceProposalTurnoutThresholdBps = reservePriceProposalTurnoutThresholdBps;
         options.bidExpiryBlockSeconds = bidExpiryBlockSeconds;
         options.bidAcceptanceThresholdBps = bidAcceptanceThresholdBps;
+    }
+
+    function setOriginalReservePrice(
+        uint192 originalId,
+        uint256 minReservePrice,
+        uint256 maxReservePrice
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        require(CryptoPunksMosaicStorage.get().originals[originalId].id > 0);
+        CryptoPunksMosaicStorage
+            .get()
+            .originals[originalId]
+            .minReservePrice = minReservePrice;
+        CryptoPunksMosaicStorage
+            .get()
+            .originals[originalId]
+            .maxReservePrice = maxReservePrice;
     }
 
     function _authorizeUpgrade(

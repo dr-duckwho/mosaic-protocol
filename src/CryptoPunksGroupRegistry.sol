@@ -366,18 +366,6 @@ contract CryptoPunksGroupRegistry is
     }
 
     //
-    // Admin
-    //
-
-    function airdrop(
-        address to,
-        uint256[] memory ids,
-        uint256[] memory amounts
-    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        _mintBatch(to, ids, amounts, "");
-    }
-
-    //
     // Internals
     //
     function supportsInterface(
@@ -396,6 +384,8 @@ contract CryptoPunksGroupRegistry is
     //
     // Admin
     //
+
+    // TODO: write unit tests
 
     function setAdminGovernanceOptions(
         bool isSet,
