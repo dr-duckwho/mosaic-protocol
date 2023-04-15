@@ -13,6 +13,8 @@ import "./external/ICryptoPunksMarket.sol";
 import "./ICryptoPunksMosaicRegistry.sol";
 import "./CryptoPunksMuseum.sol";
 import "./CryptoPunksMosaicStorage.sol";
+import "./CryptoPunksMosaicStorage.sol";
+import "./CryptoPunksMosaicStorage.sol";
 
 // TODO: Reconsider the ID scheme so that the same origin contract's same groups map to the same ID (contract, group) => (internal id)
 contract CryptoPunksMosaicRegistry is
@@ -31,10 +33,10 @@ contract CryptoPunksMosaicRegistry is
      * @dev reserve price weighted sums are valid only if more holders than this threshold have set their
      *  reserve price proposals
      */
-    uint256 public constant RESERVE_PRICE_PROCLAMATION_THRESHOLD_BPS = 3000; // 30%
+    uint256 public constant RESERVE_PRICE_PROPOSAL_TURNOUT_THRESHOLD_BPS = 3000; // 30%
 
     address private constant NO_BIDDER = address(0x0);
-    uint40 public constant BID_EXPIRY = 604800;
+    uint40 public constant BID_EXPIRY_BLOCK_SECONDS = 604800;
     uint256 public constant BID_ACCEPTANCE_THRESHOLD_BPS = 3000; // 30%
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
@@ -46,6 +48,12 @@ contract CryptoPunksMosaicRegistry is
         museum = CryptoPunksMuseum(museumAddress);
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(DEFAULT_ADMIN_ROLE, museumAddress);
+        setAdminGovernanceOptions(
+            true,
+            RESERVE_PRICE_PROPOSAL_TURNOUT_THRESHOLD_BPS,
+            BID_EXPIRY_BLOCK_SECONDS,
+            BID_ACCEPTANCE_THRESHOLD_BPS
+        );
     }
 
     modifier onlyWhenActive() {
@@ -53,20 +61,20 @@ contract CryptoPunksMosaicRegistry is
             address(museum) != address(0) && museum.isActive(),
             "Museum must be active"
         );
+        require(CryptoPunksMosaicStorage.isSetAdminGovernanceOptions());
         _;
     }
 
     modifier onlyActiveOriginal(uint192 originalId) {
         require(
             CryptoPunksMosaicStorage.get().originals[originalId].state ==
-                OriginalState.Active,
-            "Not active"
+                OriginalState.Active
         );
         _;
     }
 
     modifier onlyMosaicOwner(uint256 mosaicId) {
-        require(ownerOf(mosaicId) == msg.sender, "Must own the Mosaic");
+        require(ownerOf(mosaicId) == msg.sender);
         _;
     }
 
@@ -246,7 +254,9 @@ contract CryptoPunksMosaicRegistry is
             originalId: originalId,
             bidder: payable(msg.sender),
             createdAt: uint40(block.timestamp),
-            expiry: BID_EXPIRY,
+            expiry: CryptoPunksMosaicStorage
+                .getAdminGovernanceOptions()
+                .bidExpiryBlockSeconds,
             price: price,
             state: BidState.Proposed
         });
@@ -424,7 +434,9 @@ contract CryptoPunksMosaicRegistry is
             valids >=
                 BasisPoint.calculateBasisPoint(
                     (valids + invalids),
-                    RESERVE_PRICE_PROCLAMATION_THRESHOLD_BPS
+                    CryptoPunksMosaicStorage
+                        .getAdminGovernanceOptions()
+                        .reservePriceProposalTurnoutThresholdBps
                 ),
             "Not enough reserve price proposals set"
         );
@@ -502,7 +514,9 @@ contract CryptoPunksMosaicRegistry is
             yes >=
             BasisPoint.calculateBasisPoint(
                 totalVotable,
-                BID_ACCEPTANCE_THRESHOLD_BPS
+                CryptoPunksMosaicStorage
+                    .getAdminGovernanceOptions()
+                    .bidAcceptanceThresholdBps
             );
     }
 
@@ -549,13 +563,6 @@ contract CryptoPunksMosaicRegistry is
         return CryptoPunksMosaicStorage.get().originals[originalId];
     }
 
-    function getOriginalFromMosaicId(
-        uint256 mosaicId
-    ) external view returns (Original memory) {
-        (uint192 originalId, ) = fromMosaicId(mosaicId);
-        return CryptoPunksMosaicStorage.get().originals[originalId];
-    }
-
     function getMonoLifeCycle(
         uint256 mosaicId
     ) public view returns (MonoLifeCycle) {
@@ -577,14 +584,11 @@ contract CryptoPunksMosaicRegistry is
         return MonoLifeCycle.Active;
     }
 
-    function getOngoingBidId(
-        uint192 originalId
-    ) public view returns (uint256 bidId) {
-        return CryptoPunksMosaicStorage.get().originals[originalId].activeBidId;
-    }
-
     function hasOngoingBid(uint192 originalId) public view returns (bool) {
-        uint256 bidId = getOngoingBidId(originalId);
+        uint256 bidId = CryptoPunksMosaicStorage
+            .get()
+            .originals[originalId]
+            .activeBidId;
         Bid storage bid = CryptoPunksMosaicStorage.get().bids[bidId];
         return
             bidId != 0 &&
@@ -678,6 +682,7 @@ contract CryptoPunksMosaicRegistry is
     //
     // ERC721
     //
+
     function tokenURI(
         uint256 mosaicId
     ) public view override returns (string memory) {
@@ -715,6 +720,26 @@ contract CryptoPunksMosaicRegistry is
         return
             ERC721Upgradeable.supportsInterface(interfaceId) ||
             AccessControlUpgradeable.supportsInterface(interfaceId);
+    }
+
+    //
+    // Admin
+    //
+
+    function setAdminGovernanceOptions(
+        bool isSet,
+        uint256 reservePriceProposalTurnoutThresholdBps,
+        uint40 bidExpiryBlockSeconds,
+        uint256 bidAcceptanceThresholdBps
+    ) public onlyRole(DEFAULT_ADMIN_ROLE) {
+        CryptoPunksMosaicStorage.AdminGovernanceOptions
+            storage options = CryptoPunksMosaicStorage
+                .getAdminGovernanceOptions();
+        options.isSet = isSet;
+        options
+            .reservePriceProposalTurnoutThresholdBps = reservePriceProposalTurnoutThresholdBps;
+        options.bidExpiryBlockSeconds = bidExpiryBlockSeconds;
+        options.bidAcceptanceThresholdBps = bidAcceptanceThresholdBps;
     }
 
     function _authorizeUpgrade(

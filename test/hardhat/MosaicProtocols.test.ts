@@ -51,7 +51,11 @@ interface Context {
 
 const groupWins = async (): Context => {
   // should sum up to TICKET_SUPPLY
-  const CONTRIBUTION = { bob: BOB_CONTRIBUTION, carol: CAROL_CONTRIBUTION, david: DAVID_CONTRIBUTION };
+  const CONTRIBUTION = {
+    bob: BOB_CONTRIBUTION,
+    carol: CAROL_CONTRIBUTION,
+    david: DAVID_CONTRIBUTION,
+  };
   const ORIGINAL_MONO_ID = 0;
 
   const {
@@ -438,7 +442,9 @@ describe("MosaicProtocol", function () {
           [bidPrice, bidPrice.mul(-1)]
         )
         .to.emit(mosaicRegistry, "BidProposed");
-      const bidId: BigNumber = await mosaicRegistry.getOngoingBidId(originalId);
+      const bidId: BigNumber = (
+        await mosaicRegistry.getOriginal(originalId)
+      )[9]; // activeBidId
 
       /**
        * allows only one active bid per original
@@ -492,7 +498,7 @@ describe("MosaicProtocol", function () {
       let voters = new Map([
         [bob, 1], // Yes 33%
         [carol, 1], // Yes 51%
-        [david, 2] // No 16%
+        [david, 2], // No 16%
       ]);
 
       for (let [voter, vote] of voters) {
@@ -505,13 +511,13 @@ describe("MosaicProtocol", function () {
       voters = new Map([
         [bob, 2], // No 33%
         [carol, 2], // No 51%
-        [david, 1] // Yes 16%
+        [david, 1], // Yes 16%
       ]);
 
       for (let [voter, vote] of voters) {
         await mosaicRegistry.connect(voter).respondToBidBatch(originalId, vote);
       }
-      
+
       expect(await mosaicRegistry.isBidAcceptable(originalId)).to.equal(false);
     });
 

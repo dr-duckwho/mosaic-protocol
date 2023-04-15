@@ -242,7 +242,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
             originalId: originalId,
             bidder: payable(bidder),
             createdAt: uint40(timestamp),
-            expiry: mosaicRegistry.BID_EXPIRY(),
+            expiry: mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS(),
             price: bidFund,
             state: BidState.Rejected
         }));
@@ -277,7 +277,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         originalId: originalId,
         bidder: payable(bidder),
         createdAt: uint40(timestamp),
-        expiry: mosaicRegistry.BID_EXPIRY(),
+        expiry: mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS(),
         price: bidFund,
         state: BidState.Rejected
         }));
@@ -305,7 +305,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
             originalId: originalId,
             bidder: payable(alice),
             createdAt: uint40(block.timestamp),
-            expiry: mosaicRegistry.BID_EXPIRY(),
+            expiry: mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS(),
             price: 100 ether,
             state: BidState.Proposed
         }));
@@ -378,14 +378,14 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
             originalId: originalId,
             bidder: payable(alice),
             createdAt: uint40(block.timestamp),
-            expiry: mosaicRegistry.BID_EXPIRY(),
+            expiry: mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS(),
             price: 100 ether,
             state: BidState.Proposed
         }));
 
         // when
         mosaicRegistry.mockBidAcceptable(true, isBidAcceptable);
-        vm.warp(block.timestamp + mosaicRegistry.BID_EXPIRY() + 1);
+        vm.warp(block.timestamp + mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS() + 1);
 
         vm.expectEmit(true, true, false, false);
         if (isBidAcceptable) {
@@ -414,7 +414,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
             originalId: originalId,
             bidder: payable(bidder),
             createdAt: uint40(block.timestamp),
-            expiry: mosaicRegistry.BID_EXPIRY(),
+            expiry: mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS(),
             price: 100 ether,
             state: BidState.Accepted
         }));
@@ -594,7 +594,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
             originalId: originalId,
             bidder: payable(bidder),
             createdAt: uint40(block.timestamp),
-            expiry: mosaicRegistry.BID_EXPIRY(),
+            expiry: mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS(),
             price: 100 ether,
             state: BidState.Proposed
         }));
@@ -707,7 +707,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
             originalId: originalId,
             bidder: payable(bidder),
             createdAt: uint40(block.timestamp),
-            expiry: mosaicRegistry.BID_EXPIRY(),
+            expiry: mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS(),
             price: 100 ether,
             state: BidState.Proposed
         }));

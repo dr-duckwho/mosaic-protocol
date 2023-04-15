@@ -4,7 +4,9 @@ pragma solidity ^0.8.17;
 import "./ICryptoPunksMosaicRegistry.sol";
 
 library CryptoPunksMosaicStorage {
-    bytes32 constant POSITION = keccak256("CryptoPunksMosaicStorage");
+    bytes32 constant STORAGE_POSITION = keccak256("CryptoPunksMosaicStorage");
+    bytes32 constant ADMIN_GOVERNANCE_OPTIONS_POSITION =
+        keccak256("CryptoPunksMosaicAdminGovernanceOptions");
 
     struct Storage {
         string invalidMetadataUri;
@@ -33,10 +35,47 @@ library CryptoPunksMosaicStorage {
         mapping(uint192 => uint256) resalePrices;
     }
 
+    struct AdminGovernanceOptions {
+        /**
+         * @dev explicit flag for activation; may be useful in overriding the global options per original
+         */
+        bool isSet;
+        /**
+         * @dev reserve price weighted sums are valid only if more holders than this threshold have set their
+         *  reserve price proposals
+         */
+        // default 3000 = 30%
+        uint256 reservePriceProposalTurnoutThresholdBps;
+        // default 604800 = 1 week
+        uint40 bidExpiryBlockSeconds;
+        // default 3000 = 30%
+        uint256 bidAcceptanceThresholdBps;
+    }
+
     function get() internal pure returns (Storage storage data) {
-        bytes32 position = POSITION;
+        bytes32 position = STORAGE_POSITION;
         assembly {
             data.slot := position
         }
+    }
+
+    function getAdminGovernanceOptions()
+        internal
+        pure
+        returns (AdminGovernanceOptions storage data)
+    {
+        bytes32 position = ADMIN_GOVERNANCE_OPTIONS_POSITION;
+        assembly {
+            data.slot := position
+        }
+    }
+
+    function isSetAdminGovernanceOptions() internal view returns (bool) {
+        AdminGovernanceOptions storage data = getAdminGovernanceOptions();
+        return
+            data.isSet &&
+            data.reservePriceProposalTurnoutThresholdBps > 0 &&
+            data.bidExpiryBlockSeconds > 0 &&
+            data.bidAcceptanceThresholdBps > 0;
     }
 }
