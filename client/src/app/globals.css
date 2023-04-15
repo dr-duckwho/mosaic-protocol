@@ -25,3 +25,9 @@ a {
 .iekbcc0 .ju367v4 .ju367va .ju367v1k > svg {
   display: none;
 }
+
+/* connect modal button text color */
+div.iekbcc0.ju367v76.ju367v7r.ju367v8f > div > * > div,
+div.iekbcc0.ju367va.ju367v10.ju367v99 > div.iekbcc0.ju367v4.ju367va.ju367v2d > a > div {
+  color: #B97FFA;
+}

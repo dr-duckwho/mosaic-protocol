@@ -10,7 +10,7 @@ export function Navigation() {
   return (
     <>
       <nav className="flex fixed px-5 w-full h-14 bg-secondary justify-between z-50">
-        <Link className="flex" href="/">
+        <Link className="flex items-center" href="/">
           <Image src="/logo.svg" width={21.95} height={20.41} alt="logo" />
         </Link>
         <div className="flex items-center">
