@@ -6,7 +6,6 @@ import {
   useCryptoPunksMosaicRegistryGetLatestOriginalId,
   useCryptoPunksMosaicRegistryGetMono,
   useCryptoPunksMosaicRegistryGetMonoLifeCycle,
-  useCryptoPunksMosaicRegistryGetOriginalFromMosaicId,
   useCryptoPunksMosaicRegistryToMosaicId,
 } from "@/contracts/generated";
 import { Address } from "wagmi";
@@ -49,46 +48,11 @@ export default function GetMono() {
     ],
   });
 
-  const { data: original } =
-    useCryptoPunksMosaicRegistryGetOriginalFromMosaicId({
-      address: testnet.contracts.CryptoPunksMosaicRegistry.address as Address,
-      args: [BigNumber.from(debouncedMosaicId)],
-    });
-
   const { data: lifeCycle } = useCryptoPunksMosaicRegistryGetMonoLifeCycle({
     address: testnet.contracts.CryptoPunksMosaicRegistry.address as Address,
     args: [BigNumber.from(debouncedMosaicId)],
   });
 
-  /**
-   struct Mono {
-    uint256 mosaicId;
-    uint8 presetId;
-    MonoGovernanceOptions governanceOptions;
-  }
-
-   enum MonoLifeCycle {
-    // @dev pre-design, just minted
-    Raw,
-    // @dev post-design, valid
-    Active,
-    // @dev belonging to invalid/reconstituted Original
-    Dead
-  }
-
-   struct MonoGovernanceOptions {
-    uint256 proposedReservePrice;
-    MonoBidResponse bidResponse;
-    // @dev Bid ID
-    uint256 bidId;
-  }
-
-   enum MonoBidResponse {
-    None,
-    Yes,
-    No
-  }
-   */
   return (
     <div>
       <h2>Get Mono</h2>
