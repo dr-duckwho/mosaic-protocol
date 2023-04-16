@@ -226,13 +226,15 @@ contract CryptoPunksMosaicRegistry is
         returns (uint256 newBidId)
     {
         require(msg.value == price);
-
+        uint256 averageReservePriceProposal = getAverageReservePriceProposals(
+            originalId
+        );
         Original storage original = CryptoPunksMosaicStorage.get().originals[
             originalId
         ];
         require(
             price >= original.minReservePrice &&
-                price >= getAverageReservePriceProposals(originalId) &&
+                price >= averageReservePriceProposal &&
                 price <= original.maxReservePrice,
             "Bid out of range"
         );
@@ -432,9 +434,10 @@ contract CryptoPunksMosaicRegistry is
     // Reconstitution helpers
     //
 
+    // TODO: unit test this
     function getAverageReservePriceProposals(
         uint192 originalId
-    ) public view returns (uint256 average) {
+    ) public view virtual returns (uint256 average) {
         (
             uint256 sum,
             uint64 valids,

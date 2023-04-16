@@ -227,6 +227,102 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         assertEq(secondMono.governanceOptions.proposedReservePrice, 0);
     }
 
+    function test_bid() public {
+        // given
+        uint192 originalId = 530923;
+        uint64 monoId = 581019;
+        uint256 mosaicId = mosaicRegistry.toMosaicId(originalId, monoId);
+        uint256 price = 100 ether;
+
+        Original memory original = Original({
+            id: originalId,
+            punkId: 1,
+            totalMonoSupply: 100000000,
+            claimedMonoCount: 1000000,
+            purchasePrice: 100 ether,
+            minReservePrice: price / 2, // 50
+            maxReservePrice: price * 5, // 500
+            state: OriginalState.Active,
+            activeBidId: 0,
+            metadataBaseUri: ""
+        });
+        mosaicRegistry.setOriginal(originalId, original);
+        mosaicRegistry.mockAverageReservePriceProposals(true, 80 ether);
+
+        address bidder = _randomAddress();
+        uint256 bidPrice = 250 ether;
+
+        // when
+        vm.deal(address(bidder), bidPrice);
+        vm.prank(bidder);
+        uint256 bidId = mosaicRegistry.bid{value: bidPrice}(originalId, bidPrice);
+
+        // then
+        (Bid memory bid, uint256 deposit) = mosaicRegistry.getBid(bidId);
+        assertEq(bidId, mosaicRegistry.getOriginal(originalId).activeBidId);
+        assertEq(bidId, bid.id);
+    }
+
+    function test_bid_belowProposal() public {
+        // given
+        uint192 originalId = 530923;
+        uint64 monoId = 581019;
+        uint256 mosaicId = mosaicRegistry.toMosaicId(originalId, monoId);
+        uint256 price = 100 ether;
+
+        Original memory original = Original({
+            id: originalId,
+            punkId: 1,
+            totalMonoSupply: 100000000,
+            claimedMonoCount: 1000000,
+            purchasePrice: 100 ether,
+            minReservePrice: price / 2, // 50
+            maxReservePrice: price * 5, // 500
+            state: OriginalState.Active,
+            activeBidId: 0,
+            metadataBaseUri: ""
+        });
+        mosaicRegistry.setOriginal(originalId, original);
+        mosaicRegistry.mockAverageReservePriceProposals(true, 140 ether); // above minReservePrice
+
+        address bidder = _randomAddress();
+        uint256 bidPrice = 100 ether;
+
+        // when
+        vm.deal(address(bidder), bidPrice);
+        vm.prank(bidder);
+        vm.expectRevert("Bid out of range");
+        mosaicRegistry.bid{value: bidPrice}(originalId, bidPrice);
+    }
+
+    function test_bid_previousBid() public {
+        // given
+        uint192 originalId = 530923;
+        uint64 monoId = 581019;
+        uint256 mosaicId = mosaicRegistry.toMosaicId(originalId, monoId);
+        uint256 price = 100 ether;
+
+        Original memory original = Original({
+            id: originalId,
+            punkId: 1,
+            totalMonoSupply: 100000000,
+            claimedMonoCount: 1000000,
+            purchasePrice: 100 ether,
+            minReservePrice: price / 2, // 50
+            maxReservePrice: price * 5, // 500
+            state: OriginalState.Active,
+            activeBidId: 0,
+            metadataBaseUri: ""
+        });
+        mosaicRegistry.setOriginal(originalId, original);
+        mosaicRegistry.mockAverageReservePriceProposals(true, 80 ether);
+
+        address bidder = _randomAddress();
+        uint256 bidPrice = 250 ether;
+
+        // TODO: fill it out
+    }
+
     function test_refundBidDeposit() public {
         // given
         address bidder = _randomAddress();

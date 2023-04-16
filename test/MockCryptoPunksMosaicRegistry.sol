@@ -17,6 +17,9 @@ contract MockCryptoPunksMosaicRegistry is MockProvider, CryptoPunksMosaicRegistr
     uint64 private mockBidResponseYes;
     uint64 private mockBidResponseNo;
 
+    bool private mockingAverageReservePriceProposals;
+    uint256 mockAverageReservePriceProposal;
+
     constructor() public CryptoPunksMosaicRegistry() {}
 
     function setLatestOriginalId(uint192 value) public {
@@ -101,5 +104,17 @@ contract MockCryptoPunksMosaicRegistry is MockProvider, CryptoPunksMosaicRegistr
             return (mockBidResponseYes, mockBidResponseNo);
         }
         return super.sumBidResponses(originalId);
+    }
+
+    function mockAverageReservePriceProposals(bool enabled, uint256 value) public {
+        mockingAverageReservePriceProposals =  enabled;
+        mockAverageReservePriceProposal = value;
+    }
+
+    function getAverageReservePriceProposals(uint192 originalId) public override view returns (uint256) {
+        if (mockingAverageReservePriceProposals) {
+            return mockAverageReservePriceProposal;
+        }
+        return super.getAverageReservePriceProposals(originalId);
     }
 }
