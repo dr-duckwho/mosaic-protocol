@@ -681,8 +681,6 @@ describe("MosaicProtocol", function () {
       // TODO: verify BidState
     });
 
-    it("disallows Mono configuration if the original is sold out already", async () => {
-      // TODO: Fill it out
-    });
+    // TODO: Add more tests about Mono configuration/representation after its original is sold
   });
 });
