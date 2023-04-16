@@ -57,7 +57,7 @@ contract CryptoPunksMosaicRegistry is
     modifier onlyWhenActive() {
         require(
             address(museum) != address(0) && museum.isActive(),
-            "Museum must be active"
+            "Activate Museum"
         );
         require(CryptoPunksMosaicStorage.isSetAdminGovernanceOptions());
         _;
@@ -96,7 +96,7 @@ contract CryptoPunksMosaicRegistry is
         require(
             museum.cryptoPunksMarket().punkIndexToAddress(punkId) ==
                 address(this),
-            "The contract must own the punk"
+            "Must own the punk"
         );
         originalId = ++CryptoPunksMosaicStorage.get().latestOriginalId;
         ++CryptoPunksMosaicStorage.get().nextMonoIds[originalId];
@@ -127,7 +127,7 @@ contract CryptoPunksMosaicRegistry is
     {
         require(
             CryptoPunksMosaicStorage.get().nextMonoIds[originalId] > 0,
-            "Original must be initialized first"
+            "Must initialize Original"
         );
         uint64 monoId = CryptoPunksMosaicStorage.get().nextMonoIds[
             originalId
@@ -179,7 +179,7 @@ contract CryptoPunksMosaicRegistry is
         require(
             original.minReservePrice <= price &&
                 price <= original.maxReservePrice,
-            "Must be within the range"
+            "Out of range"
         );
         Mono storage mono = CryptoPunksMosaicStorage.get().monos[mosaicId];
         mono.governanceOptions.proposedReservePrice = price;
@@ -195,7 +195,7 @@ contract CryptoPunksMosaicRegistry is
         require(
             original.minReservePrice <= price &&
                 price <= original.maxReservePrice,
-            "Must be within the range"
+            "Out of range"
         );
         uint64 nextMonoId = CryptoPunksMosaicStorage.get().nextMonoIds[
             originalId
@@ -225,7 +225,7 @@ contract CryptoPunksMosaicRegistry is
         onlyActiveOriginal(originalId)
         returns (uint256 newBidId)
     {
-        require(msg.value == price, "Must send the exact value as proposed");
+        require(msg.value == price);
 
         Original storage original = CryptoPunksMosaicStorage.get().originals[
             originalId
@@ -234,17 +234,28 @@ contract CryptoPunksMosaicRegistry is
             price >= original.minReservePrice &&
                 price >= getAverageReservePriceProposals(originalId) &&
                 price <= original.maxReservePrice,
-            "Bid price must be within the reserve price range"
+            "Bid out of range"
         );
+        // TODO: test this
+        require(original.state == OriginalState.Active);
 
         uint256 oldBidId = original.activeBidId;
         if (oldBidId != 0) {
-            // A preceding bid exists, so its state must be updated first
-            BidState oldBidState = this.finalizeProposedBid(oldBidId);
+            // TODO: refactor and test this
+            BidState oldBidState = CryptoPunksMosaicStorage
+                .get()
+                .bids[oldBidId]
+                .state;
+            // new bids are allowed only when previous ones are rejected or refunded
             require(
-                oldBidState == BidState.Rejected,
-                "The previous bid must be rejected"
+                oldBidState != BidState.Accepted && oldBidState != BidState.Won
             );
+            if (oldBidState == BidState.Proposed) {
+                // A bid that has not been explicitly rejected yet exists,
+                // so it must be marked rejected first
+                BidState oldBidState = this.finalizeProposedBid(oldBidId);
+                require(oldBidState == BidState.Rejected);
+            }
         }
         uint256 newBidId = toBidId(originalId, msg.sender, block.timestamp);
         CryptoPunksMosaicStorage.get().bids[newBidId] = Bid({
@@ -278,27 +289,6 @@ contract CryptoPunksMosaicRegistry is
             );
     }
 
-    function refundBidDeposit(
-        uint256 bidId
-    ) external override nonReentrant onlyWhenActive {
-        Bid storage bid = CryptoPunksMosaicStorage.get().bids[bidId];
-        require(
-            bid.state == BidState.Rejected,
-            "Only rejected bids can be refunded"
-        );
-        require(
-            bid.bidder == msg.sender,
-            "Only the bidder can retrieve its own fund"
-        );
-
-        uint256 deposit = CryptoPunksMosaicStorage.get().bidDeposits[bidId];
-        (bool sent, ) = msg.sender.call{value: deposit}("");
-        require(sent, "Failed to refund");
-
-        bid.state = BidState.Refunded;
-        emit BidRefunded(bidId, bid.originalId);
-    }
-
     //
     // Reconstitution: Mosaic owners
     //
@@ -307,7 +297,7 @@ contract CryptoPunksMosaicRegistry is
         uint192 originalId,
         MonoBidResponse response
     ) external onlyWhenActive returns (uint256 bidId, uint64 changedMonoCount) {
-        require(hasOngoingBid(originalId), "No bid ongoing");
+        require(hasVotableActiveBid(originalId), "No bid ongoing");
 
         uint64 nextMonoId = CryptoPunksMosaicStorage.get().nextMonoIds[
             originalId
@@ -340,21 +330,20 @@ contract CryptoPunksMosaicRegistry is
         uint256 bidId
     ) external override onlyWhenActive returns (BidState) {
         Bid storage bid = CryptoPunksMosaicStorage.get().bids[bidId];
-        require(
-            bid.state == BidState.Proposed,
-            "Only bids in proposal can be updated"
-        );
+        require(bid.id == bidId);
+        if (bid.state != BidState.Proposed) {
+            revert IllegalBidStateTransition(bid.state, BidState.Proposed);
+        }
         require(
             bid.createdAt + bid.expiry < block.timestamp,
-            "Bid vote is ongoing"
+            "Bid vote ongoing"
         );
-        bid.state = isBidAcceptable(bid.originalId)
-            ? BidState.Accepted
-            : BidState.Rejected;
 
-        if (bid.state == BidState.Accepted) {
+        if (isBidAcceptable(bid.originalId)) {
+            bid.state = BidState.Accepted;
             emit BidAccepted(bidId, bid.originalId);
         } else {
+            bid.state = BidState.Rejected;
             emit BidRejected(bidId, bid.originalId);
         }
         return bid.state;
@@ -366,7 +355,10 @@ contract CryptoPunksMosaicRegistry is
         uint256 bidId
     ) external override onlyWhenActive {
         Bid storage bid = CryptoPunksMosaicStorage.get().bids[bidId];
-        require(bid.state == BidState.Accepted, "Bid must be accepted");
+        require(bid.id == bidId);
+        if (bid.state != BidState.Accepted) {
+            revert IllegalBidStateTransition(bid.state, BidState.Accepted);
+        }
 
         Original storage original = CryptoPunksMosaicStorage.get().originals[
             bid.originalId
@@ -379,6 +371,26 @@ contract CryptoPunksMosaicRegistry is
 
         bid.state = BidState.Won;
         emit BidWon(bidId, bid.originalId);
+    }
+
+    // @dev finalizes a rejected bid
+    function refundBidDeposit(
+        uint256 bidId
+    ) external override nonReentrant onlyWhenActive {
+        Bid storage bid = CryptoPunksMosaicStorage.get().bids[bidId];
+        require(bid.id == bidId);
+        if (bid.state != BidState.Rejected) {
+            revert IllegalBidStateTransition(bid.state, BidState.Rejected);
+        }
+        require(bid.bidder == msg.sender, "Bidder only");
+
+        uint256 deposit = CryptoPunksMosaicStorage.get().bidDeposits[bidId];
+        (bool sent, ) = msg.sender.call{value: deposit}("");
+        require(sent);
+
+        CryptoPunksMosaicStorage.get().bidDeposits[bidId] = 0;
+        bid.state = BidState.Refunded;
+        emit BidRefunded(bidId, bid.originalId);
     }
 
     //
@@ -407,11 +419,11 @@ contract CryptoPunksMosaicRegistry is
                 burnedMonoCount++;
             }
         }
-        require(burnedMonoCount > 0, "No Monos owned to refund");
+        require(burnedMonoCount > 0, "No Monos to refund");
 
         totalResaleFund = burnedMonoCount * getPerMonoResaleFund(originalId);
         (bool sent, ) = msg.sender.call{value: totalResaleFund}("");
-        require(sent, "Failed to refund");
+        require(sent);
 
         emit MonoRefunded(originalId, msg.sender);
     }
@@ -436,7 +448,7 @@ contract CryptoPunksMosaicRegistry is
                         .getAdminGovernanceOptions()
                         .reservePriceProposalTurnoutThresholdBps
                 ),
-            "Not enough reserve price proposals set"
+            "Not enough proposals"
         );
         return sum / valids;
     }
@@ -581,7 +593,18 @@ contract CryptoPunksMosaicRegistry is
         return MonoLifeCycle.Active;
     }
 
-    function hasOngoingBid(uint192 originalId) public view returns (bool) {
+    function getBid(
+        uint256 bidId
+    ) external view returns (Bid memory bid, uint256 deposit) {
+        return (
+            CryptoPunksMosaicStorage.get().bids[bidId],
+            CryptoPunksMosaicStorage.get().bidDeposits[bidId]
+        );
+    }
+
+    function hasVotableActiveBid(
+        uint192 originalId
+    ) public view returns (bool) {
         uint256 bidId = CryptoPunksMosaicStorage
             .get()
             .originals[originalId]
@@ -614,7 +637,7 @@ contract CryptoPunksMosaicRegistry is
         if (original.state == OriginalState.Sold) {
             return ReconstitutionStatus.Complete;
         }
-        if (hasOngoingBid(originalId)) {
+        if (hasVotableActiveBid(originalId)) {
             return ReconstitutionStatus.Active;
         }
         Bid storage bid = CryptoPunksMosaicStorage.get().bids[

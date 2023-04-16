@@ -64,7 +64,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
     function test_create_mustOwnPunk() public {
         // when & then
         vm.prank(mintAuthority);
-        vm.expectRevert("The contract must own the punk");
+        vm.expectRevert("Must own the punk");
         uint192 originalId = mosaicRegistry.create(1, 100, 100 ether, 70 ether, 500 ether);
     }
 
@@ -213,11 +213,11 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
 
         // when
         vm.prank(alice);
-        vm.expectRevert("Must be within the range");
+        vm.expectRevert("Out of range");
         mosaicRegistry.proposeReservePriceBatch(originalId, original.minReservePrice - 1);
 
         vm.prank(alice);
-        vm.expectRevert("Must be within the range");
+        vm.expectRevert("Out of range");
         mosaicRegistry.proposeReservePriceBatch(originalId, original.maxReservePrice + 1);
 
         // then unchanged
@@ -257,8 +257,9 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         // then
         assertEq(bidder.balance, bidFund);
         assertEq(address(mosaicRegistry).balance, registryFund - bidFund);
-        Bid memory bid = mosaicRegistry.getBid(bidId);
+        (Bid memory bid, uint256 deposit) = mosaicRegistry.getBid(bidId);
         assert(bid.state == BidState.Refunded);
+        assertEq(deposit, 0);
     }
 
     function test_refundBidDeposit_onlyBidder() public {
@@ -287,7 +288,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
 
         // when & then
         vm.prank(another);
-        vm.expectRevert("Only the bidder can retrieve its own fund");
+        vm.expectRevert("Bidder only");
         mosaicRegistry.refundBidDeposit(bidId);
     }
 
@@ -360,12 +361,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         }
     }
 
-    function test_finalizeProposedBid() public {
-        doTest_finalizeProposedBid(true);
-        doTest_finalizeProposedBid(false);
-    }
-
-    function doTest_finalizeProposedBid(bool isBidAcceptable) private {
+    function test_finalizeProposedBid(bool isBidAcceptable) public {
         // given
         address alice = _randomAddress();
         uint192 originalId = 530923;
@@ -374,13 +370,13 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         uint256 bidId = mosaicRegistry.toBidId(originalId, alice, block.timestamp);
 
         mosaicRegistry.setBid(bidId, Bid({
-            id: bidId,
-            originalId: originalId,
-            bidder: payable(alice),
-            createdAt: uint40(block.timestamp),
-            expiry: mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS(),
-            price: 100 ether,
-            state: BidState.Proposed
+        id: bidId,
+        originalId: originalId,
+        bidder: payable(alice),
+        createdAt: uint40(block.timestamp),
+        expiry: mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS(),
+        price: 100 ether,
+        state: BidState.Proposed
         }));
 
         // when
@@ -446,7 +442,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         mosaicRegistry.finalizeAcceptedBid(bidId);
 
         // then
-        Bid memory bid = mosaicRegistry.getBid(bidId);
+        (Bid memory bid, ) = mosaicRegistry.getBid(bidId);
         assert(bid.state == BidState.Won);
         Original memory changedOriginal = mosaicRegistry.getOriginal(originalId);
         assert(changedOriginal.state == OriginalState.Sold);
@@ -573,7 +569,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         }
 
         // then
-        vm.expectRevert("Not enough reserve price proposals set");
+        vm.expectRevert("Not enough proposals");
         mosaicRegistry.getAverageReservePriceProposals(originalId);
     }
 
@@ -753,12 +749,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         assertEq(no, monosWithNoCount / 2);
     }
 
-    function test_isBidAcceptable() public {
-        doTest_isBidAcceptable(true);
-        doTest_isBidAcceptable(false);
-    }
-
-    function doTest_isBidAcceptable(bool isAcceptable) private {
+    function test_isBidAcceptable(bool isAcceptable) public {
         // given
         uint192 originalId = 830404;
         uint64 yes = isAcceptable ? 31 : 29;

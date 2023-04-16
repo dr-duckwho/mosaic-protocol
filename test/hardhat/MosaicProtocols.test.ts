@@ -368,7 +368,7 @@ describe("MosaicProtocol", function () {
           mosaicRegistry
             .connect(bob)
             .proposeReservePriceBatch(originalId, unacceptableProposal)
-        ).to.revertedWith("Must be within the range");
+        ).to.revertedWith("Out of range");
       }
     });
 
@@ -383,7 +383,7 @@ describe("MosaicProtocol", function () {
         mosaicRegistry
           .connect(bidder)
           .bid(originalId, maxReservePrice, { value: maxReservePrice })
-      ).to.revertedWith("Not enough reserve price proposals set");
+      ).to.revertedWith("Not enough proposals");
 
       // David has only 16% shares, not enough to meet the min turnout condition
       const davidReservePrice = maxReservePrice.sub(ONE_WEI);
@@ -395,7 +395,7 @@ describe("MosaicProtocol", function () {
         mosaicRegistry
           .connect(bidder)
           .bid(originalId, maxReservePrice, { value: maxReservePrice })
-      ).to.revertedWith("Not enough reserve price proposals set");
+      ).to.revertedWith("Not enough proposals");
     });
 
     // Bid
@@ -421,36 +421,36 @@ describe("MosaicProtocol", function () {
       expect(averageReservePriceProposal).to.equal(bobReservePrice);
 
       // Bid
-      const [, , , , bidder, nextBidder, anotherBidder] =
+      const [, , , , oldBidder, bidder, anotherBidder] =
         await ethers.getSigners();
       // fail: below the avg proposal
       const subParBidPrice = averageReservePriceProposal.sub(ONE_WEI);
       await expect(
         mosaicRegistry
-          .connect(bidder)
+          .connect(oldBidder)
           .bid(originalId, subParBidPrice, { value: subParBidPrice })
-      ).to.revertedWith("Bid price must be within the reserve price range");
+      ).to.revertedWith("Bid out of range");
 
       // success
       const bidPrice = averageReservePriceProposal;
       await expect(
         mosaicRegistry
-          .connect(bidder)
+          .connect(oldBidder)
           .bid(originalId, bidPrice, { value: bidPrice })
       )
         .to.changeEtherBalances(
-          [mosaicRegistry.address, await bidder.getAddress()],
+          [mosaicRegistry.address, await oldBidder.getAddress()],
           [bidPrice, bidPrice.mul(-1)]
         )
         .to.emit(mosaicRegistry, "BidProposed");
-      const bidId: BigNumber = (
+      const oldBidId: BigNumber = (
         await mosaicRegistry.getOriginal(originalId)
       )[9]; // activeBidId
 
       // the bid cannot be finalized unless expired
       await expect(
-        mosaicRegistry.connect(bidder).finalizeProposedBid(bidId)
-      ).to.revertedWith("Bid vote is ongoing");
+        mosaicRegistry.connect(oldBidder).finalizeProposedBid(oldBidId)
+      ).to.revertedWith("Bid vote ongoing");
 
       /**
        * allows only one active bid per original
@@ -459,42 +459,49 @@ describe("MosaicProtocol", function () {
       // the previous bid has not expired yet
       await expect(
         mosaicRegistry
-          .connect(nextBidder)
+          .connect(bidder)
           .bid(originalId, bidPrice, { value: bidPrice })
-      ).to.revertedWith("Bid vote is ongoing");
+      ).to.revertedWith("Bid vote ongoing");
 
+      // when the previous bid is expired and a new bid is allowed
       // TODO: Make it available as a global constant
       const expiry = 604800;
       await time.increase(expiry);
 
       await expect(
         mosaicRegistry
-          .connect(nextBidder)
+          .connect(bidder)
           .bid(originalId, bidPrice, { value: bidPrice })
       )
         .to.changeEtherBalances(
-          [mosaicRegistry.address, await nextBidder.getAddress()],
+          [mosaicRegistry.address, await bidder.getAddress()],
           [bidPrice, bidPrice.mul(-1)]
         )
         .to.emit(mosaicRegistry, "BidProposed");
 
-      const nextBidId: BigNumber = (
+      const bidId: BigNumber = (
         await mosaicRegistry.getOriginal(originalId)
       )[9]; // activeBidId
+      const actualBid = (await mosaicRegistry.getBid(bidId))[0];
+      expect(actualBid[0]).to.equal(bidId);
+      expect(bidId).to.not.equal(oldBidId);
+      expect(actualBid[1]).to.equal(await bidder.getAddress());
+      expect(actualBid[6]).to.equal(1); // state == proposed
+      expect(await mosaicRegistry.hasVotableActiveBid(originalId)).to.equal(true);
 
       // the previous bidder can get refunded
-      await expect(mosaicRegistry.connect(bidder).refundBidDeposit(bidId))
+      await expect(mosaicRegistry.connect(oldBidder).refundBidDeposit(oldBidId))
         .to.changeEtherBalances(
-          [mosaicRegistry.address, await bidder.getAddress()],
+          [mosaicRegistry.address, await oldBidder.getAddress()],
           [bidPrice.mul(-1), bidPrice]
         )
         .to.emit(mosaicRegistry, "BidRefunded");
 
       return {
-        bidder: nextBidder,
-        bidId: nextBidId,
-        anotherBidder,
+        bidder,
+        bidId,
         bidPrice,
+        anotherBidder,
       };
     };
 
@@ -540,7 +547,7 @@ describe("MosaicProtocol", function () {
      * TODO: #5 Settlement
      */
     it("transfers the original to a winning bidder and burns all the holders' monos", async () => {
-      const { bidId, bidder, anotherBidder, bidPrice } = await createBid();
+      const { bidId, bidder, bidPrice, anotherBidder } = await createBid();
       const { cryptoPunks, mosaicRegistry, originalId, bob, carol, david } =
         context;
 
@@ -567,18 +574,23 @@ describe("MosaicProtocol", function () {
         mosaicRegistry
           .connect(anotherBidder)
           .bid(originalId, bidPrice, { value: bidPrice })
-      ).to.revertedWith("The previous bid must be rejected");
+      ).to.revertedWithoutReason(); // FIXME: after declaring custom errors
 
       // when the bidder finalizes the bid in two steps
-      expect(
-        await mosaicRegistry.connect(bidder).finalizeProposedBid(bidId)
+      await expect(
+        mosaicRegistry.connect(bidder).finalizeProposedBid(bidId)
       ).to.emit(mosaicRegistry, "BidAccepted");
 
-      expect(await mosaicRegistry.connect(bidder).finalizeAcceptedBid(bidId))
+      await expect(mosaicRegistry.connect(bidder).finalizeAcceptedBid(bidId))
         .to.emit(mosaicRegistry, "BidWon")
         .to.emit(mosaicRegistry, "OriginalSold")
         .to.emit(cryptoPunks, "Transfer")
         .to.emit(cryptoPunks, "PunkTransfer");
+
+      // sanity
+      await expect(
+        mosaicRegistry.connect(bidder).refundBidDeposit(bidId)
+      ).to.be.revertedWithCustomError(mosaicRegistry, "IllegalBidStateTransition");
 
       // then for each holder
 
@@ -599,16 +611,74 @@ describe("MosaicProtocol", function () {
           [mosaicRegistry.address, await holder.getAddress()],
           [expectedRefund.mul(-1), expectedRefund]
         );
-        
+
         // with no double-spending
         await expect(
           mosaicRegistry.connect(holder).refundOnSold(originalId)
-        ).to.revertedWith("No Monos owned to refund");
+        ).to.revertedWith("No Monos to refund");
+
+        // TODO: verify BidState
       }
     });
 
     it("refunds the deposit to a bidder whose bid is rejected or expired", async () => {
-      // TODO: Fill it out
+      const { bidId, bidder, bidPrice, anotherBidder } = await createBid();
+      const { mosaicRegistry, originalId, bob, carol, david } = context;
+
+      // given that the current bid is rejected by the majority
+      const voters = new Map([
+        [bob, 2], // No 33%
+        [carol, 2], // No 51%
+        [david, 1], // Yes 16%
+      ]);
+
+      for (let [voter, vote] of voters) {
+        await mosaicRegistry.connect(voter).respondToBidBatch(originalId, vote);
+      }
+
+      expect(await mosaicRegistry.isBidAcceptable(originalId)).to.equal(false);
+
+      // FIXME: test is broken
+      // when
+      await expect(
+        mosaicRegistry.connect(bidder).finalizeProposedBid(bidId)
+      ).to.revertedWith("Bid vote ongoing");
+
+      await time.increase(604800);
+      expect(await mosaicRegistry.isBidAcceptable(originalId)).to.equal(false);
+
+      // wrong finalization attempts must be rejected
+      await expect(
+        mosaicRegistry.connect(bidder).finalizeAcceptedBid(bidId)
+      ).to.be.revertedWithCustomError(mosaicRegistry, "IllegalBidStateTransition");
+
+      // when the bidder finalizes the bid in two steps
+      await expect(
+        mosaicRegistry.connect(bidder).finalizeProposedBid(bidId)
+      ).to.emit(mosaicRegistry, "BidRejected");
+
+      await expect(mosaicRegistry.connect(bidder).refundBidDeposit(bidId))
+        .to.emit(mosaicRegistry, "BidRefunded")
+        .to.changeEtherBalances(
+          [mosaicRegistry.address, await bidder.getAddress()],
+          [bidPrice.mul(-1), bidPrice]
+        );
+
+      // TODO: verify BidState
+
+      // another new bidder can bid in the meantime
+      await expect(
+        mosaicRegistry
+          .connect(anotherBidder)
+          .bid(originalId, bidPrice, { value: bidPrice })
+      )
+        .to.changeEtherBalances(
+          [mosaicRegistry.address, await anotherBidder.getAddress()],
+          [bidPrice, bidPrice.mul(-1)]
+        )
+        .to.emit(mosaicRegistry, "BidProposed");
+
+      // TODO: verify BidState
     });
 
     it("disallows Mono configuration if the original is sold out already", async () => {

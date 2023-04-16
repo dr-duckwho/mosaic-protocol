@@ -55,10 +55,6 @@ contract MockCryptoPunksMosaicRegistry is MockProvider, CryptoPunksMosaicRegistr
         return CryptoPunksMosaicStorage.get().monos[mosaicId];
     }
 
-    function getBid(uint256 bidId) public returns (Bid memory) {
-        return CryptoPunksMosaicStorage.get().bids[bidId];
-    }
-
     function incrementNextMonoId(uint192 originalId) public {
         setNextMonoId(originalId, getNextMonoId(originalId) + 1);
     }

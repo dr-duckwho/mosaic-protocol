@@ -85,6 +85,7 @@ interface UsingCryptoPunksMosaicRegistryStructs {
     }
 
     enum BidState {
+        None,
         // Initial state, awaiting the result until the bidder explicitly reconstitutes the original or admits failure
         Proposed,
         // Resulting states upon vote results
@@ -135,4 +136,6 @@ interface UsingCryptoPunksMosaicRegistryStructs {
         // All remaining funds are reclaimed
         Complete
     }
+
+    error IllegalBidStateTransition(BidState given, BidState required);
 }

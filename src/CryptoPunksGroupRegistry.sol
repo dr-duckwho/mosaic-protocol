@@ -52,7 +52,7 @@ contract CryptoPunksGroupRegistry is
     modifier onlyWhenActive() {
         require(
             address(museum) != address(0) && museum.isActive(),
-            "Museum must be active"
+            "Activate Museum"
         );
         _;
     }
@@ -217,7 +217,7 @@ contract CryptoPunksGroupRegistry is
         uint256 owed = getRefundPerTicket(group) * ticketsHeld;
         // TODO: Define a library for ETH sending with gas considerations
         (bool sent, ) = msg.sender.call{value: owed}("");
-        require(sent, "Failed to refund");
+        require(sent);
 
         // Mint
         uint256[] memory mosaicIds = new uint256[](ticketsHeld);
@@ -250,7 +250,7 @@ contract CryptoPunksGroupRegistry is
 
         uint256 owed = getRefundPerTicket(group) * ticketsHeld;
         (bool sent, ) = contributor.call{value: owed}("");
-        require(sent, "Failed to refund");
+        require(sent);
     }
 
     function getRefundPerTicket(
