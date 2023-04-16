@@ -469,13 +469,12 @@ contract CryptoPunksMosaicRegistry is
         return (priceSum, validProposalCount, invalidProposalCount);
     }
 
-    // TODO: Consider taking bidId instead of originalId
+    /**
+     * @dev returns the sum of responses to the original's latest active bid
+     */
     function sumBidResponses(
         uint192 originalId
     ) public view virtual returns (uint64 yes, uint64 no) {
-        if (!hasOngoingBid(originalId)) {
-            return (0, 0);
-        }
         uint64 nextMonoId = CryptoPunksMosaicStorage.get().nextMonoIds[
             originalId
         ];
@@ -499,7 +498,7 @@ contract CryptoPunksMosaicRegistry is
         return (yes, no);
     }
 
-    // TODO: Consider taking bidId instead of originalId
+    // TODO: Consider taking bidId?
     function isBidAcceptable(
         uint192 originalId
     ) public view virtual returns (bool) {
