@@ -238,12 +238,10 @@ contract CryptoPunksMosaicRegistry is
                 price <= original.maxReservePrice,
             "Bid out of range"
         );
-        // TODO: test this
         require(original.state == OriginalState.Active);
 
         uint256 oldBidId = original.activeBidId;
         if (oldBidId != 0) {
-            // TODO: refactor and test this
             BidState oldBidState = CryptoPunksMosaicStorage
                 .get()
                 .bids[oldBidId]

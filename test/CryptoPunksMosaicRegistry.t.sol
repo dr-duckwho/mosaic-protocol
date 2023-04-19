@@ -263,6 +263,38 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         assertEq(bidId, bid.id);
     }
 
+    function test_bid_originalNotActive() public {
+        // given
+        uint192 originalId = 530923;
+        uint64 monoId = 581019;
+        uint256 mosaicId = mosaicRegistry.toMosaicId(originalId, monoId);
+        uint256 price = 100 ether;
+
+        Original memory original = Original({
+        id: originalId,
+        punkId: 1,
+        totalMonoSupply: 100000000,
+        claimedMonoCount: 1000000,
+        purchasePrice: 100 ether,
+        minReservePrice: price / 2,
+        maxReservePrice: price * 5,
+        state: OriginalState.Sold, // sold
+        activeBidId: 0,
+        metadataBaseUri: ""
+        });
+        mosaicRegistry.setOriginal(originalId, original);
+        mosaicRegistry.mockAverageReservePriceProposals(true, 80 ether);
+
+        address bidder = _randomAddress();
+        uint256 bidPrice = 250 ether;
+
+        // when & then
+        vm.deal(address(bidder), bidPrice);
+        vm.prank(bidder);
+        vm.expectRevert();
+        mosaicRegistry.bid{value: bidPrice}(originalId, bidPrice);
+    }
+
     function test_bid_belowProposal() public {
         // given
         uint192 originalId = 530923;
@@ -301,6 +333,7 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         uint64 monoId = 581019;
         uint256 mosaicId = mosaicRegistry.toMosaicId(originalId, monoId);
         uint256 price = 100 ether;
+        uint256 oldBidId = 666;
 
         Original memory original = Original({
             id: originalId,
@@ -311,16 +344,89 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
             minReservePrice: price / 2, // 50
             maxReservePrice: price * 5, // 500
             state: OriginalState.Active,
-            activeBidId: 0,
+            activeBidId: oldBidId,
             metadataBaseUri: ""
         });
         mosaicRegistry.setOriginal(originalId, original);
         mosaicRegistry.mockAverageReservePriceProposals(true, 80 ether);
 
+        // given a previous fund not explicitly rejected yet
+        mosaicRegistry.setBid(oldBidId, Bid({
+            id: oldBidId,
+            originalId: originalId,
+            bidder: payable(_randomAddress()),
+            createdAt: uint40(block.timestamp),
+            expiry: mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS(),
+            price: 123 ether,
+            state: BidState.Proposed
+        }));
+        vm.warp(block.timestamp + mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS() + 1);
+
+        // when
         address bidder = _randomAddress();
         uint256 bidPrice = 250 ether;
 
-        // TODO: fill it out
+        vm.deal(address(bidder), bidPrice);
+        vm.prank(bidder);
+        uint256 bidId = mosaicRegistry.bid{value: bidPrice}(originalId, bidPrice);
+
+        // then
+        (Bid memory bid, uint256 deposit) = mosaicRegistry.getBid(bidId);
+        assertEq(mosaicRegistry.getOriginal(originalId).activeBidId, bidId);
+        assertEq(bid.id, bidId);
+    }
+
+    function test_bid_previousBid_wonOrAcceptedAlready() public {
+        // TODO: fix it after enum fuzzing works correctly on Forge tests
+        doTest_bid_previousBid_already(BidState.Accepted);
+        doTest_bid_previousBid_already(BidState.Won);
+    }
+
+    function doTest_bid_previousBid_already(BidState previousBidState) private {
+        // given
+        uint192 originalId = 530923;
+        uint64 monoId = 581019;
+        uint256 mosaicId = mosaicRegistry.toMosaicId(originalId, monoId);
+        uint256 price = 100 ether;
+        uint256 oldBidId = 666;
+
+        Original memory original = Original({
+            id: originalId,
+            punkId: 1,
+            totalMonoSupply: 100000000,
+            claimedMonoCount: 1000000,
+            purchasePrice: 100 ether,
+            minReservePrice: price / 2, // 50
+            maxReservePrice: price * 5, // 500
+            state: OriginalState.Active,
+            activeBidId: oldBidId,
+            metadataBaseUri: ""
+        });
+        mosaicRegistry.setOriginal(originalId, original);
+        mosaicRegistry.mockAverageReservePriceProposals(true, 80 ether);
+
+        // given that a previous fund has been accepted/won already
+        // NOTE: if it has won, then the original must be sold already,
+        // so the new bid will be rejected by the earlier requirement check
+        mosaicRegistry.setBid(oldBidId, Bid({
+            id: oldBidId,
+            originalId: originalId,
+            bidder: payable(_randomAddress()),
+            createdAt: uint40(block.timestamp),
+            expiry: mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS(),
+            price: 123 ether,
+            state: previousBidState
+        }));
+        vm.warp(block.timestamp + mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS() + 1);
+
+        // when
+        address bidder = _randomAddress();
+        uint256 bidPrice = 250 ether;
+
+        vm.deal(address(bidder), bidPrice);
+        vm.prank(bidder);
+        vm.expectRevert();
+        uint256 bidId = mosaicRegistry.bid{value: bidPrice}(originalId, bidPrice);
     }
 
     function test_refundBidDeposit() public {
