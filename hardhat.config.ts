@@ -22,7 +22,7 @@ const config: HardhatUserConfig = {
     settings: {
       optimizer: {
         enabled: true,
-        runs: 10, // FIXME: Clean up the code
+        runs: 50, // FIXME: Clean up the code
       },
     },
   },
