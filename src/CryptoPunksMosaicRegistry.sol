@@ -176,11 +176,16 @@ contract CryptoPunksMosaicRegistry is
         Original storage original = CryptoPunksMosaicStorage.get().originals[
             originalId
         ];
-        require(
-            original.minReservePrice <= price &&
-                price <= original.maxReservePrice,
-            "Out of range"
-        );
+        if (
+            !(original.minReservePrice <= price &&
+                price <= original.maxReservePrice)
+        ) {
+            revert OutOfExpectedRange(
+                original.minReservePrice,
+                original.maxReservePrice
+            );
+        }
+
         Mono storage mono = CryptoPunksMosaicStorage.get().monos[mosaicId];
         mono.governanceOptions.proposedReservePrice = price;
     }
@@ -192,11 +197,15 @@ contract CryptoPunksMosaicRegistry is
         Original storage original = CryptoPunksMosaicStorage.get().originals[
             originalId
         ];
-        require(
-            original.minReservePrice <= price &&
-                price <= original.maxReservePrice,
-            "Out of range"
-        );
+        if (
+            !(original.minReservePrice <= price &&
+                price <= original.maxReservePrice)
+        ) {
+            revert OutOfExpectedRange(
+                original.minReservePrice,
+                original.maxReservePrice
+            );
+        }
         uint64 nextMonoId = CryptoPunksMosaicStorage.get().nextMonoIds[
             originalId
         ];
@@ -232,12 +241,16 @@ contract CryptoPunksMosaicRegistry is
         Original storage original = CryptoPunksMosaicStorage.get().originals[
             originalId
         ];
-        require(
-            price >= original.minReservePrice &&
+        if (
+            !(price >= original.minReservePrice &&
                 price >= averageReservePriceProposal &&
-                price <= original.maxReservePrice,
-            "Bid out of range"
-        );
+                price <= original.maxReservePrice)
+        ) {
+            revert OutOfExpectedRange(
+                averageReservePriceProposal,
+                original.maxReservePrice
+            );
+        }
         require(original.state == OriginalState.Active);
 
         uint256 oldBidId = original.activeBidId;

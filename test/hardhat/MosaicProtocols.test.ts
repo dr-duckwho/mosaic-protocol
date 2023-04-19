@@ -311,12 +311,12 @@ describe("MosaicProtocol", function () {
       // Nonparticipants don't
       await expect(
         groupRegistry.connect(carol).refundExpired(groupId)
-      ).to.revertedWith("Only ticket holders can get refunds");
+      ).to.be.revertedWith("Only ticket holders can get refunds");
 
       // No double refund for Bob
       await expect(
         groupRegistry.connect(bob).refundExpired(groupId)
-      ).to.revertedWith("Only ticket holders can get refunds");
+      ).to.be.revertedWith("Only ticket holders can get refunds");
     });
   });
 
@@ -368,7 +368,7 @@ describe("MosaicProtocol", function () {
           mosaicRegistry
             .connect(bob)
             .proposeReservePriceBatch(originalId, unacceptableProposal)
-        ).to.revertedWith("Out of range");
+        ).to.be.revertedWithCustomError(mosaicRegistry, "OutOfExpectedRange");
       }
     });
 
@@ -383,7 +383,7 @@ describe("MosaicProtocol", function () {
         mosaicRegistry
           .connect(bidder)
           .bid(originalId, maxReservePrice, { value: maxReservePrice })
-      ).to.revertedWithCustomError(mosaicRegistry, "NotEnoughProposals");
+      ).to.be.revertedWithCustomError(mosaicRegistry, "NotEnoughProposals");
 
       // David has only 16% shares, not enough to meet the min turnout condition
       const davidReservePrice = maxReservePrice.sub(ONE_WEI);
@@ -395,7 +395,7 @@ describe("MosaicProtocol", function () {
         mosaicRegistry
           .connect(bidder)
           .bid(originalId, maxReservePrice, { value: maxReservePrice })
-      ).to.revertedWithCustomError(mosaicRegistry, "NotEnoughProposals");
+      ).to.be.revertedWithCustomError(mosaicRegistry, "NotEnoughProposals");
     });
 
     // Bid
@@ -429,7 +429,7 @@ describe("MosaicProtocol", function () {
         mosaicRegistry
           .connect(oldBidder)
           .bid(originalId, subParBidPrice, { value: subParBidPrice })
-      ).to.revertedWith("Bid out of range");
+      ).to.be.revertedWithCustomError(mosaicRegistry, "OutOfExpectedRange");
 
       // success
       const bidPrice = averageReservePriceProposal;
@@ -450,7 +450,7 @@ describe("MosaicProtocol", function () {
       // the bid cannot be finalized unless expired
       await expect(
         mosaicRegistry.connect(oldBidder).finalizeProposedBid(oldBidId)
-      ).to.revertedWith("Bid vote ongoing");
+      ).to.be.revertedWith("Bid vote ongoing");
 
       /**
        * allows only one active bid per original
@@ -461,7 +461,7 @@ describe("MosaicProtocol", function () {
         mosaicRegistry
           .connect(bidder)
           .bid(originalId, bidPrice, { value: bidPrice })
-      ).to.revertedWith("Bid vote ongoing");
+      ).to.be.revertedWith("Bid vote ongoing");
 
       // when the previous bid is expired and a new bid is allowed
       // TODO: Make it available as a global constant
@@ -487,7 +487,9 @@ describe("MosaicProtocol", function () {
       expect(bidId).to.not.equal(oldBidId);
       expect(actualBid[1]).to.equal(await bidder.getAddress());
       expect(actualBid[6]).to.equal(1); // state == proposed
-      expect(await mosaicRegistry.hasVotableActiveBid(originalId)).to.equal(true);
+      expect(await mosaicRegistry.hasVotableActiveBid(originalId)).to.equal(
+        true
+      );
 
       // the previous bidder can get refunded
       await expect(mosaicRegistry.connect(oldBidder).refundBidDeposit(oldBidId))
@@ -574,7 +576,7 @@ describe("MosaicProtocol", function () {
         mosaicRegistry
           .connect(anotherBidder)
           .bid(originalId, bidPrice, { value: bidPrice })
-      ).to.revertedWithoutReason(); // FIXME: after declaring custom errors
+      ).to.be.revertedWithoutReason(); // FIXME: after declaring custom errors
 
       // when the bidder finalizes the bid in two steps
       await expect(
@@ -590,7 +592,10 @@ describe("MosaicProtocol", function () {
       // sanity
       await expect(
         mosaicRegistry.connect(bidder).refundBidDeposit(bidId)
-      ).to.be.revertedWithCustomError(mosaicRegistry, "IllegalBidStateTransition");
+      ).to.be.revertedWithCustomError(
+        mosaicRegistry,
+        "IllegalBidStateTransition"
+      );
 
       // then for each holder
 
@@ -615,7 +620,7 @@ describe("MosaicProtocol", function () {
         // with no double-spending
         await expect(
           mosaicRegistry.connect(holder).refundOnSold(originalId)
-        ).to.revertedWith("No Monos to refund");
+        ).to.be.revertedWith("No Monos to refund");
 
         // TODO: verify BidState
       }
@@ -642,7 +647,7 @@ describe("MosaicProtocol", function () {
       // when
       await expect(
         mosaicRegistry.connect(bidder).finalizeProposedBid(bidId)
-      ).to.revertedWith("Bid vote ongoing");
+      ).to.be.revertedWith("Bid vote ongoing");
 
       await time.increase(604800);
       expect(await mosaicRegistry.isBidAcceptable(originalId)).to.equal(false);
@@ -650,7 +655,10 @@ describe("MosaicProtocol", function () {
       // wrong finalization attempts must be rejected
       await expect(
         mosaicRegistry.connect(bidder).finalizeAcceptedBid(bidId)
-      ).to.be.revertedWithCustomError(mosaicRegistry, "IllegalBidStateTransition");
+      ).to.be.revertedWithCustomError(
+        mosaicRegistry,
+        "IllegalBidStateTransition"
+      );
 
       // when the bidder finalizes the bid in two steps
       await expect(

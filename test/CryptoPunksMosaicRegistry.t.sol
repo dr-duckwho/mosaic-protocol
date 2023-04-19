@@ -256,14 +256,30 @@ contract CryptoPunksMosaicRegistryTest is
 
         // when
         vm.prank(alice);
-        vm.expectRevert("Out of range");
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                UsingCryptoPunksMosaicRegistryStructs
+                    .OutOfExpectedRange
+                    .selector,
+                50 ether,
+                500 ether
+            )
+        );
         mosaicRegistry.proposeReservePriceBatch(
             originalId,
             original.minReservePrice - 1
         );
 
         vm.prank(alice);
-        vm.expectRevert("Out of range");
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                UsingCryptoPunksMosaicRegistryStructs
+                    .OutOfExpectedRange
+                    .selector,
+                50 ether,
+                500 ether
+            )
+        );
         mosaicRegistry.proposeReservePriceBatch(
             originalId,
             original.maxReservePrice + 1
@@ -375,7 +391,15 @@ contract CryptoPunksMosaicRegistryTest is
         // when
         vm.deal(address(bidder), bidPrice);
         vm.prank(bidder);
-        vm.expectRevert("Bid out of range");
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                UsingCryptoPunksMosaicRegistryStructs
+                    .OutOfExpectedRange
+                    .selector,
+                140 ether,
+                500 ether
+            )
+        );
         mosaicRegistry.bid{value: bidPrice}(originalId, bidPrice);
     }
 
