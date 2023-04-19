@@ -15,7 +15,11 @@ import {ICryptoPunksMosaicRegistry} from "../src/ICryptoPunksMosaicRegistry.sol"
 import {MockCryptoPunksMarketProvider} from "./MockCryptoPunksMarketProvider.sol";
 import {ICryptoPunksMarket} from "../src/external/ICryptoPunksMarket.sol";
 
-contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupRegistryStructs {
+contract CryptoPunksGroupRegistryTest is
+    Test,
+    TestUtils,
+    UsingCryptoPunksGroupRegistryStructs
+{
     MockCryptoPunksMarketProvider public mockCryptoPunksMarket;
     MockProvider public mockMosaicRegistry;
     CryptoPunksGroupRegistry public groupRegistry;
@@ -33,7 +37,9 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
         targetPunkId = 1;
 
         CryptoPunksGroupRegistry impl = new CryptoPunksGroupRegistry();
-        groupRegistry = CryptoPunksGroupRegistry(payable(new ERC1967Proxy(address(impl), "")));
+        groupRegistry = CryptoPunksGroupRegistry(
+            payable(new ERC1967Proxy(address(impl), ""))
+        );
         groupRegistry.initialize(address(museum));
 
         museum.setMosaicRegistry(address(mockMosaicRegistry));
@@ -85,7 +91,10 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
 
         mockMosaicRegistry.givenSelectorReturnResponse(
             ICryptoPunksMosaicRegistry.mint.selector,
-            MockProvider.ReturnData({success : true, data : abi.encode(expectedMosaicId)}),
+            MockProvider.ReturnData({
+                success: true,
+                data: abi.encode(expectedMosaicId)
+            }),
             true
         );
 
@@ -125,34 +134,46 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
 
         // contribute
         vm.prank(alice);
-        groupRegistry.contribute{value : 40 ether}(groupId, 40);
+        groupRegistry.contribute{value: 40 ether}(groupId, 40);
         assertEq(groupRegistry.getGroupTotalContribution(groupId), 40 ether);
         vm.prank(bob);
-        groupRegistry.contribute{value : 30 ether}(groupId, 30);
+        groupRegistry.contribute{value: 30 ether}(groupId, 30);
         assertEq(groupRegistry.getGroupTotalContribution(groupId), 70 ether);
         vm.prank(carol);
-        groupRegistry.contribute{value : 30 ether}(groupId, 30);
+        groupRegistry.contribute{value: 30 ether}(groupId, 30);
         assertEq(groupRegistry.getGroupTotalContribution(groupId), 100 ether);
 
         // given the market
         mockCryptoPunksMarket.givenQueryReturn(
-            abi.encodePacked(ICryptoPunksMarket.buyPunk.selector), abi.encodePacked(uint256(1))
+            abi.encodePacked(ICryptoPunksMarket.buyPunk.selector),
+            abi.encodePacked(uint256(1))
         );
         mockCryptoPunksMarket.givenQueryReturn(
-            abi.encodePacked(ICryptoPunksMarket.transferPunk.selector), abi.encodePacked(true)
+            abi.encodePacked(ICryptoPunksMarket.transferPunk.selector),
+            abi.encodePacked(true)
         );
         mockCryptoPunksMarket.setPunksOfferedForSale(
-            1, MockCryptoPunksMarketProvider.Offer(true, 1, address(0x1), purchasePrice, address(0x0))
+            1,
+            MockCryptoPunksMarketProvider.Offer(
+                true,
+                1,
+                address(0x1),
+                purchasePrice,
+                address(0x0)
+            )
         );
         mockCryptoPunksMarket.setPunkIndexToAddress(1, address(groupRegistry));
         mockMosaicRegistry.givenSelectorReturnResponse(
             ICryptoPunksMosaicRegistry.create.selector,
-            MockProvider.ReturnData({success : true, data : abi.encode(uint192(1))}),
+            MockProvider.ReturnData({
+                success: true,
+                data: abi.encode(uint192(1))
+            }),
             true
         );
         mockMosaicRegistry.givenSelectorReturnResponse(
             ICryptoPunksMosaicRegistry.mint.selector,
-            MockProvider.ReturnData({success : true, data : abi.encode(1)}),
+            MockProvider.ReturnData({success: true, data: abi.encode(1)}),
             true
         );
 
@@ -204,34 +225,46 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
 
         // contribute
         vm.prank(alice);
-        groupRegistry.contribute{value : 40 ether}(groupId, 40);
+        groupRegistry.contribute{value: 40 ether}(groupId, 40);
         assertEq(groupRegistry.getGroupTotalContribution(groupId), 40 ether);
         vm.prank(bob);
-        groupRegistry.contribute{value : 30 ether}(groupId, 30);
+        groupRegistry.contribute{value: 30 ether}(groupId, 30);
         assertEq(groupRegistry.getGroupTotalContribution(groupId), 70 ether);
         vm.prank(carol);
-        groupRegistry.contribute{value : 30 ether}(groupId, 30);
+        groupRegistry.contribute{value: 30 ether}(groupId, 30);
         assertEq(groupRegistry.getGroupTotalContribution(groupId), 100 ether);
 
         // given the market
         mockCryptoPunksMarket.givenQueryReturn(
-            abi.encodePacked(ICryptoPunksMarket.buyPunk.selector), abi.encodePacked(uint256(1))
+            abi.encodePacked(ICryptoPunksMarket.buyPunk.selector),
+            abi.encodePacked(uint256(1))
         );
         mockCryptoPunksMarket.givenQueryReturn(
-            abi.encodePacked(ICryptoPunksMarket.transferPunk.selector), abi.encodePacked(true)
+            abi.encodePacked(ICryptoPunksMarket.transferPunk.selector),
+            abi.encodePacked(true)
         );
         mockCryptoPunksMarket.setPunksOfferedForSale(
-            1, MockCryptoPunksMarketProvider.Offer(true, 1, address(0x1), purchasePrice, address(0x0))
+            1,
+            MockCryptoPunksMarketProvider.Offer(
+                true,
+                1,
+                address(0x1),
+                purchasePrice,
+                address(0x0)
+            )
         );
         mockCryptoPunksMarket.setPunkIndexToAddress(1, address(groupRegistry));
         mockMosaicRegistry.givenSelectorReturnResponse(
             ICryptoPunksMosaicRegistry.create.selector,
-            MockProvider.ReturnData({success : true, data : abi.encode(uint192(1))}),
+            MockProvider.ReturnData({
+                success: true,
+                data: abi.encode(uint192(1))
+            }),
             true
         );
         mockMosaicRegistry.givenSelectorReturnResponse(
             ICryptoPunksMosaicRegistry.mint.selector,
-            MockProvider.ReturnData({success : true, data : abi.encode(1)}),
+            MockProvider.ReturnData({success: true, data: abi.encode(1)}),
             true
         );
 
@@ -277,15 +310,15 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
 
         // contribute
         vm.prank(alice);
-        groupRegistry.contribute{value : 40 ether}(groupId, 40);
+        groupRegistry.contribute{value: 40 ether}(groupId, 40);
         assertEq(groupRegistry.getGroupTotalContribution(groupId), 40 ether);
         assertEq(alice.balance, 0 ether);
         vm.prank(bob);
-        groupRegistry.contribute{value : 30 ether}(groupId, 30);
+        groupRegistry.contribute{value: 30 ether}(groupId, 30);
         assertEq(groupRegistry.getGroupTotalContribution(groupId), 70 ether);
         assertEq(bob.balance, 0 ether);
         vm.prank(carol);
-        groupRegistry.contribute{value : 30 ether}(groupId, 30);
+        groupRegistry.contribute{value: 30 ether}(groupId, 30);
         assertEq(groupRegistry.getGroupTotalContribution(groupId), 100 ether);
         assertEq(carol.balance, 0 ether);
 
@@ -318,8 +351,12 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
         uint256 purchasePrice = 100 ether;
 
         // when
-        uint256 minReservePrice = groupRegistry.calculateMinReservePrice(purchasePrice);
-        uint256 maxReservePrice = groupRegistry.calculateMaxReservePrice(purchasePrice);
+        uint256 minReservePrice = groupRegistry.calculateMinReservePrice(
+            purchasePrice
+        );
+        uint256 maxReservePrice = groupRegistry.calculateMaxReservePrice(
+            purchasePrice
+        );
 
         // then
         assertEq(minReservePrice, 70 ether);
@@ -330,12 +367,18 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
     // Test helpers
     //
 
-    function _create(uint256 _targetPunkId, uint256 _targetMaxPrice) internal returns (uint192) {
+    function _create(
+        uint256 _targetPunkId,
+        uint256 _targetMaxPrice
+    ) internal returns (uint192) {
         return groupRegistry.create(_targetPunkId, _targetMaxPrice);
     }
 
     // TODO: Refactor the test helpers
-    function _createContributeAndBuy(address payable creator, uint256 targetPunkId) internal returns (uint192 groupId) {
+    function _createContributeAndBuy(
+        address payable creator,
+        uint256 targetPunkId
+    ) internal returns (uint192 groupId) {
         // given conditions
         uint256 targetMaxPrice = 10 ether;
         vm.deal(creator, 100 ether);
@@ -349,23 +392,35 @@ contract CryptoPunksGroupRegistryTest is Test, TestUtils, UsingCryptoPunksGroupR
         vm.prank(creator);
         vm.expectEmit(true, true, false, false);
         emit Contributed(creator, groupId, 100);
-        groupRegistry.contribute{value : targetMaxPrice}(groupId, 100);
+        groupRegistry.contribute{value: targetMaxPrice}(groupId, 100);
         assertEq(groupRegistry.getGroupTotalContribution(groupId), 10 ether);
 
         // given mocks
         mockCryptoPunksMarket.givenQueryReturn(
-            abi.encodePacked(ICryptoPunksMarket.buyPunk.selector), abi.encodePacked(uint256(1))
+            abi.encodePacked(ICryptoPunksMarket.buyPunk.selector),
+            abi.encodePacked(uint256(1))
         );
         mockCryptoPunksMarket.givenQueryReturn(
-            abi.encodePacked(ICryptoPunksMarket.transferPunk.selector), abi.encodePacked(true)
+            abi.encodePacked(ICryptoPunksMarket.transferPunk.selector),
+            abi.encodePacked(true)
         );
         mockCryptoPunksMarket.setPunksOfferedForSale(
-            1, MockCryptoPunksMarketProvider.Offer(true, 1, address(0x1), 1 ether, address(0x0))
+            1,
+            MockCryptoPunksMarketProvider.Offer(
+                true,
+                1,
+                address(0x1),
+                1 ether,
+                address(0x0)
+            )
         );
         mockCryptoPunksMarket.setPunkIndexToAddress(1, address(groupRegistry));
         mockMosaicRegistry.givenSelectorReturnResponse(
             ICryptoPunksMosaicRegistry.create.selector,
-            MockProvider.ReturnData({success : true, data : abi.encode(uint192(1))}),
+            MockProvider.ReturnData({
+                success: true,
+                data: abi.encode(uint192(1))
+            }),
             true
         );
 

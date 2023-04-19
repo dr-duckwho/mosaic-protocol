@@ -383,7 +383,7 @@ describe("MosaicProtocol", function () {
         mosaicRegistry
           .connect(bidder)
           .bid(originalId, maxReservePrice, { value: maxReservePrice })
-      ).to.revertedWith("Not enough proposals");
+      ).to.revertedWithCustomError(mosaicRegistry, "NotEnoughProposals");
 
       // David has only 16% shares, not enough to meet the min turnout condition
       const davidReservePrice = maxReservePrice.sub(ONE_WEI);
@@ -395,7 +395,7 @@ describe("MosaicProtocol", function () {
         mosaicRegistry
           .connect(bidder)
           .bid(originalId, maxReservePrice, { value: maxReservePrice })
-      ).to.revertedWith("Not enough proposals");
+      ).to.revertedWithCustomError(mosaicRegistry, "NotEnoughProposals");
     });
 
     // Bid

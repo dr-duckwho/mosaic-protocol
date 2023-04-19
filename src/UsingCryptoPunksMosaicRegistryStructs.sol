@@ -138,4 +138,5 @@ interface UsingCryptoPunksMosaicRegistryStructs {
     }
 
     error IllegalBidStateTransition(BidState given, BidState required);
+    error NotEnoughProposals(uint64 validCount, uint256 thresholdBps);
 }

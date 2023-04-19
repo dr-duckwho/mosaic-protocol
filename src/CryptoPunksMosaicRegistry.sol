@@ -441,16 +441,22 @@ contract CryptoPunksMosaicRegistry is
             uint64 valids,
             uint64 invalids
         ) = sumReservePriceProposals(originalId);
-        require(
-            valids >=
-                BasisPoint.calculateBasisPoint(
-                    (valids + invalids),
-                    CryptoPunksMosaicStorage
-                        .getAdminGovernanceOptions()
-                        .reservePriceProposalTurnoutThresholdBps
-                ),
-            "Not enough proposals"
-        );
+        if (
+            valids <
+            BasisPoint.calculateBasisPoint(
+                (valids + invalids),
+                CryptoPunksMosaicStorage
+                    .getAdminGovernanceOptions()
+                    .reservePriceProposalTurnoutThresholdBps
+            )
+        ) {
+            revert NotEnoughProposals(
+                valids,
+                CryptoPunksMosaicStorage
+                    .getAdminGovernanceOptions()
+                    .reservePriceProposalTurnoutThresholdBps
+            );
+        }
         return sum / valids;
     }
 

@@ -5,8 +5,10 @@ import "../src/CryptoPunksMosaicRegistry.sol";
 import "../src/CryptoPunksMosaicStorage.sol";
 import "mockprovider/MockProvider.sol";
 
-contract MockCryptoPunksMosaicRegistry is MockProvider, CryptoPunksMosaicRegistry {
-
+contract MockCryptoPunksMosaicRegistry is
+    MockProvider,
+    CryptoPunksMosaicRegistry
+{
     bool private mockingBidAcceptable;
     bool private isMockBidAcceptable;
 
@@ -26,7 +28,10 @@ contract MockCryptoPunksMosaicRegistry is MockProvider, CryptoPunksMosaicRegistr
         CryptoPunksMosaicStorage.get().latestOriginalId = value;
     }
 
-    function setOriginal(uint192 originalId, Original calldata original) public {
+    function setOriginal(
+        uint192 originalId,
+        Original calldata original
+    ) public {
         CryptoPunksMosaicStorage.get().originals[originalId] = original;
     }
 
@@ -74,7 +79,9 @@ contract MockCryptoPunksMosaicRegistry is MockProvider, CryptoPunksMosaicRegistr
     }
 
     // TODO: Use MockProvider if possible
-    function isBidAcceptable(uint192 originalId) public override view returns (bool) {
+    function isBidAcceptable(
+        uint192 originalId
+    ) public view override returns (bool) {
         if (mockingBidAcceptable) {
             return isMockBidAcceptable;
         }
@@ -86,7 +93,9 @@ contract MockCryptoPunksMosaicRegistry is MockProvider, CryptoPunksMosaicRegistr
         mockGetPerMonoResaleFund = value;
     }
 
-    function getPerMonoResaleFund(uint192 originalId) public override view returns (uint256) {
+    function getPerMonoResaleFund(
+        uint192 originalId
+    ) public view override returns (uint256) {
         if (mockingGetPerMonoResaleFund) {
             return mockGetPerMonoResaleFund;
         }
@@ -99,19 +108,26 @@ contract MockCryptoPunksMosaicRegistry is MockProvider, CryptoPunksMosaicRegistr
         mockBidResponseNo = no;
     }
 
-    function sumBidResponses(uint192 originalId) public override view returns (uint64, uint64) {
+    function sumBidResponses(
+        uint192 originalId
+    ) public view override returns (uint64, uint64) {
         if (mockingSumBidResponses) {
             return (mockBidResponseYes, mockBidResponseNo);
         }
         return super.sumBidResponses(originalId);
     }
 
-    function mockAverageReservePriceProposals(bool enabled, uint256 value) public {
-        mockingAverageReservePriceProposals =  enabled;
+    function mockAverageReservePriceProposals(
+        bool enabled,
+        uint256 value
+    ) public {
+        mockingAverageReservePriceProposals = enabled;
         mockAverageReservePriceProposal = value;
     }
 
-    function getAverageReservePriceProposals(uint192 originalId) public override view returns (uint256) {
+    function getAverageReservePriceProposals(
+        uint192 originalId
+    ) public view override returns (uint256) {
         if (mockingAverageReservePriceProposals) {
             return mockAverageReservePriceProposal;
         }

@@ -40,6 +40,6 @@
     "deploy:testnet": "hardhat deploy --network goerli --export ./deployments/testnet.json --tags",
     "run:testnet": "hardhat run --network goerli",
     "verify:testnet": "hardhat --network goerli etherscan-verify --solc-input",
-    "lint:contract": "prettier --write 'src/**/*.sol'"
+    "lint:contract": "prettier --write 'src/**/*.sol' 'test/**/*.sol'"
   }
 }

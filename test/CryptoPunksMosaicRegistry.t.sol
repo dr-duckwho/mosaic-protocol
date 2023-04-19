@@ -12,7 +12,11 @@ import {MockCryptoPunksMarketProvider} from "./MockCryptoPunksMarketProvider.sol
 import "./MockCryptoPunksMosaicRegistry.sol";
 import "../src/UsingCryptoPunksMosaicRegistryStructs.sol";
 
-contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosaicRegistryStructs {
+contract CryptoPunksMosaicRegistryTest is
+    Test,
+    TestUtils,
+    UsingCryptoPunksMosaicRegistryStructs
+{
     MockCryptoPunksMosaicRegistry public mosaicRegistry;
     MockCryptoPunksMarketProvider public mockCryptoPunksMarket;
     CryptoPunksMuseum public museum;
@@ -23,7 +27,9 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         museum = new CryptoPunksMuseum(address(mockCryptoPunksMarket));
 
         MockCryptoPunksMosaicRegistry impl = new MockCryptoPunksMosaicRegistry();
-        mosaicRegistry = MockCryptoPunksMosaicRegistry(payable(new ERC1967Proxy(address(impl), "")));
+        mosaicRegistry = MockCryptoPunksMosaicRegistry(
+            payable(new ERC1967Proxy(address(impl), ""))
+        );
         mosaicRegistry.initialize(address(museum));
 
         mintAuthority = _randomAddress();
@@ -40,16 +46,26 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         uint256 minReservePrice = 70 ether;
         uint256 maxReservePrice = 500 ether;
 
-        mockCryptoPunksMarket.setPunkIndexToAddress(punkId, address(mosaicRegistry));
+        mockCryptoPunksMarket.setPunkIndexToAddress(
+            punkId,
+            address(mosaicRegistry)
+        );
 
         // when
         vm.prank(mintAuthority);
-        uint192 originalId = mosaicRegistry.create(punkId, totalClaimableCount, purchasePrice, minReservePrice, maxReservePrice);
+        uint192 originalId = mosaicRegistry.create(
+            punkId,
+            totalClaimableCount,
+            purchasePrice,
+            minReservePrice,
+            maxReservePrice
+        );
 
         // then
         assertEq(originalId, 1);
         assertEq(mosaicRegistry.getNextMonoId(originalId), 1);
-        CryptoPunksMosaicRegistry.Original memory original = mosaicRegistry.getOriginal(originalId);
+        CryptoPunksMosaicRegistry.Original memory original = mosaicRegistry
+            .getOriginal(originalId);
         assertEq(original.id, originalId);
         assertEq(original.punkId, punkId);
         assertEq(original.totalMonoSupply, totalClaimableCount);
@@ -57,7 +73,10 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         assertEq(original.purchasePrice, purchasePrice);
         assertEq(original.minReservePrice, minReservePrice);
         assertEq(original.maxReservePrice, maxReservePrice);
-        assert(original.state == UsingCryptoPunksMosaicRegistryStructs.OriginalState.Active);
+        assert(
+            original.state ==
+                UsingCryptoPunksMosaicRegistryStructs.OriginalState.Active
+        );
         assertEq(original.activeBidId, 0);
     }
 
@@ -65,7 +84,13 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         // when & then
         vm.prank(mintAuthority);
         vm.expectRevert("Must own the punk");
-        uint192 originalId = mosaicRegistry.create(1, 100, 100 ether, 70 ether, 500 ether);
+        uint192 originalId = mosaicRegistry.create(
+            1,
+            100,
+            100 ether,
+            70 ether,
+            500 ether
+        );
     }
 
     function test_mint() public {
@@ -136,8 +161,14 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         uint192 originalId = 530923;
         uint64 firstMonoId = 10;
         uint64 secondMonoId = 13;
-        uint256 firstMosaicId = mosaicRegistry.toMosaicId(originalId, firstMonoId);
-        uint256 secondMosaicId = mosaicRegistry.toMosaicId(originalId, secondMonoId);
+        uint256 firstMosaicId = mosaicRegistry.toMosaicId(
+            originalId,
+            firstMonoId
+        );
+        uint256 secondMosaicId = mosaicRegistry.toMosaicId(
+            originalId,
+            secondMonoId
+        );
         uint256 price = 100 ether;
 
         Original memory original = Original({
@@ -162,7 +193,10 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         // initial condition
         Mono memory firstMono = mosaicRegistry.getMono(originalId, firstMonoId);
         assertEq(firstMono.governanceOptions.proposedReservePrice, 0);
-        Mono memory secondMono = mosaicRegistry.getMono(originalId, secondMonoId);
+        Mono memory secondMono = mosaicRegistry.getMono(
+            originalId,
+            secondMonoId
+        );
         assertEq(secondMono.governanceOptions.proposedReservePrice, 0);
 
         // when
@@ -182,21 +216,27 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         uint192 originalId = 530923;
         uint64 firstMonoId = 10;
         uint64 secondMonoId = 13;
-        uint256 firstMosaicId = mosaicRegistry.toMosaicId(originalId, firstMonoId);
-        uint256 secondMosaicId = mosaicRegistry.toMosaicId(originalId, secondMonoId);
+        uint256 firstMosaicId = mosaicRegistry.toMosaicId(
+            originalId,
+            firstMonoId
+        );
+        uint256 secondMosaicId = mosaicRegistry.toMosaicId(
+            originalId,
+            secondMonoId
+        );
         uint256 price = 100 ether;
 
         Original memory original = Original({
-        id: originalId,
-        punkId: 1,
-        totalMonoSupply: 100,
-        claimedMonoCount: 100,
-        purchasePrice: 100 ether,
-        minReservePrice: price / 2,
-        maxReservePrice: price * 5,
-        state: OriginalState.Active,
-        activeBidId: 0,
-        metadataBaseUri: ""
+            id: originalId,
+            punkId: 1,
+            totalMonoSupply: 100,
+            claimedMonoCount: 100,
+            purchasePrice: 100 ether,
+            minReservePrice: price / 2,
+            maxReservePrice: price * 5,
+            state: OriginalState.Active,
+            activeBidId: 0,
+            metadataBaseUri: ""
         });
         mosaicRegistry.setOriginal(originalId, original);
         mosaicRegistry.setNextMonoId(originalId, 101);
@@ -208,17 +248,26 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         // initial condition
         Mono memory firstMono = mosaicRegistry.getMono(originalId, firstMonoId);
         assertEq(firstMono.governanceOptions.proposedReservePrice, 0);
-        Mono memory secondMono = mosaicRegistry.getMono(originalId, secondMonoId);
+        Mono memory secondMono = mosaicRegistry.getMono(
+            originalId,
+            secondMonoId
+        );
         assertEq(secondMono.governanceOptions.proposedReservePrice, 0);
 
         // when
         vm.prank(alice);
         vm.expectRevert("Out of range");
-        mosaicRegistry.proposeReservePriceBatch(originalId, original.minReservePrice - 1);
+        mosaicRegistry.proposeReservePriceBatch(
+            originalId,
+            original.minReservePrice - 1
+        );
 
         vm.prank(alice);
         vm.expectRevert("Out of range");
-        mosaicRegistry.proposeReservePriceBatch(originalId, original.maxReservePrice + 1);
+        mosaicRegistry.proposeReservePriceBatch(
+            originalId,
+            original.maxReservePrice + 1
+        );
 
         // then unchanged
         firstMono = mosaicRegistry.getMono(originalId, firstMonoId);
@@ -255,7 +304,10 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         // when
         vm.deal(address(bidder), bidPrice);
         vm.prank(bidder);
-        uint256 bidId = mosaicRegistry.bid{value: bidPrice}(originalId, bidPrice);
+        uint256 bidId = mosaicRegistry.bid{value: bidPrice}(
+            originalId,
+            bidPrice
+        );
 
         // then
         (Bid memory bid, uint256 deposit) = mosaicRegistry.getBid(bidId);
@@ -271,16 +323,16 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         uint256 price = 100 ether;
 
         Original memory original = Original({
-        id: originalId,
-        punkId: 1,
-        totalMonoSupply: 100000000,
-        claimedMonoCount: 1000000,
-        purchasePrice: 100 ether,
-        minReservePrice: price / 2,
-        maxReservePrice: price * 5,
-        state: OriginalState.Sold, // sold
-        activeBidId: 0,
-        metadataBaseUri: ""
+            id: originalId,
+            punkId: 1,
+            totalMonoSupply: 100000000,
+            claimedMonoCount: 1000000,
+            purchasePrice: 100 ether,
+            minReservePrice: price / 2,
+            maxReservePrice: price * 5,
+            state: OriginalState.Sold, // sold
+            activeBidId: 0,
+            metadataBaseUri: ""
         });
         mosaicRegistry.setOriginal(originalId, original);
         mosaicRegistry.mockAverageReservePriceProposals(true, 80 ether);
@@ -351,16 +403,21 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         mosaicRegistry.mockAverageReservePriceProposals(true, 80 ether);
 
         // given a previous fund not explicitly rejected yet
-        mosaicRegistry.setBid(oldBidId, Bid({
-            id: oldBidId,
-            originalId: originalId,
-            bidder: payable(_randomAddress()),
-            createdAt: uint40(block.timestamp),
-            expiry: mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS(),
-            price: 123 ether,
-            state: BidState.Proposed
-        }));
-        vm.warp(block.timestamp + mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS() + 1);
+        mosaicRegistry.setBid(
+            oldBidId,
+            Bid({
+                id: oldBidId,
+                originalId: originalId,
+                bidder: payable(_randomAddress()),
+                createdAt: uint40(block.timestamp),
+                expiry: mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS(),
+                price: 123 ether,
+                state: BidState.Proposed
+            })
+        );
+        vm.warp(
+            block.timestamp + mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS() + 1
+        );
 
         // when
         address bidder = _randomAddress();
@@ -368,7 +425,10 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
 
         vm.deal(address(bidder), bidPrice);
         vm.prank(bidder);
-        uint256 bidId = mosaicRegistry.bid{value: bidPrice}(originalId, bidPrice);
+        uint256 bidId = mosaicRegistry.bid{value: bidPrice}(
+            originalId,
+            bidPrice
+        );
 
         // then
         (Bid memory bid, uint256 deposit) = mosaicRegistry.getBid(bidId);
@@ -408,16 +468,21 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         // given that a previous fund has been accepted/won already
         // NOTE: if it has won, then the original must be sold already,
         // so the new bid will be rejected by the earlier requirement check
-        mosaicRegistry.setBid(oldBidId, Bid({
-            id: oldBidId,
-            originalId: originalId,
-            bidder: payable(_randomAddress()),
-            createdAt: uint40(block.timestamp),
-            expiry: mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS(),
-            price: 123 ether,
-            state: previousBidState
-        }));
-        vm.warp(block.timestamp + mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS() + 1);
+        mosaicRegistry.setBid(
+            oldBidId,
+            Bid({
+                id: oldBidId,
+                originalId: originalId,
+                bidder: payable(_randomAddress()),
+                createdAt: uint40(block.timestamp),
+                expiry: mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS(),
+                price: 123 ether,
+                state: previousBidState
+            })
+        );
+        vm.warp(
+            block.timestamp + mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS() + 1
+        );
 
         // when
         address bidder = _randomAddress();
@@ -426,7 +491,10 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         vm.deal(address(bidder), bidPrice);
         vm.prank(bidder);
         vm.expectRevert();
-        uint256 bidId = mosaicRegistry.bid{value: bidPrice}(originalId, bidPrice);
+        uint256 bidId = mosaicRegistry.bid{value: bidPrice}(
+            originalId,
+            bidPrice
+        );
     }
 
     function test_refundBidDeposit() public {
@@ -439,15 +507,18 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         uint256 registryFund = 150 ether;
 
         // a rejected fund
-        mosaicRegistry.setBid(bidId, Bid({
-            id: bidId,
-            originalId: originalId,
-            bidder: payable(bidder),
-            createdAt: uint40(timestamp),
-            expiry: mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS(),
-            price: bidFund,
-            state: BidState.Rejected
-        }));
+        mosaicRegistry.setBid(
+            bidId,
+            Bid({
+                id: bidId,
+                originalId: originalId,
+                bidder: payable(bidder),
+                createdAt: uint40(timestamp),
+                expiry: mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS(),
+                price: bidFund,
+                state: BidState.Rejected
+            })
+        );
         vm.deal(address(mosaicRegistry), registryFund);
         mosaicRegistry.setBidDeposits(bidId, bidFund);
         assertEq(bidder.balance, 0);
@@ -475,15 +546,18 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         uint256 registryFund = 150 ether;
 
         // a rejected fund
-        mosaicRegistry.setBid(bidId, Bid({
-        id: bidId,
-        originalId: originalId,
-        bidder: payable(bidder),
-        createdAt: uint40(timestamp),
-        expiry: mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS(),
-        price: bidFund,
-        state: BidState.Rejected
-        }));
+        mosaicRegistry.setBid(
+            bidId,
+            Bid({
+                id: bidId,
+                originalId: originalId,
+                bidder: payable(bidder),
+                createdAt: uint40(timestamp),
+                expiry: mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS(),
+                price: bidFund,
+                state: BidState.Rejected
+            })
+        );
         vm.deal(address(mosaicRegistry), registryFund);
         mosaicRegistry.setBidDeposits(bidId, bidFund);
         assertEq(bidder.balance, 0);
@@ -500,18 +574,25 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         address bob = _randomAddress();
 
         uint192 originalId = 530923;
-        uint256 bidId = mosaicRegistry.toBidId(originalId, alice, block.timestamp);
+        uint256 bidId = mosaicRegistry.toBidId(
+            originalId,
+            alice,
+            block.timestamp
+        );
         uint64 monoId = 1;
 
-        mosaicRegistry.setBid(bidId, Bid({
-            id: bidId,
-            originalId: originalId,
-            bidder: payable(alice),
-            createdAt: uint40(block.timestamp),
-            expiry: mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS(),
-            price: 100 ether,
-            state: BidState.Proposed
-        }));
+        mosaicRegistry.setBid(
+            bidId,
+            Bid({
+                id: bidId,
+                originalId: originalId,
+                bidder: payable(alice),
+                createdAt: uint40(block.timestamp),
+                expiry: mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS(),
+                price: 100 ether,
+                state: BidState.Proposed
+            })
+        );
         Original memory original = Original({
             id: originalId,
             punkId: 1,
@@ -533,7 +614,8 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
 
         // when
         vm.prank(alice);
-        (uint256 actualBidId, uint64 changedMonoCount) = mosaicRegistry.respondToBidBatch(originalId, MonoBidResponse.Yes);
+        (uint256 actualBidId, uint64 changedMonoCount) = mosaicRegistry
+            .respondToBidBatch(originalId, MonoBidResponse.Yes);
 
         // then
         assertEq(changedMonoCount, 1);
@@ -544,18 +626,21 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         assert(governanceOptions.bidResponse == MonoBidResponse.Yes);
 
         // set up the ownership for Bob
-        for (uint64 bobMonoId = 2; bobMonoId < 52; bobMonoId ++) {
+        for (uint64 bobMonoId = 2; bobMonoId < 52; bobMonoId++) {
             mosaicId = mosaicRegistry.toMosaicId(originalId, bobMonoId);
             mosaicRegistry.mockMint(bob, mosaicId);
         }
         // when
         vm.prank(bob);
-        (actualBidId, changedMonoCount) = mosaicRegistry.respondToBidBatch(originalId, MonoBidResponse.No);
+        (actualBidId, changedMonoCount) = mosaicRegistry.respondToBidBatch(
+            originalId,
+            MonoBidResponse.No
+        );
 
         // then
         assertEq(changedMonoCount, 50);
         assertEq(actualBidId, bidId);
-        for (uint64 bobMonoId = 2; bobMonoId < 52; bobMonoId ++) {
+        for (uint64 bobMonoId = 2; bobMonoId < 52; bobMonoId++) {
             mono = mosaicRegistry.getMono(mosaicId);
             governanceOptions = mono.governanceOptions;
             assertEq(governanceOptions.bidId, actualBidId);
@@ -569,21 +654,30 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         uint192 originalId = 530923;
         uint64 monoId = 581019;
         uint256 mosaicId = mosaicRegistry.toMosaicId(originalId, monoId);
-        uint256 bidId = mosaicRegistry.toBidId(originalId, alice, block.timestamp);
+        uint256 bidId = mosaicRegistry.toBidId(
+            originalId,
+            alice,
+            block.timestamp
+        );
 
-        mosaicRegistry.setBid(bidId, Bid({
-        id: bidId,
-        originalId: originalId,
-        bidder: payable(alice),
-        createdAt: uint40(block.timestamp),
-        expiry: mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS(),
-        price: 100 ether,
-        state: BidState.Proposed
-        }));
+        mosaicRegistry.setBid(
+            bidId,
+            Bid({
+                id: bidId,
+                originalId: originalId,
+                bidder: payable(alice),
+                createdAt: uint40(block.timestamp),
+                expiry: mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS(),
+                price: 100 ether,
+                state: BidState.Proposed
+            })
+        );
 
         // when
         mosaicRegistry.mockBidAcceptable(true, isBidAcceptable);
-        vm.warp(block.timestamp + mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS() + 1);
+        vm.warp(
+            block.timestamp + mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS() + 1
+        );
 
         vm.expectEmit(true, true, false, false);
         if (isBidAcceptable) {
@@ -596,7 +690,9 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         BidState result = mosaicRegistry.finalizeProposedBid(bidId);
 
         // then
-        assert(result == (isBidAcceptable ? BidState.Accepted : BidState.Rejected));
+        assert(
+            result == (isBidAcceptable ? BidState.Accepted : BidState.Rejected)
+        );
     }
 
     function test_finalizeAcceptedBid() public {
@@ -605,17 +701,24 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         uint192 originalId = 530923;
         uint64 monoId = 581019;
         uint256 mosaicId = mosaicRegistry.toMosaicId(originalId, monoId);
-        uint256 bidId = mosaicRegistry.toBidId(originalId, bidder, block.timestamp);
+        uint256 bidId = mosaicRegistry.toBidId(
+            originalId,
+            bidder,
+            block.timestamp
+        );
 
-        mosaicRegistry.setBid(bidId, Bid({
-            id: bidId,
-            originalId: originalId,
-            bidder: payable(bidder),
-            createdAt: uint40(block.timestamp),
-            expiry: mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS(),
-            price: 100 ether,
-            state: BidState.Accepted
-        }));
+        mosaicRegistry.setBid(
+            bidId,
+            Bid({
+                id: bidId,
+                originalId: originalId,
+                bidder: payable(bidder),
+                createdAt: uint40(block.timestamp),
+                expiry: mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS(),
+                price: 100 ether,
+                state: BidState.Accepted
+            })
+        );
         Original memory original = Original({
             id: originalId,
             punkId: 1,
@@ -632,7 +735,8 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
 
         // market
         mockCryptoPunksMarket.givenQueryReturn(
-            abi.encodePacked(ICryptoPunksMarket.transferPunk.selector), abi.encodePacked(true)
+            abi.encodePacked(ICryptoPunksMarket.transferPunk.selector),
+            abi.encodePacked(true)
         );
 
         // when
@@ -646,7 +750,9 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         // then
         (Bid memory bid, ) = mosaicRegistry.getBid(bidId);
         assert(bid.state == BidState.Won);
-        Original memory changedOriginal = mosaicRegistry.getOriginal(originalId);
+        Original memory changedOriginal = mosaicRegistry.getOriginal(
+            originalId
+        );
         assert(changedOriginal.state == OriginalState.Sold);
     }
 
@@ -661,7 +767,10 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
 
         // assume that Alice has [1,30] Monos
         for (uint64 monoId = 1; monoId <= ownedMonoCount; monoId++) {
-            mosaicRegistry.mockMint(alice, mosaicRegistry.toMosaicId(originalId, monoId));
+            mosaicRegistry.mockMint(
+                alice,
+                mosaicRegistry.toMosaicId(originalId, monoId)
+            );
         }
 
         // given the fund status
@@ -683,7 +792,10 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         // then
         uint256 expectedRefundSum = refundPerMono * ownedMonoCount;
         assertEq(alice.balance, expectedRefundSum);
-        assertEq(address(mosaicRegistry).balance, registryFund - expectedRefundSum);
+        assertEq(
+            address(mosaicRegistry).balance,
+            registryFund - expectedRefundSum
+        );
     }
 
     function test_sumReservePriceProposals() public {
@@ -711,10 +823,17 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         }
 
         // then
-        (uint256 priceSum, uint64 validCount, uint64 invalidCount) = mosaicRegistry.sumReservePriceProposals(originalId);
+        (
+            uint256 priceSum,
+            uint64 validCount,
+            uint64 invalidCount
+        ) = mosaicRegistry.sumReservePriceProposals(originalId);
         assertEq(validCount, monosWithProposalCount);
         assertEq(invalidCount, totalMonoCount - monosWithProposalCount);
-        assertEq(priceSum, monosWithProposalCount * proposedReservePriceAverage);
+        assertEq(
+            priceSum,
+            monosWithProposalCount * proposedReservePriceAverage
+        );
     }
 
     function test_getAverageReservePriceProposals() public {
@@ -733,16 +852,18 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
                 mosaicId: mosaicId,
                 presetId: 0,
                 governanceOptions: MonoGovernanceOptions({
-                proposedReservePrice: proposedReservePriceAverage,
-                bidResponse: MonoBidResponse.None,
-                bidId: 0
+                    proposedReservePrice: proposedReservePriceAverage,
+                    bidResponse: MonoBidResponse.None,
+                    bidId: 0
                 })
             });
             mosaicRegistry.setMono(mosaicId, mono);
         }
 
         // then
-        uint256 actual = mosaicRegistry.getAverageReservePriceProposals(originalId);
+        uint256 actual = mosaicRegistry.getAverageReservePriceProposals(
+            originalId
+        );
         assertEq(actual, proposedReservePriceAverage);
     }
 
@@ -762,16 +883,24 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
                 mosaicId: mosaicId,
                 presetId: 0,
                 governanceOptions: MonoGovernanceOptions({
-                proposedReservePrice: proposedReservePriceAverage,
-                bidResponse: MonoBidResponse.None,
-                bidId: 0
+                    proposedReservePrice: proposedReservePriceAverage,
+                    bidResponse: MonoBidResponse.None,
+                    bidId: 0
                 })
             });
             mosaicRegistry.setMono(mosaicId, mono);
         }
 
         // then
-        vm.expectRevert("Not enough proposals");
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                UsingCryptoPunksMosaicRegistryStructs
+                    .NotEnoughProposals
+                    .selector,
+                monosWithProposalCount,
+                3000
+            )
+        );
         mosaicRegistry.getAverageReservePriceProposals(originalId);
     }
 
@@ -782,32 +911,42 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         mosaicRegistry.setNextMonoId(originalId, totalMonoCount + 1);
 
         address bidder = _randomAddress();
-        uint256 bidId = mosaicRegistry.toBidId(originalId, bidder, block.timestamp);
+        uint256 bidId = mosaicRegistry.toBidId(
+            originalId,
+            bidder,
+            block.timestamp
+        );
 
         uint64 monosWithYesCount = 30;
         uint64 monosWithNoCount = 20;
 
-        mosaicRegistry.setBid(bidId, Bid({
-            id: bidId,
-            originalId: originalId,
-            bidder: payable(bidder),
-            createdAt: uint40(block.timestamp),
-            expiry: mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS(),
-            price: 100 ether,
-            state: BidState.Proposed
-        }));
-        mosaicRegistry.setOriginal(originalId, Original({
-            id: originalId,
-            punkId: 1,
-            totalMonoSupply: 100,
-            claimedMonoCount: 100,
-            purchasePrice: 100 ether,
-            minReservePrice: 50 ether,
-            maxReservePrice: 500 ether,
-            state: OriginalState.Active,
-            activeBidId: bidId,
-            metadataBaseUri: ""
-        }));
+        mosaicRegistry.setBid(
+            bidId,
+            Bid({
+                id: bidId,
+                originalId: originalId,
+                bidder: payable(bidder),
+                createdAt: uint40(block.timestamp),
+                expiry: mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS(),
+                price: 100 ether,
+                state: BidState.Proposed
+            })
+        );
+        mosaicRegistry.setOriginal(
+            originalId,
+            Original({
+                id: originalId,
+                punkId: 1,
+                totalMonoSupply: 100,
+                claimedMonoCount: 100,
+                purchasePrice: 100 ether,
+                minReservePrice: 50 ether,
+                maxReservePrice: 500 ether,
+                state: OriginalState.Active,
+                activeBidId: bidId,
+                metadataBaseUri: ""
+            })
+        );
 
         for (uint64 monoId = 1; monoId <= totalMonoCount; monoId++) {
             uint256 mosaicId = mosaicRegistry.toMosaicId(originalId, monoId);
@@ -844,22 +983,29 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         mosaicRegistry.setNextMonoId(originalId, totalMonoCount + 1);
 
         address bidder = _randomAddress();
-        uint256 bidId = mosaicRegistry.toBidId(originalId, bidder, block.timestamp);
+        uint256 bidId = mosaicRegistry.toBidId(
+            originalId,
+            bidder,
+            block.timestamp
+        );
 
         uint64 monosWithYesCount = 30;
         uint64 monosWithNoCount = 20;
-        mosaicRegistry.setOriginal(originalId, Original({
-            id: originalId,
-            punkId: 1,
-            totalMonoSupply: 100,
-            claimedMonoCount: 100,
-            purchasePrice: 100 ether,
-            minReservePrice: 50 ether,
-            maxReservePrice: 500 ether,
-            state: OriginalState.Active,
-            activeBidId: 0,
-            metadataBaseUri: ""
-        }));
+        mosaicRegistry.setOriginal(
+            originalId,
+            Original({
+                id: originalId,
+                punkId: 1,
+                totalMonoSupply: 100,
+                claimedMonoCount: 100,
+                purchasePrice: 100 ether,
+                minReservePrice: 50 ether,
+                maxReservePrice: 500 ether,
+                state: OriginalState.Active,
+                activeBidId: 0,
+                metadataBaseUri: ""
+            })
+        );
 
         for (uint64 monoId = 1; monoId <= totalMonoCount; monoId++) {
             uint256 mosaicId = mosaicRegistry.toMosaicId(originalId, monoId);
@@ -872,13 +1018,13 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
                 response = MonoBidResponse.No;
             }
             Mono memory mono = Mono({
-            mosaicId: mosaicId,
-            presetId: 0,
-            governanceOptions: MonoGovernanceOptions({
-            proposedReservePrice: 60 ether,
-            bidResponse: response,
-            bidId: bidId
-            })
+                mosaicId: mosaicId,
+                presetId: 0,
+                governanceOptions: MonoGovernanceOptions({
+                    proposedReservePrice: 60 ether,
+                    bidResponse: response,
+                    bidId: bidId
+                })
             });
             mosaicRegistry.setMono(mosaicId, mono);
         }
@@ -896,31 +1042,41 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         mosaicRegistry.setNextMonoId(originalId, totalMonoCount + 1);
 
         address bidder = _randomAddress();
-        uint256 bidId = mosaicRegistry.toBidId(originalId, bidder, block.timestamp);
+        uint256 bidId = mosaicRegistry.toBidId(
+            originalId,
+            bidder,
+            block.timestamp
+        );
 
         uint64 monosWithYesCount = 30;
         uint64 monosWithNoCount = 20;
-        mosaicRegistry.setBid(bidId, Bid({
-            id: bidId,
-            originalId: originalId,
-            bidder: payable(bidder),
-            createdAt: uint40(block.timestamp),
-            expiry: mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS(),
-            price: 100 ether,
-            state: BidState.Proposed
-        }));
-        mosaicRegistry.setOriginal(originalId, Original({
-            id: originalId,
-            punkId: 1,
-            totalMonoSupply: 100,
-            claimedMonoCount: 100,
-            purchasePrice: 100 ether,
-            minReservePrice: 50 ether,
-            maxReservePrice: 500 ether,
-            state: OriginalState.Active,
-            activeBidId: bidId,
-            metadataBaseUri: ""
-        }));
+        mosaicRegistry.setBid(
+            bidId,
+            Bid({
+                id: bidId,
+                originalId: originalId,
+                bidder: payable(bidder),
+                createdAt: uint40(block.timestamp),
+                expiry: mosaicRegistry.BID_EXPIRY_BLOCK_SECONDS(),
+                price: 100 ether,
+                state: BidState.Proposed
+            })
+        );
+        mosaicRegistry.setOriginal(
+            originalId,
+            Original({
+                id: originalId,
+                punkId: 1,
+                totalMonoSupply: 100,
+                claimedMonoCount: 100,
+                purchasePrice: 100 ether,
+                minReservePrice: 50 ether,
+                maxReservePrice: 500 ether,
+                state: OriginalState.Active,
+                activeBidId: bidId,
+                metadataBaseUri: ""
+            })
+        );
 
         for (uint64 monoId = 1; monoId <= totalMonoCount; monoId++) {
             uint256 mosaicId = mosaicRegistry.toMosaicId(originalId, monoId);
@@ -958,18 +1114,21 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         uint64 no = 20;
         mosaicRegistry.mockSumBidResponses(true, yes, no);
 
-        mosaicRegistry.setOriginal(originalId, Original({
-            id: originalId,
-            punkId: 1,
-            totalMonoSupply: 100,
-            claimedMonoCount: 100,
-            purchasePrice: 100 ether,
-            minReservePrice: 50 ether,
-            maxReservePrice: 500 ether,
-            state: OriginalState.Active,
-            activeBidId: 1234,
-            metadataBaseUri: ""
-        }));
+        mosaicRegistry.setOriginal(
+            originalId,
+            Original({
+                id: originalId,
+                punkId: 1,
+                totalMonoSupply: 100,
+                claimedMonoCount: 100,
+                purchasePrice: 100 ether,
+                minReservePrice: 50 ether,
+                maxReservePrice: 500 ether,
+                state: OriginalState.Active,
+                activeBidId: 1234,
+                metadataBaseUri: ""
+            })
+        );
 
         // then
         bool actual = mosaicRegistry.isBidAcceptable(originalId);
@@ -983,18 +1142,21 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         uint96 totalMonoSupply = 100;
         mosaicRegistry.setResalePrice(originalId, resalePrice);
 
-        mosaicRegistry.setOriginal(originalId, Original({
-            id: originalId,
-            punkId: 1,
-            totalMonoSupply: totalMonoSupply,
-            claimedMonoCount: totalMonoSupply,
-            purchasePrice: 100 ether,
-            minReservePrice: 50 ether,
-            maxReservePrice: 500 ether,
-            state: OriginalState.Active,
-            activeBidId: 1234,
-            metadataBaseUri: ""
-        }));
+        mosaicRegistry.setOriginal(
+            originalId,
+            Original({
+                id: originalId,
+                punkId: 1,
+                totalMonoSupply: totalMonoSupply,
+                claimedMonoCount: totalMonoSupply,
+                purchasePrice: 100 ether,
+                minReservePrice: 50 ether,
+                maxReservePrice: 500 ether,
+                state: OriginalState.Active,
+                activeBidId: 1234,
+                metadataBaseUri: ""
+            })
+        );
 
         // then
         uint256 actual = mosaicRegistry.getPerMonoResaleFund(originalId);
@@ -1007,8 +1169,13 @@ contract CryptoPunksMosaicRegistryTest is Test, TestUtils, UsingCryptoPunksMosai
         uint64 expectedMonoId = 830404;
 
         // when
-        uint256 mosaicId = mosaicRegistry.toMosaicId(expectedOriginalId, expectedMonoId);
-        (uint192 originalId, uint64 monoId) = mosaicRegistry.fromMosaicId(mosaicId);
+        uint256 mosaicId = mosaicRegistry.toMosaicId(
+            expectedOriginalId,
+            expectedMonoId
+        );
+        (uint192 originalId, uint64 monoId) = mosaicRegistry.fromMosaicId(
+            mosaicId
+        );
 
         // then
         assertEq(originalId, expectedOriginalId);
