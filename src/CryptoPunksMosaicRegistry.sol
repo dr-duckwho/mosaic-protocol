@@ -14,7 +14,6 @@ import "./ICryptoPunksMosaicRegistry.sol";
 import "./CryptoPunksMuseum.sol";
 import "./CryptoPunksMosaicStorage.sol";
 
-
 // TODO: Reconsider the ID scheme so that the same origin contract's same groups map to the same ID (contract, group) => (internal id)
 contract CryptoPunksMosaicRegistry is
     ICryptoPunksMosaicRegistry,
@@ -54,24 +53,30 @@ contract CryptoPunksMosaicRegistry is
     }
 
     modifier onlyWhenActive() {
-        require(
-            address(museum) != address(0) && museum.isActive(),
-            "Activate Museum"
-        );
-        require(CryptoPunksMosaicStorage.isSetAdminGovernanceOptions());
+        if (
+            address(museum) == address(0) ||
+            !museum.isActive() ||
+            !CryptoPunksMosaicStorage.isSetAdminGovernanceOptions()
+        ) {
+            revert NotActive();
+        }
         _;
     }
 
     modifier onlyActiveOriginal(uint192 originalId) {
-        require(
-            CryptoPunksMosaicStorage.get().originals[originalId].state ==
-                OriginalState.Active
-        );
+        if (
+            CryptoPunksMosaicStorage.get().originals[originalId].state !=
+            OriginalState.Active
+        ) {
+            revert NotActive();
+        }
         _;
     }
 
     modifier onlyMosaicOwner(uint256 mosaicId) {
-        require(ownerOf(mosaicId) == msg.sender);
+        if (ownerOf(mosaicId) != msg.sender) {
+            revert Unauthorized(ownerOf(mosaicId));
+        }
         _;
     }
 
@@ -124,10 +129,9 @@ contract CryptoPunksMosaicRegistry is
         onlyRole(MINTER_ROLE)
         returns (uint256 mosaicId)
     {
-        require(
-            CryptoPunksMosaicStorage.get().nextMonoIds[originalId] > 0,
-            "Must initialize Original"
-        );
+        if (CryptoPunksMosaicStorage.get().nextMonoIds[originalId] == 0) {
+            revert NotActive();
+        }
         uint64 monoId = CryptoPunksMosaicStorage.get().nextMonoIds[
             originalId
         ]++;
@@ -394,7 +398,9 @@ contract CryptoPunksMosaicRegistry is
         if (bid.state != BidState.Rejected) {
             revert IllegalBidStateTransition(bid.state, BidState.Rejected);
         }
-        require(bid.bidder == msg.sender, "Bidder only");
+        if (bid.bidder != msg.sender) {
+            revert Unauthorized(bid.bidder);
+        }
 
         uint256 deposit = CryptoPunksMosaicStorage.get().bidDeposits[bidId];
         (bool sent, ) = msg.sender.call{value: deposit}("");
@@ -431,7 +437,9 @@ contract CryptoPunksMosaicRegistry is
                 burnedMonoCount++;
             }
         }
-        require(burnedMonoCount > 0, "No Monos to refund");
+        if (burnedMonoCount == 0) {
+            revert NotEnoughFund();
+        }
 
         totalResaleFund = burnedMonoCount * getPerMonoResaleFund(originalId);
         (bool sent, ) = msg.sender.call{value: totalResaleFund}("");
@@ -554,7 +562,7 @@ contract CryptoPunksMosaicRegistry is
         uint256 resalePrice = CryptoPunksMosaicStorage.get().resalePrices[
             originalId
         ];
-        require(resalePrice > 0, "No resale price set");
+        require(resalePrice > 0);
         uint256 perMonoBps = BasisPoint.WHOLE_BPS /
             CryptoPunksMosaicStorage
                 .get()
@@ -595,11 +603,7 @@ contract CryptoPunksMosaicRegistry is
         uint256 mosaicId
     ) public view returns (MonoLifeCycle) {
         (uint192 originalId, ) = fromMosaicId(mosaicId);
-        require(
-            originalId <= CryptoPunksMosaicStorage.get().latestOriginalId,
-            "Invalid originalId"
-        );
-
+        require(originalId <= CryptoPunksMosaicStorage.get().latestOriginalId);
         Original storage original = CryptoPunksMosaicStorage.get().originals[
             originalId
         ];

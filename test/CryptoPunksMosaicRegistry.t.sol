@@ -359,7 +359,11 @@ contract CryptoPunksMosaicRegistryTest is
         // when & then
         vm.deal(address(bidder), bidPrice);
         vm.prank(bidder);
-        vm.expectRevert();
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                UsingCryptoPunksMosaicRegistryStructs.NotActive.selector
+            )
+        );
         mosaicRegistry.bid{value: bidPrice}(originalId, bidPrice);
     }
 
@@ -588,7 +592,12 @@ contract CryptoPunksMosaicRegistryTest is
 
         // when & then
         vm.prank(another);
-        vm.expectRevert("Bidder only");
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                UsingCryptoPunksMosaicRegistryStructs.Unauthorized.selector,
+                bidder
+            )
+        );
         mosaicRegistry.refundBidDeposit(bidId);
     }
 

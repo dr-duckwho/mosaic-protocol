@@ -137,6 +137,9 @@ interface UsingCryptoPunksMosaicRegistryStructs {
         Complete
     }
 
+    error NotActive();
+    error NotEnoughFund();
+    error Unauthorized(address expected);
     error IllegalBidStateTransition(BidState given, BidState required);
     error OutOfExpectedRange(uint256 expectedGte, uint256 expectedLte);
     error NotEnoughProposals(uint64 validCount, uint256 thresholdBps);

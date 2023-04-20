@@ -620,7 +620,7 @@ describe("MosaicProtocol", function () {
         // with no double-spending
         await expect(
           mosaicRegistry.connect(holder).refundOnSold(originalId)
-        ).to.be.revertedWith("No Monos to refund");
+        ).to.be.revertedWithCustomError(mosaicRegistry, "NotEnoughFund");
 
         // TODO: verify BidState
       }
