@@ -99,9 +99,9 @@ contract CryptoPunksMosaicRegistry is
     {
         require(
             museum.cryptoPunksMarket().punkIndexToAddress(punkId) ==
-                address(this),
-            "Must own the punk"
+                address(this)
         );
+
         originalId = ++CryptoPunksMosaicStorage.get().latestOriginalId;
         ++CryptoPunksMosaicStorage.get().nextMonoIds[originalId];
         CryptoPunksMosaicStorage.get().originals[originalId] = Original({
@@ -129,9 +129,8 @@ contract CryptoPunksMosaicRegistry is
         onlyRole(MINTER_ROLE)
         returns (uint256 mosaicId)
     {
-        if (CryptoPunksMosaicStorage.get().nextMonoIds[originalId] == 0) {
-            revert NotActive();
-        }
+        require(CryptoPunksMosaicStorage.get().nextMonoIds[originalId] > 0);
+
         uint64 monoId = CryptoPunksMosaicStorage.get().nextMonoIds[
             originalId
         ]++;
@@ -313,7 +312,9 @@ contract CryptoPunksMosaicRegistry is
         uint192 originalId,
         MonoBidResponse response
     ) external onlyWhenActive returns (uint256 bidId, uint64 changedMonoCount) {
-        require(hasVotableActiveBid(originalId), "No bid ongoing");
+        if (!hasVotableActiveBid(originalId)) {
+            revert NotActive();
+        }
 
         uint64 nextMonoId = CryptoPunksMosaicStorage.get().nextMonoIds[
             originalId

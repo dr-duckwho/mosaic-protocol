@@ -83,7 +83,7 @@ contract CryptoPunksMosaicRegistryTest is
     function test_create_mustOwnPunk() public {
         // when & then
         vm.prank(mintAuthority);
-        vm.expectRevert("Must own the punk");
+        vm.expectRevert();
         uint192 originalId = mosaicRegistry.create(
             1,
             100,
