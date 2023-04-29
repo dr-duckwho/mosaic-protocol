@@ -1,4 +1,5 @@
 import GroupSummary from "@/components/groups/GroupSummary";
+import GroupContent from "@/components/groups/GroupContent";
 
 export default function Page({
   params: { groupId },
@@ -20,6 +21,7 @@ export default function Page({
         totalTicket={totalTicket}
         ticketSold={ticketSold}
       />
+      <GroupContent />
     </>
   );
 }
