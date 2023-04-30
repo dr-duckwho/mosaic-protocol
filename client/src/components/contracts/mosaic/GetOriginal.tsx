@@ -9,7 +9,7 @@ import {
   useCryptoPunksMosaicRegistryGetOriginal,
   useCryptoPunksMosaicRegistryGetPerMonoResaleFund,
   useCryptoPunksMosaicRegistryGetReconstitutionStatus,
-  useCryptoPunksMosaicRegistryHasOngoingBid,
+  useCryptoPunksMosaicRegistryHasVotableActiveBid,
   useCryptoPunksMosaicRegistryIsBidAcceptable,
   useCryptoPunksMosaicRegistrySumBidResponses,
   useCryptoPunksMosaicRegistrySumReservePriceProposals,
@@ -38,10 +38,11 @@ export default function GetOriginal() {
     args: [BigNumber.from(debouncedOriginalId)],
   });
 
-  const { data: hasOngoingBid } = useCryptoPunksMosaicRegistryHasOngoingBid({
-    address: testnet.contracts.CryptoPunksMosaicRegistry.address as Address,
-    args: [BigNumber.from(debouncedOriginalId)],
-  });
+  const { data: hasOngoingBid } =
+    useCryptoPunksMosaicRegistryHasVotableActiveBid({
+      address: testnet.contracts.CryptoPunksMosaicRegistry.address as Address,
+      args: [BigNumber.from(debouncedOriginalId)],
+    });
 
   const { data: distributionStatus } =
     useCryptoPunksMosaicRegistryGetDistributionStatus({
