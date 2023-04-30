@@ -32,7 +32,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     from: deployer,
     proxy: {
       owner: deployer,
-      proxyContract: "ERC1967Proxy",
+      proxyContract: "UUPS",
       proxyArgs: ["{implementation}", "{data}"],
       execute: {
         methodName: "initialize",
@@ -46,7 +46,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     from: deployer,
     proxy: {
       owner: deployer,
-      proxyContract: "ERC1967Proxy",
+      proxyContract: "UUPS",
       proxyArgs: ["{implementation}", "{data}"],
       execute: {
         methodName: "initialize",
