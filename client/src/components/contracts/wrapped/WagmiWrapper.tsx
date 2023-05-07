@@ -5,6 +5,7 @@ import {
   createClient,
   goerli,
   mainnet,
+  sepolia,
   WagmiConfig,
 } from "wagmi";
 import {
@@ -19,7 +20,7 @@ import ClientOnly from "@/components/utils/ClientOnly";
 const { chains, provider, webSocketProvider } = configureChains(
   [
     ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === "true"
-      ? [goerli]
+      ? [sepolia, goerli]
       : [mainnet]),
   ],
   [publicProvider()]

@@ -1,5 +1,5 @@
 {
-  "address": "0x53F7aDE73Dd4229949E4A94c52487ac76A144c79",
+  "address": "0x7cD528F8436Aa68DE375C816270C75F59872BE35",
   "abi": [
     {
       "anonymous": false,
@@ -55,12 +55,106 @@
       "type": "receive"
     },
     {
+      "inputs": [
+        {
+          "internalType": "enum UsingCryptoPunksMosaicRegistryStructs.BidState",
+          "name": "given",
+          "type": "uint8"
+        },
+        {
+          "internalType": "enum UsingCryptoPunksMosaicRegistryStructs.BidState",
+          "name": "required",
+          "type": "uint8"
+        }
+      ],
+      "name": "IllegalBidStateTransition",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotActive",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotEnoughFund",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint64",
+          "name": "validCount",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint256",
+          "name": "thresholdBps",
+          "type": "uint256"
+        }
+      ],
+      "name": "NotEnoughProposals",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "expectedGte",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "expectedLte",
+          "type": "uint256"
+        }
+      ],
+      "name": "OutOfExpectedRange",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "expected",
+          "type": "address"
+        }
+      ],
+      "name": "Unauthorized",
+      "type": "error"
+    },
+    {
       "anonymous": false,
       "inputs": [
         {
           "indexed": true,
           "internalType": "address",
-          "name": "account",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "approved",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
+      "name": "Approval",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "owner",
           "type": "address"
         },
         {
@@ -84,24 +178,18 @@
       "inputs": [
         {
           "indexed": true,
-          "internalType": "address",
-          "name": "claimer",
-          "type": "address"
+          "internalType": "uint256",
+          "name": "bidId",
+          "type": "uint256"
         },
         {
           "indexed": true,
           "internalType": "uint192",
-          "name": "groupId",
+          "name": "originalId",
           "type": "uint192"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "mosaicId",
-          "type": "uint256"
         }
       ],
-      "name": "Claimed",
+      "name": "BidAccepted",
       "type": "event"
     },
     {
@@ -109,24 +197,18 @@
       "inputs": [
         {
           "indexed": true,
-          "internalType": "address",
-          "name": "contributor",
-          "type": "address"
+          "internalType": "uint256",
+          "name": "bidId",
+          "type": "uint256"
         },
         {
           "indexed": true,
           "internalType": "uint192",
-          "name": "groupId",
+          "name": "originalId",
           "type": "uint192"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint96",
-          "name": "ticketQuantity",
-          "type": "uint96"
         }
       ],
-      "name": "Contributed",
+      "name": "BidProposed",
       "type": "event"
     },
     {
@@ -134,36 +216,18 @@
       "inputs": [
         {
           "indexed": true,
-          "internalType": "uint192",
-          "name": "groupId",
-          "type": "uint192"
+          "internalType": "uint256",
+          "name": "bidId",
+          "type": "uint256"
         },
         {
           "indexed": true,
-          "internalType": "address",
-          "name": "creator",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "targetMaxPrice",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint64",
-          "name": "totalTicketSupply",
-          "type": "uint64"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "unitTicketPrice",
-          "type": "uint256"
+          "internalType": "uint192",
+          "name": "originalId",
+          "type": "uint192"
         }
       ],
-      "name": "GroupCreated",
+      "name": "BidRefunded",
       "type": "event"
     },
     {
@@ -171,12 +235,37 @@
       "inputs": [
         {
           "indexed": true,
+          "internalType": "uint256",
+          "name": "bidId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
           "internalType": "uint192",
-          "name": "groupId",
+          "name": "originalId",
           "type": "uint192"
         }
       ],
-      "name": "GroupWon",
+      "name": "BidRejected",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "bidId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint192",
+          "name": "originalId",
+          "type": "uint192"
+        }
+      ],
+      "name": "BidWon",
       "type": "event"
     },
     {
@@ -190,6 +279,44 @@
         }
       ],
       "name": "Initialized",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint192",
+          "name": "originalId",
+          "type": "uint192"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "monoOwner",
+          "type": "address"
+        }
+      ],
+      "name": "MonoRefunded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint192",
+          "name": "originalId",
+          "type": "uint192"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "bidId",
+          "type": "uint256"
+        }
+      ],
+      "name": "OriginalSold",
       "type": "event"
     },
     {
@@ -273,12 +400,6 @@
         {
           "indexed": true,
           "internalType": "address",
-          "name": "operator",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
           "name": "from",
           "type": "address"
         },
@@ -289,85 +410,36 @@
           "type": "address"
         },
         {
-          "indexed": false,
-          "internalType": "uint256[]",
-          "name": "ids",
-          "type": "uint256[]"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256[]",
-          "name": "values",
-          "type": "uint256[]"
-        }
-      ],
-      "name": "TransferBatch",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
           "indexed": true,
-          "internalType": "address",
-          "name": "operator",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "from",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "to",
-          "type": "address"
-        },
-        {
-          "indexed": false,
           "internalType": "uint256",
-          "name": "id",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "value",
+          "name": "tokenId",
           "type": "uint256"
         }
       ],
-      "name": "TransferSingle",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "string",
-          "name": "value",
-          "type": "string"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "id",
-          "type": "uint256"
-        }
-      ],
-      "name": "URI",
+      "name": "Transfer",
       "type": "event"
     },
     {
       "inputs": [],
-      "name": "CURATOR_ROLE",
+      "name": "BID_ACCEPTANCE_THRESHOLD_BPS",
       "outputs": [
         {
-          "internalType": "bytes32",
+          "internalType": "uint256",
           "name": "",
-          "type": "bytes32"
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "BID_EXPIRY_BLOCK_SECONDS",
+      "outputs": [
+        {
+          "internalType": "uint40",
+          "name": "",
+          "type": "uint40"
         }
       ],
       "stateMutability": "view",
@@ -388,12 +460,12 @@
     },
     {
       "inputs": [],
-      "name": "MAX_RESERVE_PRICE_BPS",
+      "name": "MINTER_ROLE",
       "outputs": [
         {
-          "internalType": "uint64",
+          "internalType": "bytes32",
           "name": "",
-          "type": "uint64"
+          "type": "bytes32"
         }
       ],
       "stateMutability": "view",
@@ -401,25 +473,12 @@
     },
     {
       "inputs": [],
-      "name": "MIN_RESERVE_PRICE_BPS",
+      "name": "RESERVE_PRICE_PROPOSAL_TURNOUT_THRESHOLD_BPS",
       "outputs": [
         {
-          "internalType": "uint64",
+          "internalType": "uint256",
           "name": "",
-          "type": "uint64"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "TICKET_SUPPLY_PER_GROUP",
-      "outputs": [
-        {
-          "internalType": "uint64",
-          "name": "",
-          "type": "uint64"
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -429,13 +488,26 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "account",
+          "name": "to",
           "type": "address"
         },
         {
           "internalType": "uint256",
-          "name": "id",
+          "name": "tokenId",
           "type": "uint256"
+        }
+      ],
+      "name": "approve",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
         }
       ],
       "name": "balanceOf",
@@ -452,112 +524,24 @@
     {
       "inputs": [
         {
-          "internalType": "address[]",
-          "name": "accounts",
-          "type": "address[]"
-        },
-        {
-          "internalType": "uint256[]",
-          "name": "ids",
-          "type": "uint256[]"
-        }
-      ],
-      "name": "balanceOfBatch",
-      "outputs": [
-        {
-          "internalType": "uint256[]",
-          "name": "",
-          "type": "uint256[]"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
           "internalType": "uint192",
-          "name": "groupId",
-          "type": "uint192"
-        }
-      ],
-      "name": "buy",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "purchasePrice",
-          "type": "uint256"
-        }
-      ],
-      "name": "calculateMaxReservePrice",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "maxReservePrice",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "purchasePrice",
-          "type": "uint256"
-        }
-      ],
-      "name": "calculateMinReservePrice",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "minReservePrice",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint192",
-          "name": "groupId",
-          "type": "uint192"
-        }
-      ],
-      "name": "claim",
-      "outputs": [
-        {
-          "internalType": "uint256[]",
-          "name": "mosaicIds",
-          "type": "uint256[]"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint192",
-          "name": "groupId",
+          "name": "originalId",
           "type": "uint192"
         },
         {
-          "internalType": "uint64",
-          "name": "ticketQuantity",
-          "type": "uint64"
+          "internalType": "uint256",
+          "name": "price",
+          "type": "uint256"
         }
       ],
-      "name": "contribute",
-      "outputs": [],
+      "name": "bid",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "newBidId",
+          "type": "uint256"
+        }
+      ],
       "stateMutability": "payable",
       "type": "function"
     },
@@ -565,12 +549,27 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "targetPunkId",
+          "name": "punkId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint64",
+          "name": "totalClaimableCount",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint256",
+          "name": "purchasePrice",
           "type": "uint256"
         },
         {
           "internalType": "uint256",
-          "name": "targetMaxPrice",
+          "name": "minReservePrice",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "maxReservePrice",
           "type": "uint256"
         }
       ],
@@ -578,7 +577,7 @@
       "outputs": [
         {
           "internalType": "uint192",
-          "name": "groupId",
+          "name": "originalId",
           "type": "uint192"
         }
       ],
@@ -588,69 +587,118 @@
     {
       "inputs": [
         {
+          "internalType": "uint256",
+          "name": "bidId",
+          "type": "uint256"
+        }
+      ],
+      "name": "finalizeAcceptedBid",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "bidId",
+          "type": "uint256"
+        }
+      ],
+      "name": "finalizeProposedBid",
+      "outputs": [
+        {
+          "internalType": "enum UsingCryptoPunksMosaicRegistryStructs.BidState",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "mosaicId",
+          "type": "uint256"
+        }
+      ],
+      "name": "fromMosaicId",
+      "outputs": [
+        {
           "internalType": "uint192",
-          "name": "groupId",
+          "name": "originalId",
+          "type": "uint192"
+        },
+        {
+          "internalType": "uint64",
+          "name": "monoId",
+          "type": "uint64"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getApproved",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint192",
+          "name": "originalId",
           "type": "uint192"
         }
       ],
-      "name": "getGroup",
+      "name": "getAverageReservePriceProposals",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "average",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "bidId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getBid",
       "outputs": [
         {
           "components": [
             {
-              "internalType": "uint192",
+              "internalType": "uint256",
               "name": "id",
-              "type": "uint192"
+              "type": "uint256"
             },
             {
-              "internalType": "address",
-              "name": "creator",
+              "internalType": "address payable",
+              "name": "bidder",
               "type": "address"
-            },
-            {
-              "internalType": "uint256",
-              "name": "targetPunkId",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "targetMaxPrice",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint64",
-              "name": "totalTicketSupply",
-              "type": "uint64"
-            },
-            {
-              "internalType": "uint256",
-              "name": "unitTicketPrice",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "totalContribution",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint64",
-              "name": "ticketsBought",
-              "type": "uint64"
-            },
-            {
-              "internalType": "uint40",
-              "name": "expiresAt",
-              "type": "uint40"
-            },
-            {
-              "internalType": "enum UsingCryptoPunksGroupRegistryStructs.GroupStatus",
-              "name": "status",
-              "type": "uint8"
-            },
-            {
-              "internalType": "uint256",
-              "name": "purchasePrice",
-              "type": "uint256"
             },
             {
               "internalType": "uint192",
@@ -658,12 +706,122 @@
               "type": "uint192"
             },
             {
-              "internalType": "string",
-              "name": "metadataUri",
-              "type": "string"
+              "internalType": "uint256",
+              "name": "price",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint40",
+              "name": "createdAt",
+              "type": "uint40"
+            },
+            {
+              "internalType": "uint40",
+              "name": "expiry",
+              "type": "uint40"
+            },
+            {
+              "internalType": "enum UsingCryptoPunksMosaicRegistryStructs.BidState",
+              "name": "state",
+              "type": "uint8"
             }
           ],
-          "internalType": "struct UsingCryptoPunksGroupRegistryStructs.Group",
+          "internalType": "struct UsingCryptoPunksMosaicRegistryStructs.Bid",
+          "name": "bid",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint256",
+          "name": "deposit",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint192",
+          "name": "originalId",
+          "type": "uint192"
+        }
+      ],
+      "name": "getDistributionStatus",
+      "outputs": [
+        {
+          "internalType": "enum UsingCryptoPunksMosaicRegistryStructs.DistributionStatus",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getLatestOriginalId",
+      "outputs": [
+        {
+          "internalType": "uint192",
+          "name": "latestOriginalId",
+          "type": "uint192"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint192",
+          "name": "originalId",
+          "type": "uint192"
+        },
+        {
+          "internalType": "uint64",
+          "name": "monoId",
+          "type": "uint64"
+        }
+      ],
+      "name": "getMono",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "mosaicId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint8",
+              "name": "presetId",
+              "type": "uint8"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "proposedReservePrice",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "enum UsingCryptoPunksMosaicRegistryStructs.MonoBidResponse",
+                  "name": "bidResponse",
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "bidId",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct UsingCryptoPunksMosaicRegistryStructs.MonoGovernanceOptions",
+              "name": "governanceOptions",
+              "type": "tuple"
+            }
+          ],
+          "internalType": "struct UsingCryptoPunksMosaicRegistryStructs.Mono",
           "name": "",
           "type": "tuple"
         }
@@ -674,15 +832,15 @@
     {
       "inputs": [
         {
-          "internalType": "uint192",
-          "name": "groupId",
-          "type": "uint192"
+          "internalType": "uint256",
+          "name": "mosaicId",
+          "type": "uint256"
         }
       ],
-      "name": "getGroupLifeCycle",
+      "name": "getMonoLifeCycle",
       "outputs": [
         {
-          "internalType": "enum UsingCryptoPunksGroupRegistryStructs.GroupLifeCycle",
+          "internalType": "enum UsingCryptoPunksMosaicRegistryStructs.MonoLifeCycle",
           "name": "",
           "type": "uint8"
         }
@@ -694,15 +852,86 @@
       "inputs": [
         {
           "internalType": "uint192",
-          "name": "groupId",
+          "name": "originalId",
           "type": "uint192"
         }
       ],
-      "name": "getGroupTotalContribution",
+      "name": "getOriginal",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint192",
+              "name": "id",
+              "type": "uint192"
+            },
+            {
+              "internalType": "uint256",
+              "name": "punkId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint96",
+              "name": "totalMonoSupply",
+              "type": "uint96"
+            },
+            {
+              "internalType": "uint96",
+              "name": "claimedMonoCount",
+              "type": "uint96"
+            },
+            {
+              "internalType": "uint256",
+              "name": "purchasePrice",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "minReservePrice",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "maxReservePrice",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "metadataBaseUri",
+              "type": "string"
+            },
+            {
+              "internalType": "enum UsingCryptoPunksMosaicRegistryStructs.OriginalState",
+              "name": "state",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint256",
+              "name": "activeBidId",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct UsingCryptoPunksMosaicRegistryStructs.Original",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint192",
+          "name": "originalId",
+          "type": "uint192"
+        }
+      ],
+      "name": "getPerMonoResaleFund",
       "outputs": [
         {
           "internalType": "uint256",
-          "name": "totalContribution",
+          "name": "perMonoResaleFund",
           "type": "uint256"
         }
       ],
@@ -710,13 +939,19 @@
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "getLatestGroupId",
-      "outputs": [
+      "inputs": [
         {
           "internalType": "uint192",
-          "name": "latestGroupId",
+          "name": "originalId",
           "type": "uint192"
+        }
+      ],
+      "name": "getReconstitutionStatus",
+      "outputs": [
+        {
+          "internalType": "enum UsingCryptoPunksMosaicRegistryStructs.ReconstitutionStatus",
+          "name": "",
+          "type": "uint8"
         }
       ],
       "stateMutability": "view",
@@ -745,24 +980,13 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "inquired",
+          "name": "addr",
           "type": "address"
-        },
-        {
-          "internalType": "uint192",
-          "name": "groupId",
-          "type": "uint192"
         }
       ],
-      "name": "getTickets",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
+      "name": "grantMintAuthority",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -781,30 +1005,6 @@
       "name": "grantRole",
       "outputs": [],
       "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "inquired",
-          "type": "address"
-        },
-        {
-          "internalType": "uint192",
-          "name": "groupId",
-          "type": "uint192"
-        }
-      ],
-      "name": "hasContribution",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -834,6 +1034,25 @@
     {
       "inputs": [
         {
+          "internalType": "uint192",
+          "name": "originalId",
+          "type": "uint192"
+        }
+      ],
+      "name": "hasVotableActiveBid",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "address",
           "name": "museumAddress",
           "type": "address"
@@ -848,7 +1067,7 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "account",
+          "name": "owner",
           "type": "address"
         },
         {
@@ -871,17 +1090,12 @@
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "inquired",
-          "type": "address"
-        },
-        {
           "internalType": "uint192",
-          "name": "groupId",
+          "name": "originalId",
           "type": "uint192"
         }
       ],
-      "name": "isCreator",
+      "name": "isBidAcceptable",
       "outputs": [
         {
           "internalType": "bool",
@@ -890,6 +1104,30 @@
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "contributor",
+          "type": "address"
+        },
+        {
+          "internalType": "uint192",
+          "name": "originalId",
+          "type": "uint192"
+        }
+      ],
+      "name": "mint",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "mosaicId",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -903,6 +1141,74 @@
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "name",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
+      "name": "ownerOf",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "mosaicId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "price",
+          "type": "uint256"
+        }
+      ],
+      "name": "proposeReservePrice",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint192",
+          "name": "originalId",
+          "type": "uint192"
+        },
+        {
+          "internalType": "uint256",
+          "name": "price",
+          "type": "uint256"
+        }
+      ],
+      "name": "proposeReservePriceBatch",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -921,13 +1227,32 @@
     {
       "inputs": [
         {
+          "internalType": "uint256",
+          "name": "bidId",
+          "type": "uint256"
+        }
+      ],
+      "name": "refundBidDeposit",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "uint192",
-          "name": "groupId",
+          "name": "originalId",
           "type": "uint192"
         }
       ],
-      "name": "refundExpired",
-      "outputs": [],
+      "name": "refundOnSold",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "totalResaleFund",
+          "type": "uint256"
+        }
+      ],
       "stateMutability": "nonpayable",
       "type": "function"
     },
@@ -946,6 +1271,35 @@
       ],
       "name": "renounceRole",
       "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint192",
+          "name": "originalId",
+          "type": "uint192"
+        },
+        {
+          "internalType": "enum UsingCryptoPunksMosaicRegistryStructs.MonoBidResponse",
+          "name": "response",
+          "type": "uint8"
+        }
+      ],
+      "name": "respondToBidBatch",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "bidId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint64",
+          "name": "changedMonoCount",
+          "type": "uint64"
+        }
+      ],
       "stateMutability": "nonpayable",
       "type": "function"
     },
@@ -980,22 +1334,12 @@
           "type": "address"
         },
         {
-          "internalType": "uint256[]",
-          "name": "ids",
-          "type": "uint256[]"
-        },
-        {
-          "internalType": "uint256[]",
-          "name": "amounts",
-          "type": "uint256[]"
-        },
-        {
-          "internalType": "bytes",
-          "name": "data",
-          "type": "bytes"
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
         }
       ],
-      "name": "safeBatchTransferFrom",
+      "name": "safeTransferFrom",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -1014,12 +1358,7 @@
         },
         {
           "internalType": "uint256",
-          "name": "id",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "amount",
+          "name": "tokenId",
           "type": "uint256"
         },
         {
@@ -1041,19 +1380,19 @@
           "type": "bool"
         },
         {
-          "internalType": "uint64",
-          "name": "minReservePriceBps",
-          "type": "uint64"
+          "internalType": "uint256",
+          "name": "reservePriceProposalTurnoutThresholdBps",
+          "type": "uint256"
         },
         {
-          "internalType": "uint64",
-          "name": "maxReservePriceBps",
-          "type": "uint64"
+          "internalType": "uint40",
+          "name": "bidExpiryBlockSeconds",
+          "type": "uint40"
         },
         {
-          "internalType": "uint64",
-          "name": "ticketSupplyPerGroup",
-          "type": "uint64"
+          "internalType": "uint256",
+          "name": "bidAcceptanceThresholdBps",
+          "type": "uint256"
         }
       ],
       "name": "setAdminGovernanceOptions",
@@ -1082,6 +1421,131 @@
     {
       "inputs": [
         {
+          "internalType": "string",
+          "name": "_uri",
+          "type": "string"
+        }
+      ],
+      "name": "setInvalidMetadataUri",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint192",
+          "name": "originalId",
+          "type": "uint192"
+        },
+        {
+          "internalType": "string",
+          "name": "_uri",
+          "type": "string"
+        }
+      ],
+      "name": "setMetadataBaseUri",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint192",
+          "name": "originalId",
+          "type": "uint192"
+        },
+        {
+          "internalType": "uint256",
+          "name": "minReservePrice",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "maxReservePrice",
+          "type": "uint256"
+        }
+      ],
+      "name": "setOriginalReservePrice",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "mosaicId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint8",
+          "name": "presetId",
+          "type": "uint8"
+        }
+      ],
+      "name": "setPresetId",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint192",
+          "name": "originalId",
+          "type": "uint192"
+        }
+      ],
+      "name": "sumBidResponses",
+      "outputs": [
+        {
+          "internalType": "uint64",
+          "name": "yes",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint64",
+          "name": "no",
+          "type": "uint64"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint192",
+          "name": "originalId",
+          "type": "uint192"
+        }
+      ],
+      "name": "sumReservePriceProposals",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "priceSum",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint64",
+          "name": "validProposalCount",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint64",
+          "name": "invalidProposalCount",
+          "type": "uint64"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "bytes4",
           "name": "interfaceId",
           "type": "bytes4"
@@ -1096,6 +1560,114 @@
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "symbol",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint192",
+          "name": "originalId",
+          "type": "uint192"
+        },
+        {
+          "internalType": "address",
+          "name": "bidder",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "blockTimestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "toBidId",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "id",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint192",
+          "name": "originalId",
+          "type": "uint192"
+        },
+        {
+          "internalType": "uint64",
+          "name": "monoId",
+          "type": "uint64"
+        }
+      ],
+      "name": "toMosaicId",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "mosaicId",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "mosaicId",
+          "type": "uint256"
+        }
+      ],
+      "name": "tokenURI",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "from",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
+      "name": "transferFrom",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -1132,25 +1704,6 @@
     {
       "inputs": [
         {
-          "internalType": "uint256",
-          "name": "groupId",
-          "type": "uint256"
-        }
-      ],
-      "name": "uri",
-      "outputs": [
-        {
-          "internalType": "string",
-          "name": "",
-          "type": "string"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
           "internalType": "address",
           "name": "_logic",
           "type": "address"
@@ -1165,81 +1718,81 @@
       "type": "constructor"
     }
   ],
-  "transactionHash": "0x1e2fe17c2f56a514d2b3e5c320ba2ce40398447c1949de9d221272b4fc48c3b5",
+  "transactionHash": "0x6ab5e5f711de7132181ec54b6b792e9993ea604a48238ee8d029add4e4106b0a",
   "receipt": {
     "to": null,
-    "from": "0x9675e17451FEB900280FC84D2eE44D114f629C96",
-    "contractAddress": "0x53F7aDE73Dd4229949E4A94c52487ac76A144c79",
-    "transactionIndex": 22,
-    "gasUsed": "427078",
-    "logsBloom": "0x00000004000000000000000000000000400080000000000000000000000000000000000000804000000000000000000000000000000000000000000000000000000000000000000000000002000002000080000000010000000000000000000000000000020000000000000000000800000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000400000000000000000000001000000000000000000020000000000000000000040000000000000000000100400040000120000000000000010000000000000000000000000000000004000000000004000000",
-    "blockHash": "0xb34098c997e7d3ab180c0a2c932d4782606f3962d643133a330f748705d75efa",
-    "transactionHash": "0x1e2fe17c2f56a514d2b3e5c320ba2ce40398447c1949de9d221272b4fc48c3b5",
+    "from": "0x4eF26a3129b91Ee21d5E9Ed963e6549B531C3744",
+    "contractAddress": "0x7cD528F8436Aa68DE375C816270C75F59872BE35",
+    "transactionIndex": 8,
+    "gasUsed": "515853",
+    "logsBloom": "0x00000004000000000000000000000000400000000000000000000000000000000100000000000000000000000000000000000000000000000000000000100000000000000000000000000000000002008008000000000000000000000000000000000000020000000000000000000800000000000000000000000200000000000800000000000000008000000000000000000000000080000000000000000000000000000000000000000084000400002000000000000000001000000000000000000020000000004000000000040000000000000000000100001000000020000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0xba97ad5b00a7829905ace259ccb7a4786597d25aa3eb6e51040f3a4b7745ddf2",
+    "transactionHash": "0x6ab5e5f711de7132181ec54b6b792e9993ea604a48238ee8d029add4e4106b0a",
     "logs": [
       {
-        "transactionIndex": 22,
-        "blockNumber": 8910670,
-        "transactionHash": "0x1e2fe17c2f56a514d2b3e5c320ba2ce40398447c1949de9d221272b4fc48c3b5",
-        "address": "0x53F7aDE73Dd4229949E4A94c52487ac76A144c79",
+        "transactionIndex": 8,
+        "blockNumber": 3427674,
+        "transactionHash": "0x6ab5e5f711de7132181ec54b6b792e9993ea604a48238ee8d029add4e4106b0a",
+        "address": "0x7cD528F8436Aa68DE375C816270C75F59872BE35",
         "topics": [
           "0xbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b",
-          "0x000000000000000000000000534c77dbbce7aefec1c1ab659fc63e98d0676c64"
+          "0x000000000000000000000000f633f9008d82cff5e095a408a5c7542e4f8d30ca"
         ],
         "data": "0x",
-        "logIndex": 63,
-        "blockHash": "0xb34098c997e7d3ab180c0a2c932d4782606f3962d643133a330f748705d75efa"
+        "logIndex": 2,
+        "blockHash": "0xba97ad5b00a7829905ace259ccb7a4786597d25aa3eb6e51040f3a4b7745ddf2"
       },
       {
-        "transactionIndex": 22,
-        "blockNumber": 8910670,
-        "transactionHash": "0x1e2fe17c2f56a514d2b3e5c320ba2ce40398447c1949de9d221272b4fc48c3b5",
-        "address": "0x53F7aDE73Dd4229949E4A94c52487ac76A144c79",
+        "transactionIndex": 8,
+        "blockNumber": 3427674,
+        "transactionHash": "0x6ab5e5f711de7132181ec54b6b792e9993ea604a48238ee8d029add4e4106b0a",
+        "address": "0x7cD528F8436Aa68DE375C816270C75F59872BE35",
         "topics": [
           "0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d",
           "0x0000000000000000000000000000000000000000000000000000000000000000",
-          "0x0000000000000000000000009675e17451feb900280fc84d2ee44d114f629c96",
-          "0x0000000000000000000000009675e17451feb900280fc84d2ee44d114f629c96"
+          "0x0000000000000000000000004ef26a3129b91ee21d5e9ed963e6549b531c3744",
+          "0x0000000000000000000000004ef26a3129b91ee21d5e9ed963e6549b531c3744"
         ],
         "data": "0x",
-        "logIndex": 64,
-        "blockHash": "0xb34098c997e7d3ab180c0a2c932d4782606f3962d643133a330f748705d75efa"
+        "logIndex": 3,
+        "blockHash": "0xba97ad5b00a7829905ace259ccb7a4786597d25aa3eb6e51040f3a4b7745ddf2"
       },
       {
-        "transactionIndex": 22,
-        "blockNumber": 8910670,
-        "transactionHash": "0x1e2fe17c2f56a514d2b3e5c320ba2ce40398447c1949de9d221272b4fc48c3b5",
-        "address": "0x53F7aDE73Dd4229949E4A94c52487ac76A144c79",
+        "transactionIndex": 8,
+        "blockNumber": 3427674,
+        "transactionHash": "0x6ab5e5f711de7132181ec54b6b792e9993ea604a48238ee8d029add4e4106b0a",
+        "address": "0x7cD528F8436Aa68DE375C816270C75F59872BE35",
         "topics": [
           "0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d",
-          "0x850d585eb7f024ccee5e68e55f2c26cc72e1e6ee456acf62135757a5eb9d4a10",
-          "0x0000000000000000000000009675e17451feb900280fc84d2ee44d114f629c96",
-          "0x0000000000000000000000009675e17451feb900280fc84d2ee44d114f629c96"
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "0x000000000000000000000000caa3c23aeef417b00208e150ad04fd6a1878e474",
+          "0x0000000000000000000000004ef26a3129b91ee21d5e9ed963e6549b531c3744"
         ],
         "data": "0x",
-        "logIndex": 65,
-        "blockHash": "0xb34098c997e7d3ab180c0a2c932d4782606f3962d643133a330f748705d75efa"
+        "logIndex": 4,
+        "blockHash": "0xba97ad5b00a7829905ace259ccb7a4786597d25aa3eb6e51040f3a4b7745ddf2"
       },
       {
-        "transactionIndex": 22,
-        "blockNumber": 8910670,
-        "transactionHash": "0x1e2fe17c2f56a514d2b3e5c320ba2ce40398447c1949de9d221272b4fc48c3b5",
-        "address": "0x53F7aDE73Dd4229949E4A94c52487ac76A144c79",
+        "transactionIndex": 8,
+        "blockNumber": 3427674,
+        "transactionHash": "0x6ab5e5f711de7132181ec54b6b792e9993ea604a48238ee8d029add4e4106b0a",
+        "address": "0x7cD528F8436Aa68DE375C816270C75F59872BE35",
         "topics": [
           "0x7f26b83ff96e1f2b6a682f133852f6798a09c465da95921460cefb3847402498"
         ],
         "data": "0x0000000000000000000000000000000000000000000000000000000000000001",
-        "logIndex": 66,
-        "blockHash": "0xb34098c997e7d3ab180c0a2c932d4782606f3962d643133a330f748705d75efa"
+        "logIndex": 5,
+        "blockHash": "0xba97ad5b00a7829905ace259ccb7a4786597d25aa3eb6e51040f3a4b7745ddf2"
       }
     ],
-    "blockNumber": 8910670,
-    "cumulativeGasUsed": "2840865",
+    "blockNumber": 3427674,
+    "cumulativeGasUsed": "706673",
     "status": 1,
     "byzantium": true
   },
   "args": [
-    "0x534C77DbBcE7aefEc1C1AB659FC63e98d0676c64",
-    "0xc4d66de80000000000000000000000006720a7155b6f857e06380bcf46e242161ddbd71b"
+    "0xf633F9008D82cfF5E095a408a5C7542e4f8D30Ca",
+    "0xc4d66de8000000000000000000000000caa3c23aeef417b00208e150ad04fd6a1878e474"
   ],
   "numDeployments": 1,
   "solcInputHash": "0e89febeebc7444140de8e67c9067d2c",
@@ -1249,10 +1802,10 @@
   "execute": {
     "methodName": "initialize",
     "args": [
-      "0x6720A7155B6f857e06380BCf46E242161DDbD71b"
+      "0xcAa3c23aeEF417b00208e150ad04fD6A1878e474"
     ]
   },
-  "implementation": "0x534C77DbBcE7aefEc1C1AB659FC63e98d0676c64",
+  "implementation": "0xf633F9008D82cfF5E095a408a5C7542e4f8D30Ca",
   "devdoc": {
     "details": "This contract implements an upgradeable proxy. It is upgradeable because calls are delegated to an implementation address that can be changed. This address is stored in storage in the location specified by https://eips.ethereum.org/EIPS/eip-1967[EIP1967], so that it doesn't conflict with the storage layout of the implementation behind the proxy.",
     "kind": "dev",

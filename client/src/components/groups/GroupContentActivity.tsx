@@ -1,11 +1,23 @@
+"use client";
+
 import Jazzicon from "react-jazzicon";
 import Image from "next/image";
+import { getGroupEvents } from "@/components/contracts/client";
 
 const secondary = {
   color: "#918090",
 };
 
 export default function GroupContentActivity() {
+  const groupId = 1;
+  getGroupEvents(groupId, [
+    "Claimed",
+    "GroupCreated",
+    "GroupWon",
+    "Contributed",
+  ]).then((events) => {
+    console.log(events);
+  });
   return (
     <section className="mt-7">
       {Array.from({ length: 4 }).map((_, index) => (

@@ -28,8 +28,12 @@ const config: HardhatUserConfig = {
   },
   networks: {
     goerli: {
-      url: `https://eth-goerli.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`,
-      accounts: [process.env.GOERLI_PRIVATE_KEY ?? ""],
+      url: `https://eth-goerli.alchemyapi.io/v2/${process.env.ALCHEMY_GOERLI}`,
+      accounts: [process.env.PRIVATE_KEY ?? ""],
+    },
+    sepolia: {
+      url: `https://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_SEPOLIA}`,
+      accounts: [process.env.PRIVATE_KEY ?? ""],
     },
   },
   namedAccounts: {

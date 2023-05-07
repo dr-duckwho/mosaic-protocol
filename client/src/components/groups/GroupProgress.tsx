@@ -29,7 +29,8 @@ export function GroupProgress(props: {
               color: "#E2D770",
             }}
           >
-            {props.ticketSold} ETH Funded
+            {/* TODO: wei가 아닌 eth로 표기 */}
+            {props.ticketSold} wei Funded
           </div>
           <div
             style={{
