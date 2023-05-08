@@ -44,6 +44,8 @@ interface UsingCryptoPunksGroupRegistryStructs {
         uint256 unitTicketPrice
     );
 
+    event GroupForceLost(uint192 indexed groupId, address indexed editor);
+
     event GroupWon(uint192 indexed groupId);
 
     event Contributed(
@@ -57,4 +59,6 @@ interface UsingCryptoPunksGroupRegistryStructs {
         uint192 indexed groupId,
         uint256 indexed mosaicId
     );
+
+    error NotActive();
 }

@@ -19,6 +19,10 @@ library CryptoPunksGroupStorage {
          * @dev groupId -> address -> shares (= the number of tickets bought)
          */
         mapping(uint192 => mapping(address => uint256)) refundableTickets;
+        /**
+         * @dev groupId -> bool, set true by {@code forceLose}
+         */
+        mapping(uint192 => bool) forceLost;
     }
 
     struct AdminGovernanceOptions {

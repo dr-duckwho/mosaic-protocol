@@ -103,10 +103,26 @@ contract CryptoPunksGroupRegistry is
         return groupId;
     }
 
+    function forceLose(
+        uint192 groupId
+    ) external onlyValidGroup(groupId) onlyRole(CURATOR_ROLE) {
+        if (getGroupLifeCycle(groupId) != GroupLifeCycle.Active) {
+            revert NotActive();
+        }
+        CryptoPunksGroupStorage.get().forceLost[groupId] = true;
+        CryptoPunksGroupStorage.get().groups[groupId].expiresAt = uint40(
+            block.timestamp - 1
+        );
+        emit GroupForceLost(groupId, msg.sender);
+    }
+
     function contribute(
         uint192 groupId,
         uint64 ticketQuantity
     ) external payable onlyValidGroup(groupId) onlyWhenActive {
+        if (getGroupLifeCycle(groupId) != GroupLifeCycle.Active) {
+            revert NotActive();
+        }
         Group storage group = CryptoPunksGroupStorage.get().groups[groupId];
 
         uint256 ticketsLeft = group.totalTicketSupply - group.ticketsBought;
@@ -143,11 +159,12 @@ contract CryptoPunksGroupRegistry is
         onlyValidGroup(groupId)
         onlyWhenActive
     {
-        // Internal prerequisites
-        require(
-            address(museum.mosaicRegistry()) != address(0x0),
-            "Exhibit registry must be set"
-        );
+        // NOTE: this may prevent groups with sufficient funds to proceed after their expiry.
+        // For simplicity, though, we will consider the expiry as a hard deadline before which
+        // buying must be done.
+        if (getGroupLifeCycle(groupId) != GroupLifeCycle.Active) {
+            revert NotActive();
+        }
 
         // Stakeholder and group status prerequisites
         Group storage group = CryptoPunksGroupStorage.get().groups[groupId];
@@ -297,10 +314,13 @@ contract CryptoPunksGroupRegistry is
             return GroupLifeCycle.Won;
         }
         if (group.status == GroupStatus.Open) {
-            if (group.expiresAt >= block.timestamp) {
-                return GroupLifeCycle.Active;
+            if (
+                group.expiresAt < block.timestamp ||
+                CryptoPunksGroupStorage.get().forceLost[groupId]
+            ) {
+                return GroupLifeCycle.Lost;
             }
-            return GroupLifeCycle.Lost;
+            return GroupLifeCycle.Active;
         }
         return GroupLifeCycle.Nonexistent;
     }
