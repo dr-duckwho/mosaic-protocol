@@ -12,7 +12,8 @@ export function GroupPrice(props: {
     <div className="flex text-white mb-7">
       <div className="flex-1">
         <div className="text-sm">Ticket Price</div>
-        <div className="text-xl font-medium">{props.ticketPrice} ETH</div>
+        {/* TODO: wei가 아닌 eth로 표기 */}
+        <div className="text-xl font-medium">{props.ticketPrice} wei</div>
         <div
           className="text-sm"
           style={{
@@ -25,7 +26,8 @@ export function GroupPrice(props: {
       <div className="flex-1 ml-5">
         <div className="text-sm">Auction Price</div>
         <div className="text-xl font-medium">
-          {props.ticketPrice * props.totalTicket} ETH
+          {/* TODO: wei가 아닌 eth로 표기 */}
+          {props.ticketPrice * props.totalTicket} wei
         </div>
         <div
           className="text-sm"

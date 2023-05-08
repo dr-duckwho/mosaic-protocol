@@ -7,6 +7,8 @@ export function CryptoPunkImage({
   punkId: number;
   children?: React.ReactNode;
 }) {
+  const punkIdStr = punkId.toString().padStart(4, "0");
+
   return (
     <div
       className="relative"
@@ -19,7 +21,7 @@ export function CryptoPunkImage({
         style={{
           imageRendering: "pixelated",
         }}
-        src={`https://cryptopunks.app/public/images/cryptopunks/punk${punkId}.png`}
+        src={`https://cryptopunks.app/public/images/cryptopunks/punk${punkIdStr}.png`}
         alt={`Punk #${punkId}`}
         width={24}
         height={24}

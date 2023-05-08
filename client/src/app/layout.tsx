@@ -10,10 +10,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body>
+      <body className="">
         <WagmiWrapper>
           <Navigation />
-          <main className="overflow-hidden mb-20">{children}</main>
+          <main className="overflow-hidden mb-20 max-w-lg mx-auto">
+            {children}
+          </main>
         </WagmiWrapper>
       </body>
     </html>

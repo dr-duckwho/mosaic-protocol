@@ -26,7 +26,7 @@ export default function Home() {
         description=" Buy piecewise, win together, and get your own share. Join purchase
         divides cost and increases accessibility."
       />
-      <CurrentAuction punkId={3100} groupId={0} />
+      <CurrentAuction />
       <Feature title="Join our community" />
       <Button
         className="w-full px-5 mt-7"
