@@ -60,13 +60,13 @@ function GroupContentActivityItem({ event }: { event: Log }) {
             <span style={secondary}>
               {event.address.substring(0, 5)}...{event.address.substring(39)}
             </span>{" "}
-            {event.eventName}
+            {(event as any).eventName}
           </div>
           <div style={secondary} className="text-xs flex items-center">
-            #{parseInt(event.blockNumber)}
+            #{parseInt(event.blockNumber?.toString() ?? "0")}
             <Link
               href={`https://sepolia.etherscan.io/block/${parseInt(
-                event.blockNumber
+                event.blockNumber?.toString() ?? "0"
               )}`}
               target="_blank"
             >
