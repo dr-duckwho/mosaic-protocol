@@ -15,17 +15,20 @@ function GroupContentPhastDataItem({
   endsOn?: Date;
 }) {
   const statusBackground: {
-    Active: { background: string };
-    Complete: { backgroundColor: string };
-    Failed: { backgroundColor: string };
+    Active: { color: string; background: string };
+    Complete: { color: string; backgroundColor: string };
+    Failed: { color: string; backgroundColor: string };
   } = {
     Active: {
-      background: "linear-gradient(93.21deg, #6732FF 14.82%, #FA7F7F 91.44%)",
+      color: "#1B1B1E",
+      background: "linear-gradient(93.21deg, #FFFFFF 14.82%, #80B1FB 91.44%)",
     },
     Complete: {
-      backgroundColor: "#914098",
+      color: "#FFFFFF",
+      backgroundColor: "#29304B",
     },
     Failed: {
+      color: "#FFFFFF",
       backgroundColor: "#DF4343",
     },
   };
@@ -50,7 +53,7 @@ function GroupContentPhastDataItem({
     >
       <div
         style={{
-          backgroundColor: "#4D1F51",
+          backgroundColor: "#292F46",
         }}
         className="flex flex-1 justify-center items-center w-100 py-6 text-xl font-medium pb-11"
       >
@@ -58,7 +61,7 @@ function GroupContentPhastDataItem({
       </div>
       <div
         style={{
-          backgroundColor: "#3C163F",
+          backgroundColor: "#1B1B1E",
           flex: 6,
         }}
         className="py-6 px-4"
@@ -76,7 +79,7 @@ function GroupContentPhastDataItem({
         </div>
         <div
           style={{
-            color: "#918090",
+            color: "#8B8F9F",
           }}
           className="flex justify-start items-center text-xs mt-1"
         >
@@ -92,7 +95,7 @@ function GroupContentPhastDataItem({
       </div>
       <button
         style={{
-          backgroundColor: "#3C163F",
+          backgroundColor: "#1B1B1E",
         }}
         className="flex flex-1 justify-center items-center py-6 pr-2.5"
       >

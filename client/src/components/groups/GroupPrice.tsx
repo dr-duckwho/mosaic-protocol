@@ -17,7 +17,7 @@ export function GroupPrice(props: {
         <div
           className="text-sm"
           style={{
-            color: "#918090",
+            color: "#64646A",
           }}
         >
           {formatter.format(props.ticketPrice * props.ethPrice)}
@@ -32,7 +32,7 @@ export function GroupPrice(props: {
         <div
           className="text-sm"
           style={{
-            color: "#918090",
+            color: "#64646A",
           }}
         >
           {formatter.format(

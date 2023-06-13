@@ -41,7 +41,7 @@ export default function GroupSummary({
         />
         <GroupProgress totalTicket={totalTicket} ticketSold={ticketSold} />
         <div className="mt-9">
-          <div className="text-center text-sm text-primary">
+          <div className="text-center text-sm text-white">
             Expires in {days} Days ({formattedDate})
           </div>
           <Button className="w-full mt-4" light title="Buy Tickets" href="#" />

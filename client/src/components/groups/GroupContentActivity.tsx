@@ -3,35 +3,51 @@
 import Jazzicon from "react-jazzicon";
 import Image from "next/image";
 import { getGroupEvents } from "@/components/contracts/client";
+import { useEffect, useState } from "react";
+import { Log } from "viem";
+import Link from "next/link";
 
 const secondary = {
-  color: "#918090",
+  color: "#7B8198",
 };
 
 export default function GroupContentActivity() {
-  const groupId = 1;
-  getGroupEvents(groupId, [
-    "Claimed",
-    "GroupCreated",
-    "GroupWon",
-    "Contributed",
-  ]).then((events) => {
-    console.log(events);
-  });
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [events, setEvents] = useState<Log[]>([]);
+
+  useEffect(() => {
+    if (isLoaded) return;
+
+    const groupId = 1;
+    getGroupEvents(groupId, [
+      "Claimed",
+      "GroupCreated",
+      "GroupWon",
+      "Contributed",
+    ]).then((events) => {
+      const result: Log[] = events.flatMap((event) => event);
+      // @ts-ignore
+      result.sort((a, b) => parseInt(b.blockNumber) - parseInt(a.blockNumber));
+      setEvents(result);
+      console.log(result);
+      setIsLoaded(true);
+    });
+  }, [events]);
+
   return (
     <section className="mt-7">
-      {Array.from({ length: 4 }).map((_, index) => (
-        <GroupContentActivityItem key={index} />
+      {events.map((event, index) => (
+        <GroupContentActivityItem key={index} event={event} />
       ))}
     </section>
   );
 }
 
-function GroupContentActivityItem() {
+function GroupContentActivityItem({ event }: { event: Log }) {
   return (
     <div
       style={{
-        backgroundColor: "#320D33",
+        backgroundColor: "#1B1B1E",
       }}
       className="flex justify-between items-center px-5 py-4 mb-4"
     >
@@ -41,17 +57,27 @@ function GroupContentActivityItem() {
         </div>
         <div className="ml-2 flex-col justify-start">
           <div className="text-white text-sm font-medium">
-            <span style={secondary}>0x1234</span> bought 2 Tickets
+            <span style={secondary}>
+              {event.address.substring(0, 5)}...{event.address.substring(39)}
+            </span>{" "}
+            {event.eventName}
           </div>
           <div style={secondary} className="text-xs flex items-center">
-            16 Dec 2022, 05:12 pm
-            <Image
-              className="ml-1.5"
-              src="/link.svg"
-              alt="link"
-              width={9}
-              height={9}
-            />
+            #{parseInt(event.blockNumber)}
+            <Link
+              href={`https://sepolia.etherscan.io/block/${parseInt(
+                event.blockNumber
+              )}`}
+              target="_blank"
+            >
+              <Image
+                className="ml-1.5"
+                src="/link.svg"
+                alt="link"
+                width={9}
+                height={9}
+              />
+            </Link>
           </div>
         </div>
       </div>

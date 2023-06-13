@@ -21,17 +21,7 @@ export function Button({
       <div className={className}>
         <button
           className="box-content py-5 w-full font-bold flex items-center justify-center"
-          style={
-            light
-              ? {
-                  color: "#000000",
-                  background: "#B97FFA",
-                }
-              : {
-                  color: "#B97FFA",
-                  background: "#331235",
-                }
-          }
+          style={{ color: "#060606", background: "#FFFFFF" }}
         >
           {icon && (
             <Image

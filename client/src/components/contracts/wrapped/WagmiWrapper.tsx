@@ -42,12 +42,12 @@ const theme = {
   ...darkTheme(),
   colors: {
     ...darkTheme().colors,
-    accentColorForeground: "#B97FFA",
-    accentColor: "#230022",
-    connectButtonBackground: "#331235",
-    connectButtonText: "#D2BBE9",
-    modalBackground: "#230022",
-    modalText: "#D2BBE9",
+    accentColorForeground: "#AAAFC5",
+    accentColor: "#1E212E",
+    connectButtonBackground: "#1E212E",
+    connectButtonText: "#AAAFC5",
+    modalBackground: "#1E212E",
+    modalText: "#AAAFC5",
   },
 } as Theme;
 

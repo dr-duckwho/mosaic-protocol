@@ -12,21 +12,21 @@ export function GroupProgress(props: {
         <div
           className="w-full h-1 mt-2"
           style={{
-            backgroundColor: "#3E324B",
+            backgroundColor: "#242431",
           }}
         >
           <div
             className="h-full"
             style={{
               width: `${(props.ticketSold / props.totalTicket) * 100}%`,
-              backgroundColor: `#E2D770`,
+              backgroundColor: `#E28570`,
             }}
           />
         </div>
         <div className="mt-3 flex justify-between text-xs">
           <div
             style={{
-              color: "#E2D770",
+              color: "#E28570",
             }}
           >
             {/* TODO: wei가 아닌 eth로 표기 */}
@@ -34,10 +34,10 @@ export function GroupProgress(props: {
           </div>
           <div
             style={{
-              color: "#918090",
+              color: "#64646A",
             }}
           >
-            / {props.totalTicket} Tickets (Total)
+            {props.ticketSold} / {props.totalTicket}
           </div>
         </div>
       </div>

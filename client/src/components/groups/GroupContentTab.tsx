@@ -12,12 +12,12 @@ function GroupContentTabItem({
   return (
     <button
       onClick={() => onChangeMenu()}
-      className={`${isSelected && "text-primary"} text-sm mr-6`}
+      className={`${isSelected && "text-white"} text-sm mr-6`}
     >
       {title}
       <div
         style={{ height: 1 }}
-        className={`${isSelected && "bg-primary"} mt-3 relative z-10`}
+        className={`${isSelected && "bg-white"} mt-3 relative z-10`}
       />
     </button>
   );
@@ -40,7 +40,7 @@ export default function GroupContentTab({
     <div className="relative">
       <div
         style={{
-          color: "#918090",
+          color: "#808080",
         }}
         className="flex items-center"
       >
@@ -56,7 +56,7 @@ export default function GroupContentTab({
       <div
         style={{
           height: 1,
-          backgroundColor: "#3E324B",
+          backgroundColor: "#1D1D1D",
         }}
         className="mt-3 w-full absolute bottom-0 z-0"
       />

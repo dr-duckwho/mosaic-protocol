@@ -41,9 +41,8 @@ export async function getGroupEvents(groupId: number, eventNames: string[]) {
         fromBlock: "earliest",
         toBlock: "latest",
         eventName: eventName,
-        args: {
-          groupId,
-        },
+        // @ts-ignore
+        args: { groupId },
       })
     )
   );
